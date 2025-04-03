@@ -41,7 +41,7 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     function setUp() public {
         // April 02, 2025
         setupDomain({ mainnetForkBlock: 22182140 });
-        deployPayload()
+        deployPayload();
     }
 
     function test_almSystemDeployment() public {
