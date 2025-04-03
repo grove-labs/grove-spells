@@ -1,0 +1,9 @@
+[submodule "lib/forge-std"]
+	path = lib/forge-std
+	url = https://github.com/foundry-rs/forge-std
+[submodule "lib/bloom-alm-controller"]
+	path = lib/bloom-alm-controller
+	url = https://github.com/bloom-foundation/bloom-alm-controller
+[submodule "lib/bloom-address-registry"]
+	path = lib/bloom-address-registry
+	url = https://github.com/bloom-foundation/bloom-address-registry
