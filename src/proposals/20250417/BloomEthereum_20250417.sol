@@ -9,18 +9,16 @@ import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/Ra
 
 /**
  * @title  Apr 17, 2025 Bloom Ethereum Proposal
- * @notice Activate Bloom Liquidity Layer
+ * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard Morpho Steakhouse Vault
  * @author Steakhouse Financial
  * Forum:  TBD
  * Vote:   TBD
  */
 contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
-    // TODO: Confirm these addresses
-    address internal constant FREEZER                 = 0x90D8c80C028B4C09C0d8dcAab9bbB057F0513431;
-    address internal constant RELAYER                 = 0x8a25A24EDE9482C4Fc0738F99611BE58F1c839AB;
+    address internal constant FREEZER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
+    address internal constant RELAYER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
-
 
     function _execute() internal override {
         initiateAlmSystem();
@@ -59,20 +57,20 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
     function setupBasicRateLimits() private {
         _setUSDSMintRateLimit(
-            100_000_000e6,                  // TODO: get actual number
-            100_000_000e6 / uint256(1 days) // TODO: get actual number
+            5_000_000e6,
+            2_500_000e6 / uint256(1 days)
         );
         _setUSDSToUSDCRateLimit(
-            100_000_000e6,                  // TODO: get actual number
-            100_000_000e6 / uint256(1 days) // TODO: get actual number
+            5_000_000e6,
+            2_500_000e6 / uint256(1 days)
         );
     }
 
     function onboardMorphoSteakhouseVault() private {
         _onboardERC4626Vault(
             MORPHO_STEAKHOUSE_VAULT,
-            100_000_000e6,                  // TODO: get actual number
-            100_000_000e6 / uint256(1 days) // TODO: get actual number
+            5_000_000e6,
+            2_500_000e6 / uint256(1 days)
         );
     }
 

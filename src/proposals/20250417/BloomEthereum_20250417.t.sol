@@ -22,9 +22,8 @@ interface IVatLike {
 
 contract BloomEthereum_20250320Test is BloomTestBase {
 
-    // TODO: Confirm these addresses
-    address internal constant FREEZER                 = 0x90D8c80C028B4C09C0d8dcAab9bbB057F0513431;
-    address internal constant RELAYER                 = 0x8a25A24EDE9482C4Fc0738F99611BE58F1c839AB;
+    address internal constant FREEZER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
+    address internal constant RELAYER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
     address internal constant DEPLOYER                = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
@@ -121,14 +120,14 @@ contract BloomEthereum_20250320Test is BloomTestBase {
 
         _assertRateLimit({
             key: controller.LIMIT_USDS_MINT(),
-            maxAmount: 100_000_000e6,              // TODO: get actual number
-            slope: 100_000_000e6 / uint256(1 days) // TODO: get actual number
+            maxAmount: 5_000_000e6,
+            slope: 2_500_000e6 / uint256(1 days)
         });
 
         _assertRateLimit({
             key: controller.LIMIT_USDS_TO_USDC(),
-            maxAmount: 100_000_000e6,              // TODO: get actual number
-            slope: 100_000_000e6 / uint256(1 days) // TODO: get actual number
+            maxAmount: 5_000_000e6,
+            slope: 2_500_000e6 / uint256(1 days)
         });
     }
 
@@ -137,9 +136,9 @@ contract BloomEthereum_20250320Test is BloomTestBase {
 
         _testERC4626Onboarding(
             MORPHO_STEAKHOUSE_VAULT,
-            100_000_000e6,                  // TODO: get actual number
-            100_000_000e6,                  // TODO: get actual number
-            100_000_000e6 / uint256(1 days) // TODO: get actual number
+            5_000_000e6,
+            5_000_000e6,
+            2_500_000e6 / uint256(1 days)
         );
     }
 
