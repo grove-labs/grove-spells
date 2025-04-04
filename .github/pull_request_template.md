@@ -22,3 +22,7 @@ New addresses introduced in the spell
 ## Notes for reviewers
 - Pay extra attention to: ...
 - Extra feedback wanted on: ...
+
+## Remaining TODOs:
+- [ ] TODO item 1
+- [ ] TODO item 2
