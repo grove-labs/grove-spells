@@ -6,10 +6,10 @@
 
 ## List of intended changes
 
-- [ ] change 1 (high level)
-    - [ ] param 1 (detail 1)
-    - [ ] param 2 (detail 2)
-- [ ] change 2
+- change 1 (high level)
+    - param 1 (detail 1)
+    - param 2 (detail 2)
+- change 2
 
 
 ## Addresses
