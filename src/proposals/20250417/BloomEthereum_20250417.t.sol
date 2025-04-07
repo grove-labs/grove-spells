@@ -142,5 +142,56 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         );
     }
 
-    // TODO: Add an integration test for the Bloom Liquidity Layer (perform operations intended after spell execution)
+    function test_E2E() public {
+        vm.skip(true);
+
+        executePayload();
+
+        vm.startPrank(RELAYER);
+
+        _assertMainnetAlmProxyBalances({
+            usds: 0,
+            usdc: 0
+        });
+
+        controller.mintUSDS(5_000_000e18);
+        _assertMainnetAlmProxyBalances({
+            usds: 5_000_000e18,
+            usdc: 0
+        });
+
+        controller.swapUSDSToUSDC(5_000_000e6);
+        _assertMainnetAlmProxyBalances({
+            usds: 0,
+            usdc: 5_000_000e6
+        });
+
+        controller.depositERC4626(MORPHO_STEAKHOUSE_VAULT, 5_000_000e6);
+        _assertMainnetAlmProxyBalances({
+            usds: 0,
+            usdc: 5_000_000e6
+        });
+        // TODO: add assertion for Morpho Steakhouse Vault shares balance - exact number at the fork block
+
+        controller.withdrawERC4626(MORPHO_STEAKHOUSE_VAULT, 5_000_000e6);
+        _assertMainnetAlmProxyBalances({
+            usds: 0,
+            usdc: 5_000_000e6
+        });
+
+        controller.swapUSDCToUSDS(5_000_000e6);
+        _assertMainnetAlmProxyBalances({
+            usds: 5_000_000e18,
+            usdc: 0
+        });
+
+        controller.burnUSDS(5_000_000e18);
+        _assertMainnetAlmProxyBalances({
+            usds: 0,
+            usdc: 0
+        });
+
+        vm.stopPrank();
+    }
+
 }

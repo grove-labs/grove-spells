@@ -3,7 +3,8 @@ pragma solidity >=0.7.5 <0.9.0;
 
 import "forge-std/StdJson.sol";
 import "forge-std/Test.sol";
-import {IERC20} from "erc20-helpers/interfaces/IERC20.sol";
+
+import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 
 library ChainIds {
     uint256 internal constant MAINNET = 1;
@@ -108,4 +109,5 @@ contract CommonTestBase is Test {
     }
     return false;
   }
+
 }
