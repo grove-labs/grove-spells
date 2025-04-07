@@ -38,8 +38,8 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
                 rateLimits : Ethereum.ALM_RATE_LIMITS
             }),
             configAddresses: MainnetControllerInit.ConfigAddressParams({
-                freezer       : Ethereum.ALM_FREEZER,
-                relayer       : Ethereum.ALM_RELAYER,
+                freezer       : FREEZER,
+                relayer       : RELAYER,
                 oldController : address(0)
             }),
             checkAddresses: MainnetControllerInit.CheckAddressParams({
@@ -57,8 +57,8 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
     function setupBasicRateLimits() private {
         _setUSDSMintRateLimit(
-            5_000_000e6,
-            2_500_000e6 / uint256(1 days)
+            5_000_000e18,
+            2_500_000e18 / uint256(1 days)
         );
         _setUSDSToUSDCRateLimit(
             5_000_000e6,

@@ -20,6 +20,10 @@ interface IVatLike {
     function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256);
 }
 
+interface IPSMLike {
+    function kiss(address) external;
+}
+
 contract BloomEthereum_20250320Test is BloomTestBase {
 
     address internal constant FREEZER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
@@ -38,14 +42,16 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     }
 
     function setUp() public {
-        // April 02, 2025
-        setupDomain({ mainnetForkBlock: 22182140 });
+        // April 07, 2025
+        setupDomain({ mainnetForkBlock: 22217540 });
         deployPayload();
+
+        vm.startPrank(Ethereum.PAUSE_PROXY);
+        IPSMLike(address(controller.psm())).kiss(address(almProxy));
+        vm.stopPrank();
     }
 
     function test_almSystemDeployment() public {
-        vm.skip(true);
-
         assertEq(almProxy.hasRole(0x0, Ethereum.BLOOM_PROXY),   true, "incorrect-admin-almProxy");
         assertEq(rateLimits.hasRole(0x0, Ethereum.BLOOM_PROXY), true, "incorrect-admin-rateLimits");
         assertEq(controller.hasRole(0x0, Ethereum.BLOOM_PROXY), true, "incorrect-admin-controller");
@@ -85,8 +91,6 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     }
 
     function test_almSystemInitialization() public {
-        vm.skip(true);
-
         executePayload();
 
         assertEq(almProxy.hasRole(almProxy.CONTROLLER(), Ethereum.ALM_CONTROLLER), true, "incorrect-controller-almProxy");
@@ -102,8 +106,6 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     }
 
     function test_basicRateLimits() public {
-        vm.skip(true);
-
         _assertRateLimit({
             key: controller.LIMIT_USDS_MINT(),
             maxAmount: 0,
@@ -120,8 +122,8 @@ contract BloomEthereum_20250320Test is BloomTestBase {
 
         _assertRateLimit({
             key: controller.LIMIT_USDS_MINT(),
-            maxAmount: 5_000_000e6,
-            slope: 2_500_000e6 / uint256(1 days)
+            maxAmount: 5_000_000e18,
+            slope: 2_500_000e18 / uint256(1 days)
         });
 
         _assertRateLimit({
@@ -132,8 +134,6 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     }
 
     function test_morphoSteakhouseVaultOnboarding() public {
-        vm.skip(true);
-
         _testERC4626Onboarding(
             MORPHO_STEAKHOUSE_VAULT,
             5_000_000e6,
@@ -143,8 +143,6 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     }
 
     function test_E2E() public {
-        vm.skip(true);
-
         executePayload();
 
         vm.startPrank(RELAYER);
@@ -169,23 +167,23 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         controller.depositERC4626(MORPHO_STEAKHOUSE_VAULT, 5_000_000e6);
         _assertMainnetAlmProxyBalances({
             usds: 0,
-            usdc: 5_000_000e6
-        });
-        // TODO: add assertion for Morpho Steakhouse Vault shares balance - exact number at the fork block
-
-        controller.withdrawERC4626(MORPHO_STEAKHOUSE_VAULT, 5_000_000e6);
-        _assertMainnetAlmProxyBalances({
-            usds: 0,
-            usdc: 5_000_000e6
-        });
-
-        controller.swapUSDCToUSDS(5_000_000e6);
-        _assertMainnetAlmProxyBalances({
-            usds: 5_000_000e18,
             usdc: 0
         });
 
-        controller.burnUSDS(5_000_000e18);
+        // 1 USDC wei is lost due to rounding
+        controller.withdrawERC4626(MORPHO_STEAKHOUSE_VAULT, 5_000_000e6 - 1);
+        _assertMainnetAlmProxyBalances({
+            usds: 0,
+            usdc: 5_000_000e6 - 1
+        });
+
+        controller.swapUSDCToUSDS(5_000_000e6 - 1);
+        _assertMainnetAlmProxyBalances({
+            usds: 5_000_000e18 - 1e12,
+            usdc: 0
+        });
+
+        controller.burnUSDS(5_000_000e18 - 1e12);
         _assertMainnetAlmProxyBalances({
             usds: 0,
             usdc: 0
