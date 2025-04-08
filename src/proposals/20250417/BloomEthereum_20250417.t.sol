@@ -52,6 +52,10 @@ interface IInvestmentManager {
     ) external;
 }
 
+interface IRestrictionManager {
+    function updateMember(address token, address user, uint64 validUntil) external;
+}
+
 interface IVatLike {
     function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256);
 }
@@ -62,22 +66,23 @@ interface IPSMLike {
 
 contract BloomEthereum_20250320Test is BloomTestBase {
 
-    address internal constant DEPLOYER                = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
-    address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
+    address internal constant DEPLOYER                       = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
+    address internal constant MORPHO_STEAKHOUSE_VAULT        = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
+    address internal constant CENTRIFUGE_JTRSY_VAULT         = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant CENTRIFUGE_JTRSY_TOKEN         = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
+    address internal constant CENTRIFUGE_ROOT                = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
+    address internal constant CENTRIFUGE_INVESTMENT_MANAGER  = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
+    address internal constant CENTRIFUGE_RESTRICTION_MANAGER = 0x4737C3f62Cc265e786b280153fC666cEA2fBc0c0;
 
-    bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
+    bytes16 internal constant CENTRIFUGE_JTRSY_TRANCHE_ID = 0x97aa65f23e7be09fcd62d0554d2e9273;
+    bytes32 internal constant ALLOCATOR_ILK                = "ALLOCATOR-BLOOM-A";
+
+    uint64  internal constant CENTRIFUGE_JTRSY_POOL_ID    = 4139607887;
+    uint128 internal constant CENTRIFUGE_USDC_ASSET_ID    = 242333941209166991950178742833476896417;
 
     IALMProxy         almProxy   = IALMProxy(Ethereum.ALM_PROXY);
     IRateLimits       rateLimits = IRateLimits(Ethereum.ALM_RATE_LIMITS);
     MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
-
-    address constant CENTRIFUGE_JTRSY_VAULT        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
-    address constant CENTRIFUGE_JTRSY_TOKEN        = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
-    uint64  constant CENTRIFUGE_JTRSY_POOL_ID      = 4139607887;
-    bytes16 constant CENTRIFUGE_JTRSY_TRANCHE_ID   = 0x97aa65f23e7be09fcd62d0554d2e9273;
-    uint128 constant CENTRIFUGE_USDC_ASSET_ID      = 242333941209166991950178742833476896417;
-    address constant CENTRIFUGE_ROOT               = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
-    address constant CENTRIFUGE_INVESTMENT_MANAGER = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
 
     constructor() {
         id = "20250417";
@@ -93,7 +98,7 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         vm.stopPrank();
     }
 
-    function test_almSystemDeployment() public {
+    function test_almSystemDeployment() public view {
         assertEq(almProxy.hasRole(0x0, Ethereum.BLOOM_PROXY),   true, "incorrect-admin-almProxy");
         assertEq(rateLimits.hasRole(0x0, Ethereum.BLOOM_PROXY), true, "incorrect-admin-rateLimits");
         assertEq(controller.hasRole(0x0, Ethereum.BLOOM_PROXY), true, "incorrect-admin-controller");
@@ -235,9 +240,15 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     }
 
     function test_centrifugeJTRSYOnboarding() public {
-        vm.skip(true);
-
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+
+        // !!! This needs to be done before onboarding the vault !!!
+        vm.prank(CENTRIFUGE_ROOT);
+        IRestrictionManager(CENTRIFUGE_RESTRICTION_MANAGER).updateMember(
+            CENTRIFUGE_JTRSY_TOKEN,
+            Ethereum.ALM_PROXY,
+            type(uint64).max
+        );
 
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             controller.LIMIT_7540_DEPOSIT(),
