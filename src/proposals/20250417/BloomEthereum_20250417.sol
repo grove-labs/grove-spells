@@ -5,6 +5,7 @@ import { Ethereum, BloomPayloadEthereum } from "src/libraries/BloomPayloadEthere
 
 import { MainnetControllerInit, ControllerInstance } from "lib/bloom-alm-controller/deploy/MainnetControllerInit.sol";
 
+import { MainnetController }               from "lib/bloom-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
 
 /**
@@ -16,14 +17,15 @@ import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/Ra
  */
 contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
-    address internal constant FREEZER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
-    address internal constant RELAYER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
+
+    address internal constant JTRSY_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
 
     function _execute() internal override {
         initiateAlmSystem();
         setupBasicRateLimits();
         onboardMorphoSteakhouseVault();
+        _onboardCentrifugeJTRSY();
     }
 
     function initiateAlmSystem() private {
@@ -38,8 +40,8 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
                 rateLimits : Ethereum.ALM_RATE_LIMITS
             }),
             configAddresses: MainnetControllerInit.ConfigAddressParams({
-                freezer       : FREEZER,
-                relayer       : RELAYER,
+                freezer       : Ethereum.ALM_FREEZER,
+                relayer       : Ethereum.ALM_RELAYER,
                 oldController : address(0)
             }),
             checkAddresses: MainnetControllerInit.CheckAddressParams({
@@ -57,12 +59,12 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
     function setupBasicRateLimits() private {
         _setUSDSMintRateLimit(
-            5_000_000e18,
-            2_500_000e18 / uint256(1 days)
+            10_000_000e18,
+            5_000_000e18 / uint256(1 days)
         );
         _setUSDSToUSDCRateLimit(
-            5_000_000e6,
-            2_500_000e6 / uint256(1 days)
+            10_000_000e6,
+            5_000_000e6 / uint256(1 days)
         );
     }
 
@@ -71,6 +73,32 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
             MORPHO_STEAKHOUSE_VAULT,
             5_000_000e6,
             2_500_000e6 / uint256(1 days)
+        );
+    }
+
+    function _onboardCentrifugeJTRSY() private {
+        RateLimitHelpers.setRateLimitData(
+            RateLimitHelpers.makeAssetKey(
+                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_DEPOSIT(),
+                JTRSY_VAULT
+            ),
+            Ethereum.ALM_RATE_LIMITS,
+            RateLimitData({
+                maxAmount : 5_000_000e6,
+                slope     : 2_500_000e6 / uint256(1 days)
+            }),
+            "jtrsyMintLimit",
+            6
+        );
+        RateLimitHelpers.setRateLimitData(
+            RateLimitHelpers.makeAssetKey(
+                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
+                JTRSY_VAULT
+            ),
+            Ethereum.ALM_RATE_LIMITS,
+            RateLimitHelpers.unlimitedRateLimit(),
+            "jtrsyBurnLimit",
+            6
         );
     }
 

@@ -22,18 +22,13 @@ struct BloomLiquidityLayerContext {
 
 abstract contract BloomLiquidityLayerTests is SpellRunner {
 
-    // TODO: Use address registry addresses in the context initialization.
-    // This is temporarily added here, before they are added to the address registry
-    address internal constant _FREEZER = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
-    address internal constant _RELAYER = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
-
     function _getBloomLiquidityLayerContext() internal pure returns(BloomLiquidityLayerContext memory ctx) {
         ctx = BloomLiquidityLayerContext(
             Ethereum.ALM_CONTROLLER,
             IALMProxy(Ethereum.ALM_PROXY),
             IRateLimits(Ethereum.ALM_RATE_LIMITS),
-            _RELAYER, // TODO: Use address registry addresses in the context initialization.
-            _FREEZER  // TODO: Use address registry addresses in the context initialization.
+            Ethereum.ALM_RELAYER, // TODO: Use address registry addresses in the context initialization.
+            Ethereum.ALM_FREEZER // TODO: Use address registry addresses in the context initialization.
         );
     }
 

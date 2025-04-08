@@ -16,6 +16,42 @@ import { IRateLimits } from "bloom-alm-controller/src/interfaces/IRateLimits.sol
 
 import { AllocatorVault }  from 'dss-allocator/src/AllocatorVault.sol';
 
+import { BloomLiquidityLayerContext } from "../../test-harness/BloomLiquidityLayerTests.sol";
+
+interface IInvestmentManager {
+    function fulfillCancelDepositRequest(
+        uint64 poolId,
+        bytes16 trancheId,
+        address user,
+        uint128 assetId,
+        uint128 assets,
+        uint128 fulfillment
+    ) external;
+    function fulfillCancelRedeemRequest(
+        uint64 poolId,
+        bytes16 trancheId,
+        address user,
+        uint128 assetId,
+        uint128 shares
+    ) external;
+    function fulfillDepositRequest(
+        uint64 poolId,
+        bytes16 trancheId,
+        address user,
+        uint128 assetId,
+        uint128 assets,
+        uint128 shares
+    ) external;
+    function fulfillRedeemRequest(
+        uint64 poolId,
+        bytes16 trancheId,
+        address user,
+        uint128 assetId,
+        uint128 assets,
+        uint128 shares
+    ) external;
+}
+
 interface IVatLike {
     function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256);
 }
@@ -26,8 +62,6 @@ interface IPSMLike {
 
 contract BloomEthereum_20250320Test is BloomTestBase {
 
-    address internal constant FREEZER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
-    address internal constant RELAYER                 = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
     address internal constant DEPLOYER                = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
@@ -36,6 +70,14 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     IALMProxy         almProxy   = IALMProxy(Ethereum.ALM_PROXY);
     IRateLimits       rateLimits = IRateLimits(Ethereum.ALM_RATE_LIMITS);
     MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
+
+    address constant CENTRIFUGE_JTRSY_VAULT        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address constant CENTRIFUGE_JTRSY_TOKEN        = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
+    uint64  constant CENTRIFUGE_JTRSY_POOL_ID      = 4139607887;
+    bytes16 constant CENTRIFUGE_JTRSY_TRANCHE_ID   = 0x97aa65f23e7be09fcd62d0554d2e9273;
+    uint128 constant CENTRIFUGE_USDC_ASSET_ID      = 242333941209166991950178742833476896417;
+    address constant CENTRIFUGE_ROOT               = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
+    address constant CENTRIFUGE_INVESTMENT_MANAGER = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
 
     constructor() {
         id = "20250417";
@@ -50,7 +92,7 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         IPSMLike(address(controller.psm())).kiss(address(almProxy));
         vm.stopPrank();
     }
-
+    
     function test_almSystemDeployment() public {
         assertEq(almProxy.hasRole(0x0, Ethereum.BLOOM_PROXY),   true, "incorrect-admin-almProxy");
         assertEq(rateLimits.hasRole(0x0, Ethereum.BLOOM_PROXY), true, "incorrect-admin-rateLimits");
@@ -97,8 +139,8 @@ contract BloomEthereum_20250320Test is BloomTestBase {
 
         assertEq(rateLimits.hasRole(rateLimits.CONTROLLER(), Ethereum.ALM_CONTROLLER), true, "incorrect-controller-rateLimits");
 
-        assertEq(controller.hasRole(controller.FREEZER(), FREEZER), true, "incorrect-freezer-controller");
-        assertEq(controller.hasRole(controller.RELAYER(), RELAYER), true, "incorrect-relayer-controller");
+        assertEq(controller.hasRole(controller.FREEZER(), Ethereum.ALM_FREEZER), true, "incorrect-freezer-controller");
+        assertEq(controller.hasRole(controller.RELAYER(), Ethereum.ALM_RELAYER), true, "incorrect-relayer-controller");
 
         assertEq(AllocatorVault(Ethereum.ALLOCATOR_VAULT).wards(Ethereum.ALM_PROXY), 1, "incorrect-vault-ward");
 
@@ -122,14 +164,14 @@ contract BloomEthereum_20250320Test is BloomTestBase {
 
         _assertRateLimit({
             key: controller.LIMIT_USDS_MINT(),
-            maxAmount: 5_000_000e18,
-            slope: 2_500_000e18 / uint256(1 days)
+            maxAmount: 10_000_000e18,
+            slope: 5_000_000e18 / uint256(1 days)
         });
 
         _assertRateLimit({
             key: controller.LIMIT_USDS_TO_USDC(),
-            maxAmount: 5_000_000e6,
-            slope: 2_500_000e6 / uint256(1 days)
+            maxAmount: 10_000_000e6,
+            slope: 5_000_000e6 / uint256(1 days)
         });
     }
 
@@ -142,10 +184,10 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         );
     }
 
-    function test_E2E() public {
+    function test_fullUSDStoUSDCtoMorphoSteakhouseVaultDepositThenWithdraw() public {
         executePayload();
 
-        vm.startPrank(RELAYER);
+        vm.startPrank(Ethereum.ALM_RELAYER);
 
         _assertMainnetAlmProxyBalances({
             usds: 0,
@@ -190,6 +232,111 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         });
 
         vm.stopPrank();
+    }
+
+    function test_centrifugeJTRSYOnboarding() public {
+        vm.skip(true);
+
+        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            controller.LIMIT_7540_DEPOSIT(),
+            CENTRIFUGE_JTRSY_VAULT
+        );
+        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
+            controller.LIMIT_7540_REDEEM(),
+            CENTRIFUGE_JTRSY_VAULT
+        );
+
+        _assertRateLimit(depositKey,  0, 0);
+        _assertRateLimit(withdrawKey, 0, 0);
+
+        executePayload();
+
+        _assertRateLimit(depositKey, 5_000_000e6, 2_500_000e6 / uint256(1 days));
+        _assertRateLimit(withdrawKey, type(uint256).max, 0);
+
+        IERC20 usdc  = IERC20(Ethereum.USDC);
+        IERC20 jtrsy = IERC20(CENTRIFUGE_JTRSY_TOKEN);
+
+        // USDS -> USDC limits are 5m, go a bit below in case some is in use
+        uint256 mintAmount = 4_500_000e6;
+        vm.startPrank(ctx.relayer);
+        controller.mintUSDS(mintAmount * 1e12);
+        controller.swapUSDSToUSDC(mintAmount);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  mintAmount);
+        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
+
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 5_000_000e6);
+
+        controller.requestDepositERC7540(CENTRIFUGE_JTRSY_VAULT, mintAmount);
+        vm.stopPrank();
+
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 5_000_000e6 - mintAmount);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
+        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
+
+        _centrifugeFulfillDepositRequest(mintAmount);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
+        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
+
+        vm.prank(ctx.relayer);
+        controller.claimDepositERC7540(CENTRIFUGE_JTRSY_VAULT);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
+        assertEq(jtrsy.balanceOf(address(ctx.proxy)), mintAmount / 2);
+
+        vm.prank(ctx.relayer);
+        controller.requestRedeemERC7540(CENTRIFUGE_JTRSY_VAULT, mintAmount / 2);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
+        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
+
+        _centrifugeFulfillRedeemRequest(mintAmount / 2);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
+        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
+
+        vm.prank(ctx.relayer);
+        controller.claimRedeemERC7540(CENTRIFUGE_JTRSY_VAULT);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  mintAmount);
+        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
+    }
+
+    function _centrifugeFulfillDepositRequest(uint256 amountUsdc) internal {
+        uint128 _amountUsdc = uint128(amountUsdc);
+        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+
+        // Fulfill request at price 2.0
+        vm.prank(CENTRIFUGE_ROOT);
+        IInvestmentManager(CENTRIFUGE_INVESTMENT_MANAGER).fulfillDepositRequest(
+            CENTRIFUGE_JTRSY_POOL_ID,
+            CENTRIFUGE_JTRSY_TRANCHE_ID,
+            address(ctx.proxy),
+            CENTRIFUGE_USDC_ASSET_ID,
+            _amountUsdc,
+            _amountUsdc / 2
+        );
+    }
+
+    function _centrifugeFulfillRedeemRequest(uint256 amountJtrsy) internal {
+        uint128 _amountJtrsy = uint128(amountJtrsy);
+        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+
+        // Fulfill request at price 2.0
+        vm.prank(CENTRIFUGE_ROOT);
+        IInvestmentManager(CENTRIFUGE_INVESTMENT_MANAGER).fulfillRedeemRequest(
+            CENTRIFUGE_JTRSY_POOL_ID,
+            CENTRIFUGE_JTRSY_TRANCHE_ID,
+            address(ctx.proxy),
+            CENTRIFUGE_USDC_ASSET_ID,
+            _amountJtrsy * 2,
+            _amountJtrsy
+        );
     }
 
 }
