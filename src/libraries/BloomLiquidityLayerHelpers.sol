@@ -59,6 +59,11 @@ library BloomLiquidityLayerHelpers {
         );
     }
 
+    /**
+     * @notice Onboard an ERC7540 vault
+     * @dev This will set the deposit to the given numbers with
+     *      the redeem limit set to unlimited.
+     */
     function onboardERC7540Vault(
         address rateLimits,
         address vault,
