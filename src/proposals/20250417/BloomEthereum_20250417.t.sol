@@ -92,7 +92,7 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         IPSMLike(address(controller.psm())).kiss(address(almProxy));
         vm.stopPrank();
     }
-    
+
     function test_almSystemDeployment() public {
         assertEq(almProxy.hasRole(0x0, Ethereum.BLOOM_PROXY),   true, "incorrect-admin-almProxy");
         assertEq(rateLimits.hasRole(0x0, Ethereum.BLOOM_PROXY), true, "incorrect-admin-rateLimits");

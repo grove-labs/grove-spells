@@ -18,17 +18,16 @@ import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/Ra
 contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
-
-    address internal constant JTRSY_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant JTRSY_VAULT             = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
 
     function _execute() internal override {
-        initiateAlmSystem();
-        setupBasicRateLimits();
-        onboardMorphoSteakhouseVault();
+        _initiateAlmSystem();
+        _setupBasicRateLimits();
+        _onboardMorphoSteakhouseVault();
         _onboardCentrifugeJTRSY();
     }
 
-    function initiateAlmSystem() private {
+    function _initiateAlmSystem() private {
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](0);
 
         MainnetControllerInit.initAlmSystem({
@@ -57,7 +56,7 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
         });
     }
 
-    function setupBasicRateLimits() private {
+    function _setupBasicRateLimits() private {
         _setUSDSMintRateLimit(
             10_000_000e18,
             5_000_000e18 / uint256(1 days)
@@ -68,7 +67,7 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
         );
     }
 
-    function onboardMorphoSteakhouseVault() private {
+    function _onboardMorphoSteakhouseVault() private {
         _onboardERC4626Vault(
             MORPHO_STEAKHOUSE_VAULT,
             5_000_000e6,
@@ -77,28 +76,10 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
     }
 
     function _onboardCentrifugeJTRSY() private {
-        RateLimitHelpers.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(
-                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_DEPOSIT(),
-                JTRSY_VAULT
-            ),
-            Ethereum.ALM_RATE_LIMITS,
-            RateLimitData({
-                maxAmount : 5_000_000e6,
-                slope     : 2_500_000e6 / uint256(1 days)
-            }),
-            "jtrsyMintLimit",
-            6
-        );
-        RateLimitHelpers.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(
-                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
-                JTRSY_VAULT
-            ),
-            Ethereum.ALM_RATE_LIMITS,
-            RateLimitHelpers.unlimitedRateLimit(),
-            "jtrsyBurnLimit",
-            6
+        _onboardERC7540Vault(
+            JTRSY_VAULT,
+            5_000_000e6,
+            2_500_000e6 / uint256(1 days)
         );
     }
 

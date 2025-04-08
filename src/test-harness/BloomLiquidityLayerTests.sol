@@ -27,8 +27,8 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
             Ethereum.ALM_CONTROLLER,
             IALMProxy(Ethereum.ALM_PROXY),
             IRateLimits(Ethereum.ALM_RATE_LIMITS),
-            Ethereum.ALM_RELAYER, // TODO: Use address registry addresses in the context initialization.
-            Ethereum.ALM_FREEZER // TODO: Use address registry addresses in the context initialization.
+            Ethereum.ALM_RELAYER,
+            Ethereum.ALM_FREEZER
         );
     }
 
