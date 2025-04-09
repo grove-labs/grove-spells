@@ -67,7 +67,6 @@ interface IPSMLike {
 contract BloomEthereum_20250320Test is BloomTestBase {
 
     address internal constant DEPLOYER                       = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
-    address internal constant MORPHO_STEAKHOUSE_VAULT        = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
     address internal constant CENTRIFUGE_JTRSY_VAULT         = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant CENTRIFUGE_JTRSY_TOKEN         = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
     address internal constant CENTRIFUGE_ROOT                = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
@@ -89,8 +88,8 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     }
 
     function setUp() public {
-        // April 07, 2025
-        setupDomain({ mainnetForkBlock: 22217540 });
+        // April 09, 2025
+        setupDomain({ mainnetForkBlock: 22232222 });
         deployPayload();
 
         vm.startPrank(Ethereum.PAUSE_PROXY);
@@ -169,74 +168,15 @@ contract BloomEthereum_20250320Test is BloomTestBase {
 
         _assertRateLimit({
             key: controller.LIMIT_USDS_MINT(),
-            maxAmount: 10_000_000e18,
-            slope: 5_000_000e18 / uint256(1 days)
+            maxAmount: 100_000e18,
+            slope: 50_000e18 / uint256(1 days)
         });
 
         _assertRateLimit({
             key: controller.LIMIT_USDS_TO_USDC(),
-            maxAmount: 10_000_000e6,
-            slope: 5_000_000e6 / uint256(1 days)
+            maxAmount: 100_000e6,
+            slope: 50_000e6 / uint256(1 days)
         });
-    }
-
-    function test_morphoSteakhouseVaultOnboarding() public {
-        _testERC4626Onboarding(
-            MORPHO_STEAKHOUSE_VAULT,
-            5_000_000e6,
-            5_000_000e6,
-            2_500_000e6 / uint256(1 days)
-        );
-    }
-
-    function test_fullUSDStoUSDCtoMorphoSteakhouseVaultDepositThenWithdraw() public {
-        executePayload();
-
-        vm.startPrank(Ethereum.ALM_RELAYER);
-
-        _assertMainnetAlmProxyBalances({
-            usds: 0,
-            usdc: 0
-        });
-
-        controller.mintUSDS(5_000_000e18);
-        _assertMainnetAlmProxyBalances({
-            usds: 5_000_000e18,
-            usdc: 0
-        });
-
-        controller.swapUSDSToUSDC(5_000_000e6);
-        _assertMainnetAlmProxyBalances({
-            usds: 0,
-            usdc: 5_000_000e6
-        });
-
-        controller.depositERC4626(MORPHO_STEAKHOUSE_VAULT, 5_000_000e6);
-        _assertMainnetAlmProxyBalances({
-            usds: 0,
-            usdc: 0
-        });
-
-        // 1 USDC wei is lost due to rounding
-        controller.withdrawERC4626(MORPHO_STEAKHOUSE_VAULT, 5_000_000e6 - 1);
-        _assertMainnetAlmProxyBalances({
-            usds: 0,
-            usdc: 5_000_000e6 - 1
-        });
-
-        controller.swapUSDCToUSDS(5_000_000e6 - 1);
-        _assertMainnetAlmProxyBalances({
-            usds: 5_000_000e18 - 1e12,
-            usdc: 0
-        });
-
-        controller.burnUSDS(5_000_000e18 - 1e12);
-        _assertMainnetAlmProxyBalances({
-            usds: 0,
-            usdc: 0
-        });
-
-        vm.stopPrank();
     }
 
     function test_centrifugeJTRSYOnboarding() public {
@@ -264,14 +204,14 @@ contract BloomEthereum_20250320Test is BloomTestBase {
 
         executePayload();
 
-        _assertRateLimit(depositKey, 5_000_000e6, 2_500_000e6 / uint256(1 days));
+        _assertRateLimit(depositKey, 100_000e6, 50_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
 
         IERC20 usdc  = IERC20(Ethereum.USDC);
         IERC20 jtrsy = IERC20(CENTRIFUGE_JTRSY_TOKEN);
 
-        // USDS -> USDC limits are 5m, go a bit below in case some is in use
-        uint256 mintAmount = 4_500_000e6;
+        // USDS -> USDC limits are 100k, go a bit below in case some is in use
+        uint256 mintAmount = 90_000e6;
         vm.startPrank(ctx.relayer);
         controller.mintUSDS(mintAmount * 1e12);
         controller.swapUSDSToUSDC(mintAmount);
@@ -279,12 +219,12 @@ contract BloomEthereum_20250320Test is BloomTestBase {
         assertEq(usdc.balanceOf(address(ctx.proxy)),  mintAmount);
         assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 5_000_000e6);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000e6);
 
         controller.requestDepositERC7540(CENTRIFUGE_JTRSY_VAULT, mintAmount);
         vm.stopPrank();
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 5_000_000e6 - mintAmount);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000e6 - mintAmount);
 
         assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
         assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);

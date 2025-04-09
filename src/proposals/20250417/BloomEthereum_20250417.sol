@@ -5,25 +5,22 @@ import { Ethereum, BloomPayloadEthereum } from "src/libraries/BloomPayloadEthere
 
 import { MainnetControllerInit, ControllerInstance } from "lib/bloom-alm-controller/deploy/MainnetControllerInit.sol";
 
-import { MainnetController }               from "lib/bloom-alm-controller/src/MainnetController.sol";
-import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetController } from "lib/bloom-alm-controller/src/MainnetController.sol";
 
 /**
  * @title  Apr 17, 2025 Bloom Ethereum Proposal
- * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard Morpho Steakhouse Vault
+ * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard JTRSY Centrifuge Vault
  * @author Steakhouse Financial
  * Forum:  TBD
  * Vote:   TBD
  */
 contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
-    address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
-    address internal constant JTRSY_VAULT             = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant JTRSY_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
 
     function _execute() internal override {
         _initiateAlmSystem();
         _setupBasicRateLimits();
-        _onboardMorphoSteakhouseVault();
         _onboardCentrifugeJTRSY();
     }
 
@@ -58,28 +55,20 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
 
     function _setupBasicRateLimits() private {
         _setUSDSMintRateLimit(
-            10_000_000e18,
-            5_000_000e18 / uint256(1 days)
+            100_000e18,
+            50_000e18 / uint256(1 days)
         );
         _setUSDSToUSDCRateLimit(
-            10_000_000e6,
-            5_000_000e6 / uint256(1 days)
-        );
-    }
-
-    function _onboardMorphoSteakhouseVault() private {
-        _onboardERC4626Vault(
-            MORPHO_STEAKHOUSE_VAULT,
-            5_000_000e6,
-            2_500_000e6 / uint256(1 days)
+            100_000e6,
+            50_000e6 / uint256(1 days)
         );
     }
 
     function _onboardCentrifugeJTRSY() private {
         _onboardERC7540Vault(
             JTRSY_VAULT,
-            5_000_000e6,
-            2_500_000e6 / uint256(1 days)
+            100_000e6,
+            50_000e6 / uint256(1 days)
         );
     }
 
