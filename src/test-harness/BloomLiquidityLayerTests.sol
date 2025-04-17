@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
 import { Ethereum } from "bloom-address-registry/Ethereum.sol";
@@ -19,48 +18,6 @@ struct BloomLiquidityLayerContext {
     IRateLimits rateLimits;
     address     relayer;
     address     freezer;
-}
-
-struct CentrifugeConfig {
-    address centrifugeRoot;
-    address centrifugeInvestmentManager;
-    bytes16 centrifugeTrancheId;
-    uint64  centrifugePoolId;
-    uint128 centrifugeAssetId;
-}
-
-interface IInvestmentManager {
-    function fulfillCancelDepositRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 fulfillment
-    ) external;
-    function fulfillCancelRedeemRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 shares
-    ) external;
-    function fulfillDepositRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 shares
-    ) external;
-    function fulfillRedeemRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 shares
-    ) external;
 }
 
 abstract contract BloomLiquidityLayerTests is SpellRunner {
@@ -130,10 +87,9 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
         _assertRateLimit(depositKey, 0, 0);
         _assertRateLimit(withdrawKey, 0, 0);
 
-        // TODO: Uncomment this once the relayer going to be properly set before the payload execution
-        // vm.prank(ctx.relayer);
-        // vm.expectRevert("RateLimits/zero-maxAmount");
-        // MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
+        vm.prank(ctx.relayer);
+        vm.expectRevert("RateLimits/zero-maxAmount");
+        MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
 
         executePayload();
 
@@ -173,123 +129,6 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
             uint256 monthlySlope = depositSlope * 30 days;
             assertGe(monthlySlope, depositMax);
         }
-    }
-
-    function _testCentrifugeOnboarding(
-        address centrifugeVault,
-        address centrifugeToken,
-        CentrifugeConfig memory centrifugeConfig,
-        uint256 expectedDepositAmount,
-        uint256 depositMax,
-        uint256 depositSlope
-    ) public {
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
-
-        deal(IERC4626(centrifugeVault).asset(), address(ctx.proxy), expectedDepositAmount);
-        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(ctx.controller).LIMIT_7540_DEPOSIT(),
-            centrifugeVault
-        );
-        bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(ctx.controller).LIMIT_7540_REDEEM(),
-            centrifugeVault
-        );
-
-        _assertRateLimit(depositKey,  0, 0);
-        _assertRateLimit(redeemKey, 0, 0);
-
-        executePayload();
-
-        _assertRateLimit(depositKey, depositMax, depositSlope);
-        _assertRateLimit(redeemKey, type(uint256).max, 0);
-
-        IERC20 usdc       = IERC20(Ethereum.USDC);
-        IERC20 vaultToken = IERC20(centrifugeToken);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       expectedDepositAmount);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), 0);
-
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax);
-
-        vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).requestDepositERC7540(centrifugeVault, expectedDepositAmount);
-
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax - expectedDepositAmount);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), 0);
-
-        _centrifugeFulfillDepositRequest(
-            centrifugeConfig,
-            expectedDepositAmount
-        );
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), 0);
-
-        vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).claimDepositERC7540(centrifugeVault);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), expectedDepositAmount / 2);
-
-        vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).requestRedeemERC7540(centrifugeVault, expectedDepositAmount / 2);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), 0);
-
-        _centrifugeFulfillRedeemRequest(
-            centrifugeConfig,
-            expectedDepositAmount / 2
-        );
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), 0);
-
-        vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).claimRedeemERC7540(centrifugeVault);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  expectedDepositAmount);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), 0);
-    }
-
-    function _centrifugeFulfillDepositRequest(
-        CentrifugeConfig memory config,
-        uint256 assetAmount
-    ) internal {
-        uint128 _assetAmount = uint128(assetAmount);
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
-
-        // Fulfill request at price 2.0
-        vm.prank(config.centrifugeRoot);
-        IInvestmentManager(config.centrifugeInvestmentManager).fulfillDepositRequest(
-            config.centrifugePoolId,
-            config.centrifugeTrancheId,
-            address(ctx.proxy),
-            config.centrifugeAssetId,
-            _assetAmount,
-            _assetAmount / 2
-        );
-    }
-
-    function _centrifugeFulfillRedeemRequest(
-        CentrifugeConfig memory config,
-        uint256 tokenAmount
-    ) internal {
-        uint128 _tokenAmount = uint128(tokenAmount);
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
-
-        // Fulfill request at price 2.0
-        vm.prank(config.centrifugeRoot);
-        IInvestmentManager(config.centrifugeInvestmentManager).fulfillRedeemRequest(
-            config.centrifugePoolId,
-            config.centrifugeTrancheId,
-            address(ctx.proxy),
-            config.centrifugeAssetId,
-            _tokenAmount * 2,
-            _tokenAmount
-        );
     }
 
 }
