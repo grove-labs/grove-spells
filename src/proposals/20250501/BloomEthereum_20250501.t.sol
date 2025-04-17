@@ -66,22 +66,28 @@ interface IPSMLike {
 
 contract BloomEthereum_20250501Test is BloomTestBase {
 
-    address internal constant DEPLOYER                       = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
-    address internal constant CENTRIFUGE_JTRSY_VAULT         = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
-    address internal constant CENTRIFUGE_JTRSY_TOKEN         = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
-    address internal constant CENTRIFUGE_JAAA_VAULT          = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
-    address internal constant CENTRIFUGE_JAAA_TOKEN          = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
+    address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
+
+    bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
+
     address internal constant CENTRIFUGE_ROOT                = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
     address internal constant CENTRIFUGE_INVESTMENT_MANAGER  = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
     address internal constant CENTRIFUGE_RESTRICTION_MANAGER = 0x4737C3f62Cc265e786b280153fC666cEA2fBc0c0;
 
-    bytes16 internal constant CENTRIFUGE_JTRSY_TRANCHE_ID = 0x97aa65f23e7be09fcd62d0554d2e9273;
-    bytes16 internal constant CENTRIFUGE_JAAA_TRANCHE_ID  = 0x97aa65f23e7be09fcd62d0554d2e9273; // TODO: Change to proper ID
-    bytes32 internal constant ALLOCATOR_ILK               = "ALLOCATOR-BLOOM-A";
+    uint128 internal constant CENTRIFUGE_USDC_ASSET_ID = 242333941209166991950178742833476896417;
 
-    uint64  internal constant CENTRIFUGE_JTRSY_POOL_ID    = 4139607887;
-    uint64  internal constant CENTRIFUGE_JAAA_POOL_ID     = 4139607887; // TODO: Change to proper ID
-    uint128 internal constant CENTRIFUGE_USDC_ASSET_ID    = 242333941209166991950178742833476896417;
+    address internal constant CENTRIFUGE_JAAA_VAULT  = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
+    address internal constant CENTRIFUGE_JTRSY_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant CENTRIFUGE_JAAA_TOKEN  = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
+    address internal constant CENTRIFUGE_JTRSY_TOKEN = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
+
+    uint64  internal constant CENTRIFUGE_JAAA_POOL_ID  = 4139607887; // TODO: Change to proper ID
+    uint64  internal constant CENTRIFUGE_JTRSY_POOL_ID = 4139607887;
+
+    bytes16 internal constant CENTRIFUGE_JAAA_TRANCHE_ID  = 0x97aa65f23e7be09fcd62d0554d2e9273; // TODO: Change to proper ID
+    bytes16 internal constant CENTRIFUGE_JTRSY_TRANCHE_ID = 0x97aa65f23e7be09fcd62d0554d2e9273;
+
+
 
     IALMProxy         almProxy   = IALMProxy(Ethereum.ALM_PROXY);
     IRateLimits       rateLimits = IRateLimits(Ethereum.ALM_RATE_LIMITS);
@@ -183,23 +189,6 @@ contract BloomEthereum_20250501Test is BloomTestBase {
         });
     }
 
-    function test_centrifugeJTRSYOnboarding() public {
-        _testCentrifugeOnboarding(
-            CENTRIFUGE_JTRSY_VAULT,
-            CENTRIFUGE_JTRSY_TOKEN,
-            CentrifugeConfig({
-                centrifugeRoot:               CENTRIFUGE_ROOT,
-                centrifugeInvestmentManager:  CENTRIFUGE_INVESTMENT_MANAGER,
-                centrifugeTrancheId:          CENTRIFUGE_JTRSY_TRANCHE_ID,
-                centrifugePoolId:             CENTRIFUGE_JTRSY_POOL_ID,
-                centrifugeAssetId:            CENTRIFUGE_USDC_ASSET_ID
-            }),
-            100_000e6,
-            100_000e6,
-            50_000e6 / uint256(1 days)
-        );
-    }
-
     function test_centrifugeJAAAOnboarding() public {
         vm.skip(true); // TODO: Un-skip once JAAA values are confirmed
         _testCentrifugeOnboarding(
@@ -217,4 +206,22 @@ contract BloomEthereum_20250501Test is BloomTestBase {
             10_000_000e6 / uint256(1 days)
         );
     }
+
+    function test_centrifugeJTRSYOnboarding() public {
+        _testCentrifugeOnboarding(
+            CENTRIFUGE_JTRSY_VAULT,
+            CENTRIFUGE_JTRSY_TOKEN,
+            CentrifugeConfig({
+                centrifugeRoot:               CENTRIFUGE_ROOT,
+                centrifugeInvestmentManager:  CENTRIFUGE_INVESTMENT_MANAGER,
+                centrifugeTrancheId:          CENTRIFUGE_JTRSY_TRANCHE_ID,
+                centrifugePoolId:             CENTRIFUGE_JTRSY_POOL_ID,
+                centrifugeAssetId:            CENTRIFUGE_USDC_ASSET_ID
+            }),
+            100_000e6,
+            100_000e6,
+            50_000e6 / uint256(1 days)
+        );
+    }
+
 }
