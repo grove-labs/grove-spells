@@ -16,7 +16,7 @@ import { IRateLimits } from "bloom-alm-controller/src/interfaces/IRateLimits.sol
 
 import { AllocatorVault }  from 'dss-allocator/src/AllocatorVault.sol';
 
-import { BloomLiquidityLayerContext } from "../../test-harness/BloomLiquidityLayerTests.sol";
+import { BloomLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/BloomLiquidityLayerTests.sol";
 
 interface IInvestmentManager {
     function fulfillCancelDepositRequest(
@@ -69,14 +69,18 @@ contract BloomEthereum_20250501Test is BloomTestBase {
     address internal constant DEPLOYER                       = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant CENTRIFUGE_JTRSY_VAULT         = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant CENTRIFUGE_JTRSY_TOKEN         = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
+    address internal constant CENTRIFUGE_JAAA_VAULT          = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
+    address internal constant CENTRIFUGE_JAAA_TOKEN          = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
     address internal constant CENTRIFUGE_ROOT                = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
     address internal constant CENTRIFUGE_INVESTMENT_MANAGER  = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
     address internal constant CENTRIFUGE_RESTRICTION_MANAGER = 0x4737C3f62Cc265e786b280153fC666cEA2fBc0c0;
 
     bytes16 internal constant CENTRIFUGE_JTRSY_TRANCHE_ID = 0x97aa65f23e7be09fcd62d0554d2e9273;
-    bytes32 internal constant ALLOCATOR_ILK                = "ALLOCATOR-BLOOM-A";
+    bytes16 internal constant CENTRIFUGE_JAAA_TRANCHE_ID  = 0x97aa65f23e7be09fcd62d0554d2e9273; // TODO: Change to proper ID
+    bytes32 internal constant ALLOCATOR_ILK               = "ALLOCATOR-BLOOM-A";
 
     uint64  internal constant CENTRIFUGE_JTRSY_POOL_ID    = 4139607887;
+    uint64  internal constant CENTRIFUGE_JAAA_POOL_ID     = 4139607887; // TODO: Change to proper ID
     uint128 internal constant CENTRIFUGE_USDC_ASSET_ID    = 242333941209166991950178742833476896417;
 
     IALMProxy         almProxy   = IALMProxy(Ethereum.ALM_PROXY);
@@ -180,114 +184,37 @@ contract BloomEthereum_20250501Test is BloomTestBase {
     }
 
     function test_centrifugeJTRSYOnboarding() public {
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
-
-        // !!! This needs to be done before onboarding the vault !!!
-        vm.prank(CENTRIFUGE_ROOT);
-        IRestrictionManager(CENTRIFUGE_RESTRICTION_MANAGER).updateMember(
+        _testCentrifugeOnboarding(
+            CENTRIFUGE_JTRSY_VAULT,
             CENTRIFUGE_JTRSY_TOKEN,
-            Ethereum.ALM_PROXY,
-            type(uint64).max
-        );
-
-        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
-            controller.LIMIT_7540_DEPOSIT(),
-            CENTRIFUGE_JTRSY_VAULT
-        );
-        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
-            controller.LIMIT_7540_REDEEM(),
-            CENTRIFUGE_JTRSY_VAULT
-        );
-
-        _assertRateLimit(depositKey,  0, 0);
-        _assertRateLimit(withdrawKey, 0, 0);
-
-        executePayload();
-
-        _assertRateLimit(depositKey, 100_000e6, 50_000e6 / uint256(1 days));
-        _assertRateLimit(withdrawKey, type(uint256).max, 0);
-
-        IERC20 usdc  = IERC20(Ethereum.USDC);
-        IERC20 jtrsy = IERC20(CENTRIFUGE_JTRSY_TOKEN);
-
-        // USDS -> USDC limits are 100k, go a bit below in case some is in use
-        uint256 mintAmount = 90_000e6;
-        vm.startPrank(ctx.relayer);
-        controller.mintUSDS(mintAmount * 1e12);
-        controller.swapUSDSToUSDC(mintAmount);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  mintAmount);
-        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
-
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000e6);
-
-        controller.requestDepositERC7540(CENTRIFUGE_JTRSY_VAULT, mintAmount);
-        vm.stopPrank();
-
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000e6 - mintAmount);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
-        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
-
-        _centrifugeFulfillDepositRequest(mintAmount);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
-        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
-
-        vm.prank(ctx.relayer);
-        controller.claimDepositERC7540(CENTRIFUGE_JTRSY_VAULT);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
-        assertEq(jtrsy.balanceOf(address(ctx.proxy)), mintAmount / 2);
-
-        vm.prank(ctx.relayer);
-        controller.requestRedeemERC7540(CENTRIFUGE_JTRSY_VAULT, mintAmount / 2);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
-        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
-
-        _centrifugeFulfillRedeemRequest(mintAmount / 2);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  0);
-        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
-
-        vm.prank(ctx.relayer);
-        controller.claimRedeemERC7540(CENTRIFUGE_JTRSY_VAULT);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  mintAmount);
-        assertEq(jtrsy.balanceOf(address(ctx.proxy)), 0);
-    }
-
-    function _centrifugeFulfillDepositRequest(uint256 amountUsdc) internal {
-        uint128 _amountUsdc = uint128(amountUsdc);
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
-
-        // Fulfill request at price 2.0
-        vm.prank(CENTRIFUGE_ROOT);
-        IInvestmentManager(CENTRIFUGE_INVESTMENT_MANAGER).fulfillDepositRequest(
-            CENTRIFUGE_JTRSY_POOL_ID,
-            CENTRIFUGE_JTRSY_TRANCHE_ID,
-            address(ctx.proxy),
-            CENTRIFUGE_USDC_ASSET_ID,
-            _amountUsdc,
-            _amountUsdc / 2
+            CentrifugeConfig({
+                centrifugeRoot:               CENTRIFUGE_ROOT,
+                centrifugeInvestmentManager:  CENTRIFUGE_INVESTMENT_MANAGER,
+                centrifugeTrancheId:          CENTRIFUGE_JTRSY_TRANCHE_ID,
+                centrifugePoolId:             CENTRIFUGE_JTRSY_POOL_ID,
+                centrifugeAssetId:            CENTRIFUGE_USDC_ASSET_ID
+            }),
+            100_000e6,
+            100_000e6,
+            50_000e6 / uint256(1 days)
         );
     }
 
-    function _centrifugeFulfillRedeemRequest(uint256 amountJtrsy) internal {
-        uint128 _amountJtrsy = uint128(amountJtrsy);
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
-
-        // Fulfill request at price 2.0
-        vm.prank(CENTRIFUGE_ROOT);
-        IInvestmentManager(CENTRIFUGE_INVESTMENT_MANAGER).fulfillRedeemRequest(
-            CENTRIFUGE_JTRSY_POOL_ID,
-            CENTRIFUGE_JTRSY_TRANCHE_ID,
-            address(ctx.proxy),
-            CENTRIFUGE_USDC_ASSET_ID,
-            _amountJtrsy * 2,
-            _amountJtrsy
+    function test_centrifugeJAAAOnboarding() public {
+        vm.skip(true); // TODO: Un-skip once JAAA values are confirmed
+        _testCentrifugeOnboarding(
+            CENTRIFUGE_JAAA_VAULT,
+            CENTRIFUGE_JAAA_TOKEN,
+            CentrifugeConfig({
+                centrifugeRoot:               CENTRIFUGE_ROOT,
+                centrifugeInvestmentManager:  CENTRIFUGE_INVESTMENT_MANAGER,
+                centrifugeTrancheId:          CENTRIFUGE_JAAA_TRANCHE_ID,
+                centrifugePoolId:             CENTRIFUGE_JAAA_POOL_ID,
+                centrifugeAssetId:            CENTRIFUGE_USDC_ASSET_ID
+            }),
+            100_000_000e6,
+            100_000_000e6,
+            10_000_000e6 / uint256(1 days)
         );
     }
-
 }

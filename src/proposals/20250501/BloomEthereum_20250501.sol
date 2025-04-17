@@ -11,8 +11,8 @@ import { MainnetController } from "lib/bloom-alm-controller/src/MainnetControlle
  * @title  May 1, 2025 Bloom Ethereum Proposal
  * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard JTRSY and JAAA Centrifuge Vaults
  * @author Steakhouse Financial
- * Forum:  TBD
- * Vote:   TBD
+ * Forum:  TODO: add forum link
+ * Vote:   TODO: add vote link
  */
 contract BloomEthereum_20250501 is BloomPayloadEthereum {
 
