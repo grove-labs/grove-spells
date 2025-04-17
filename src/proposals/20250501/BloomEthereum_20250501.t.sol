@@ -64,7 +64,7 @@ interface IPSMLike {
     function kiss(address) external;
 }
 
-contract BloomEthereum_20250320Test is BloomTestBase {
+contract BloomEthereum_20250501Test is BloomTestBase {
 
     address internal constant DEPLOYER                       = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant CENTRIFUGE_JTRSY_VAULT         = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
@@ -84,12 +84,12 @@ contract BloomEthereum_20250320Test is BloomTestBase {
     MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
 
     constructor() {
-        id = "20250417";
+        id = "20250501";
     }
 
     function setUp() public {
-        // April 09, 2025
-        setupDomain({ mainnetForkBlock: 22232222 });
+        // April 17, 2025
+        setupDomain({ mainnetForkBlock: 22288130 });
         deployPayload();
 
         vm.startPrank(Ethereum.PAUSE_PROXY);

@@ -8,20 +8,22 @@ import { MainnetControllerInit, ControllerInstance } from "lib/bloom-alm-control
 import { MainnetController } from "lib/bloom-alm-controller/src/MainnetController.sol";
 
 /**
- * @title  Apr 17, 2025 Bloom Ethereum Proposal
- * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard JTRSY Centrifuge Vault
+ * @title  May 1, 2025 Bloom Ethereum Proposal
+ * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard JTRSY and JAAA Centrifuge Vaults
  * @author Steakhouse Financial
  * Forum:  TBD
  * Vote:   TBD
  */
-contract BloomEthereum_20250417 is BloomPayloadEthereum {
+contract BloomEthereum_20250501 is BloomPayloadEthereum {
 
     address internal constant JTRSY_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant JAAA_VAULT  = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
 
     function _execute() internal override {
         _initiateAlmSystem();
         _setupBasicRateLimits();
         _onboardCentrifugeJTRSY();
+        // _onboardCentrifugeJAAA(); // TODO: uncomment when JAAA address is confirmed
     }
 
     function _initiateAlmSystem() private {
@@ -69,6 +71,14 @@ contract BloomEthereum_20250417 is BloomPayloadEthereum {
             JTRSY_VAULT,
             100_000e6,
             50_000e6 / uint256(1 days)
+        );
+    }
+
+    function _onboardCentrifugeJAAA() private {
+        _onboardERC7540Vault(
+            JAAA_VAULT,
+            100_000_000e6,
+            10_000_000e6 / uint256(1 days)
         );
     }
 
