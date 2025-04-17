@@ -9,21 +9,19 @@ import { MainnetController } from "lib/bloom-alm-controller/src/MainnetControlle
 
 /**
  * @title  May 1, 2025 Bloom Ethereum Proposal
- * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard JTRSY and JAAA Centrifuge Vaults
+ * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard Centrifuge Vault
  * @author Steakhouse Financial
  * Forum:  TODO: add forum link
  * Vote:   TODO: add vote link
  */
 contract BloomEthereum_20250501 is BloomPayloadEthereum {
 
-    address internal constant JAAA_VAULT  = 0xdEADBEeF00000000000000000000000000000000; // TODO: add address
-    address internal constant JTRSY_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant CENTRIFUGE_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50; // TODO: add address
 
     function _execute() internal override {
         _initiateAlmSystem();
         _setupBasicRateLimits();
-        // _onboardCentrifugeJAAA(); // TODO: uncomment when JAAA address is confirmed
-        _onboardCentrifugeJTRSY();
+        _onboardCentrifugeVault();
     }
 
     function _initiateAlmSystem() private {
@@ -57,28 +55,19 @@ contract BloomEthereum_20250501 is BloomPayloadEthereum {
 
     function _setupBasicRateLimits() private {
         _setUSDSMintRateLimit(
-            100_000e18,
-            50_000e18 / uint256(1 days)
+            100_000_000e18,
+            50_000_000e18 / uint256(1 days)
         );
         _setUSDSToUSDCRateLimit(
-            100_000e6,
-            50_000e6 / uint256(1 days)
-        );
-    }
-
-    function _onboardCentrifugeJAAA() private {
-        _onboardERC7540Vault(
-            JAAA_VAULT,
             100_000_000e6,
-            10_000_000e6 / uint256(1 days)
+            50_000_000e6 / uint256(1 days)
         );
     }
-
-    function _onboardCentrifugeJTRSY() private {
+    function _onboardCentrifugeVault() private {
         _onboardERC7540Vault(
-            JTRSY_VAULT,
-            100_000e6,
-            50_000e6 / uint256(1 days)
+            CENTRIFUGE_VAULT,
+            100_000_000e6,
+            50_000_000e6 / uint256(1 days)
         );
     }
 
