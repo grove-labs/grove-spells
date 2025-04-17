@@ -26,6 +26,15 @@ abstract contract BloomPayloadEthereum {
         );
     }
 
+    function _onboardERC7540Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
+        BloomLiquidityLayerHelpers.onboardERC7540Vault(
+            Ethereum.ALM_RATE_LIMITS,
+            vault,
+            depositMax,
+            depositSlope
+        );
+    }
+
     function _setUSDSMintRateLimit(uint256 maxAmount, uint256 slope) internal {
         BloomLiquidityLayerHelpers.setUSDSMintRateLimit(
             Ethereum.ALM_RATE_LIMITS,

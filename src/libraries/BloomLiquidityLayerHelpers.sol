@@ -16,6 +16,8 @@ library BloomLiquidityLayerHelpers {
 
     bytes32 private constant LIMIT_4626_DEPOSIT  = keccak256("LIMIT_4626_DEPOSIT");
     bytes32 private constant LIMIT_4626_WITHDRAW = keccak256("LIMIT_4626_WITHDRAW");
+    bytes32 private constant LIMIT_7540_DEPOSIT  = keccak256("LIMIT_7540_DEPOSIT");
+    bytes32 private constant LIMIT_7540_REDEEM   = keccak256("LIMIT_7540_REDEEM");
     bytes32 private constant LIMIT_USDS_MINT     = keccak256("LIMIT_USDS_MINT");
     bytes32 private constant LIMIT_USDS_TO_USDC  = keccak256("LIMIT_USDS_TO_USDC");
 
@@ -42,7 +44,7 @@ library BloomLiquidityLayerHelpers {
                 maxAmount : depositMax,
                 slope     : depositSlope
             }),
-            "vaultDepositLimit",
+            "erc4626VaultDepositLimit",
             asset.decimals()
         );
         RateLimitHelpers.setRateLimitData(
@@ -52,7 +54,47 @@ library BloomLiquidityLayerHelpers {
             ),
             rateLimits,
             RateLimitHelpers.unlimitedRateLimit(),
-            "vaultWithdrawLimit",
+            "erc4626VaultWithdrawLimit",
+            asset.decimals()
+        );
+    }
+
+    /**
+     * @notice Onboard an ERC7540 vault
+     * @dev This will set the deposit to the given numbers with
+     *      the redeem limit set to unlimited.
+     */
+    function onboardERC7540Vault(
+        address rateLimits,
+        address vault,
+        uint256 depositMax,
+        uint256 depositSlope
+    ) internal {
+        // ERC7540 vaults are obliged to implement ERC4626 as well
+        IERC20 asset = IERC20(IERC4626(vault).asset());
+
+        RateLimitHelpers.setRateLimitData(
+            RateLimitHelpers.makeAssetKey(
+                LIMIT_7540_DEPOSIT,
+                vault
+            ),
+            rateLimits,
+            RateLimitData({
+                maxAmount : depositMax,
+                slope     : depositSlope
+            }),
+            "erc7540VaultDepositLimit",
+            asset.decimals()
+        );
+
+        RateLimitHelpers.setRateLimitData(
+            RateLimitHelpers.makeAssetKey(
+                LIMIT_7540_REDEEM,
+                vault
+            ),
+            rateLimits,
+            RateLimitHelpers.unlimitedRateLimit(),
+            "erc7540VaultRedeemLimit",
             asset.decimals()
         );
     }
