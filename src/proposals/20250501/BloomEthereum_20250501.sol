@@ -8,15 +8,15 @@ import { MainnetControllerInit, ControllerInstance } from "lib/bloom-alm-control
 import { MainnetController } from "lib/bloom-alm-controller/src/MainnetController.sol";
 
 /**
- * @title  May 1, 2025 Bloom Ethereum Proposal
+ * @title  April 30, 2025 Bloom Ethereum Proposal
  * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard Centrifuge Vault
  * @author Steakhouse Financial
- * Forum:  TODO: add forum link
- * Vote:   TODO: add vote link
+ * Forum: https://forum.sky.money/t/technical-test-of-of-the-star2-allocation-system/26289
+ * Vote:  TODO: add vote link
  */
 contract BloomEthereum_20250501 is BloomPayloadEthereum {
 
-    address internal constant CENTRIFUGE_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50; // TODO: add address
+    address internal constant CENTRIFUGE_VAULT = 0xE9d1f733F406D4bbbDFac6D4CfCD2e13A6ee1d01;
 
     function _execute() internal override {
         _initiateAlmSystem();
