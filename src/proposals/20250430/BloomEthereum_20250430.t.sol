@@ -72,8 +72,6 @@ contract BloomEthereum_20250430Test is BloomTestBase {
 
     address internal constant DEPLOYER                      = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant CENTRIFUGE_ROOT               = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
-    address internal constant CENTRIFUGE_ROUTER             = 0xb1a07D21Fc8eD1eF2208395Bb3b262C66D3d3281;
-    address internal constant ANEMOY_DEPLOYER               = 0xcccCCCcCCC33D538DBC2EE4fEab0a7A1FF4e8A94;
     address internal constant CENTRIFUGE_INVESTMENT_MANAGER = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
     address internal constant CENTRIFUGE_POOL_MANAGER       = 0x91808B5E2F6d7483D41A681034D7c9DbB64B9E29;
     address internal constant CENTRIFUGE_VAULT              = 0xE9d1f733F406D4bbbDFac6D4CfCD2e13A6ee1d01;
