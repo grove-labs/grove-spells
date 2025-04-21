@@ -12,7 +12,8 @@ import { MainnetController } from "lib/bloom-alm-controller/src/MainnetControlle
  * @notice Activate Bloom Liquidity Layer - initiate ALM system, set rate limits, onboard Centrifuge Vault
  * @author Steakhouse Financial
  * Forum: https://forum.sky.money/t/technical-test-of-of-the-star2-allocation-system/26289
- * Vote:  TODO: add vote link
+ * Vote:  https://vote.makerdao.com/polling/QmedB3hH -- Increase line and gap
+ *        https://vote.makerdao.com/polling/QmepaQjk -- Activate Liquidity Layer
  */
 contract BloomEthereum_20250430 is BloomPayloadEthereum {
 
