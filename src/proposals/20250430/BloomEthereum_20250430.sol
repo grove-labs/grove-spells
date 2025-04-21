@@ -14,7 +14,7 @@ import { MainnetController } from "lib/bloom-alm-controller/src/MainnetControlle
  * Forum: https://forum.sky.money/t/technical-test-of-of-the-star2-allocation-system/26289
  * Vote:  TODO: add vote link
  */
-contract BloomEthereum_20250501 is BloomPayloadEthereum {
+contract BloomEthereum_20250430 is BloomPayloadEthereum {
 
     address internal constant CENTRIFUGE_VAULT = 0xE9d1f733F406D4bbbDFac6D4CfCD2e13A6ee1d01;
 

@@ -60,33 +60,33 @@ interface IPSMLike {
     function kiss(address) external;
 }
 
-contract BloomEthereum_20250501Test is BloomTestBase {
+contract BloomEthereum_20250430Test is BloomTestBase {
 
     address internal constant DEPLOYER                      = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant CENTRIFUGE_ROOT               = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
     address internal constant CENTRIFUGE_INVESTMENT_MANAGER = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
-    address internal constant CENTRIFUGE_VAULT              = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50; // TODO: add address
-    address internal constant CENTRIFUGE_VAULT_TOKEN        = 0x8c213ee79581Ff4984583C6a801e5263418C4b86; // TODO: add address
+    address internal constant CENTRIFUGE_VAULT              = 0xE9d1f733F406D4bbbDFac6D4CfCD2e13A6ee1d01;
+    address internal constant CENTRIFUGE_VAULT_TOKEN        = 0x5a0F93D040De44e78F251b03c43be9CF317Dcf64;
 
     bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
-    bytes16 internal constant CENTRIFUGE_VAULT_TRANCHE_ID = 0x97aa65f23e7be09fcd62d0554d2e9273; // TODO: Change to proper ID
+    bytes16 internal constant CENTRIFUGE_VAULT_TRANCHE_ID = 0x57e1b211a9ce6306b69a414f274f9998;
 
     uint128 internal constant CENTRIFUGE_USDC_ASSET_ID = 242333941209166991950178742833476896417;
 
-    uint64  internal constant CENTRIFUGE_VAULT_POOL_ID = 4139607887; // TODO: Change to proper ID
+    uint64  internal constant CENTRIFUGE_VAULT_POOL_ID = 158696445;
 
     IALMProxy         almProxy   = IALMProxy(Ethereum.ALM_PROXY);
     IRateLimits       rateLimits = IRateLimits(Ethereum.ALM_RATE_LIMITS);
     MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
 
     constructor() {
-        id = "20250501";
+        id = "20250430";
     }
 
     function setUp() public {
-        // April 17, 2025
-        setupDomain({ mainnetForkBlock: 22288130 });
+        // April 21, 2025
+        setupDomain({ mainnetForkBlock: 22318442 });
         deployPayload();
 
         vm.startPrank(Ethereum.PAUSE_PROXY);
