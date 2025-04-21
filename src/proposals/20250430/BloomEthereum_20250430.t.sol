@@ -70,6 +70,7 @@ interface IPoolManagerLike {
 
 contract BloomEthereum_20250430Test is BloomTestBase {
 
+    address internal constant BLOOM_ETHEREUM_20250430       = 0x0c9CC5D5fF3baf096d29676039BD6fB94586111A;  
     address internal constant DEPLOYER                      = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant CENTRIFUGE_ROOT               = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
     address internal constant CENTRIFUGE_INVESTMENT_MANAGER = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
@@ -95,8 +96,8 @@ contract BloomEthereum_20250430Test is BloomTestBase {
 
     function setUp() public {
         // April 21, 2025
-        setupDomain({ mainnetForkBlock: 22318442 });
-        deployPayload();
+        setupDomain({ mainnetForkBlock: 22319972 });
+        spellMetadata.payload = BLOOM_ETHEREUM_20250430;
 
         vm.startPrank(Ethereum.PAUSE_PROXY);
         IPSMLike(address(controller.psm())).kiss(address(almProxy));
