@@ -70,7 +70,7 @@ interface IPoolManagerLike {
 
 contract BloomEthereum_20250430Test is BloomTestBase {
 
-    address internal constant BLOOM_ETHEREUM_20250430       = 0x0c9CC5D5fF3baf096d29676039BD6fB94586111A;  
+    address internal constant BLOOM_ETHEREUM_20250430       = 0x0c9CC5D5fF3baf096d29676039BD6fB94586111A;
     address internal constant DEPLOYER                      = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
     address internal constant CENTRIFUGE_ROOT               = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
     address internal constant CENTRIFUGE_INVESTMENT_MANAGER = 0x427A1ce127b1775e4Cbd4F58ad468B9F832eA7e9;
@@ -95,8 +95,8 @@ contract BloomEthereum_20250430Test is BloomTestBase {
     }
 
     function setUp() public {
-        // April 21, 2025
-        setupDomain({ mainnetForkBlock: 22319972 });
+        // April 23, 2025
+        setupDomain({ mainnetForkBlock: 22333526 });
         spellMetadata.payload = BLOOM_ETHEREUM_20250430;
 
         vm.startPrank(Ethereum.PAUSE_PROXY);
@@ -187,25 +187,6 @@ contract BloomEthereum_20250430Test is BloomTestBase {
     }
 
     function test_centrifugeVaultOnboarding() public {
-        // Set a price to be completed by Centrifuge
-        vm.startPrank(CENTRIFUGE_ROOT);
-        IPoolManagerLike(CENTRIFUGE_POOL_MANAGER).updateTranchePrice(
-            CENTRIFUGE_VAULT_POOL_ID,
-            CENTRIFUGE_VAULT_TRANCHE_ID,
-            CENTRIFUGE_USDC_ASSET_ID,
-            1e6,
-            uint64(block.timestamp)
-        );
-        vm.stopPrank();
-
-        // Set DEPLOYER as a ward on CENTRIFUGE_ROOT to endorse the ALM_PROXY to be completed by Centrifuge
-        bytes32 key = keccak256(abi.encode(DEPLOYER, uint256(0)));
-        vm.store(CENTRIFUGE_ROOT, key, bytes32(uint256(1)));
-        
-        vm.startPrank(DEPLOYER);
-        ICentrifugeRoot(CENTRIFUGE_ROOT).endorse(Ethereum.ALM_PROXY);
-        vm.stopPrank();
-
         _testCentrifugeOnboarding(
             CENTRIFUGE_VAULT,
             CENTRIFUGE_VAULT_TOKEN,
