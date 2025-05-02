@@ -17,9 +17,21 @@ interface IBuidlLike is IERC20 {
     function issueTokens(address to, uint256 amount) external;
 }
 
+interface ICentrifugeRoot {
+    function endorse(address user) external;
+}
+
+interface ISuperstateToken is IERC20 {
+    function calculateSuperstateTokenOut(uint256, address)
+        external view returns (uint256, uint256, uint256);
+}
+
 contract BloomEthereum_20250529Test is BloomTestBase {
 
-    address internal constant CENTRIFUGE_JTRSY_VAULT = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant DEPLOYER        = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
+    address internal constant CENTRIFUGE_ROOT = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
+
+    address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
 
     address internal constant BUIDL         = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
     address internal constant BUIDL_DEPOSIT = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
@@ -36,9 +48,17 @@ contract BloomEthereum_20250529Test is BloomTestBase {
         deployPayload();
     }
 
-    function test_centrifugeVaultOnboarding() public {
+    function test_centrifugeJTRSYOnboarding() public {
+        // Set DEPLOYER as a ward on CENTRIFUGE_ROOT to endorse the ALM_PROXY to be completed by Centrifuge
+        bytes32 key = keccak256(abi.encode(DEPLOYER, uint256(0)));
+        vm.store(CENTRIFUGE_ROOT, key, bytes32(uint256(1)));
+
+        vm.startPrank(DEPLOYER);
+        ICentrifugeRoot(CENTRIFUGE_ROOT).endorse(Ethereum.ALM_PROXY);
+        vm.stopPrank();
+
         _testCentrifugeOnboarding(
-            CENTRIFUGE_JTRSY_VAULT,
+            CENTRIFUGE_JTRSY,
             100_000_000e6,
             100_000_000e6,
             50_000_000e6 / uint256(1 days)
@@ -109,6 +129,75 @@ contract BloomEthereum_20250529Test is BloomTestBase {
 
         assertEq(buidl.balanceOf(address(ctx.proxy)), 0);
         assertEq(buidl.balanceOf(BUIDL_REDEEM),       buidlRedeemBalance + mintAmount);
+    }
+
+    function test_superstateUSTBOnboarding() public {
+        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+
+        MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
+
+        IERC20 usdc           = IERC20(Ethereum.USDC);
+        ISuperstateToken ustb = ISuperstateToken(Ethereum.USTB);
+
+        bytes32 depositKey        = controller.LIMIT_SUPERSTATE_SUBSCRIBE();
+        bytes32 withdrawKey       = controller.LIMIT_SUPERSTATE_REDEEM();
+        bytes32 offchainRedeemKey = RateLimitHelpers.makeAssetDestinationKey(
+            controller.LIMIT_ASSET_TRANSFER(),
+            address(ustb),
+            address(ustb)
+        );
+
+        _assertRateLimit(depositKey,        0, 0);
+        _assertRateLimit(withdrawKey,       0, 0);
+        _assertRateLimit(offchainRedeemKey, 0, 0);
+
+        executePayload();
+
+        _assertRateLimit(depositKey, 100_000_000e6, 50_000_000e6 / uint256(1 days));
+        _assertRateLimit(withdrawKey, type(uint256).max, 0);
+        _assertRateLimit(offchainRedeemKey, type(uint256).max, 0);
+
+        // Line can be raised to 100m, but currently set to 50m and will be raised to 100m automatically when used up
+        uint256 mintAmount = 50_000_000e6;
+        vm.startPrank(ctx.relayer);
+        controller.mintUSDS(mintAmount * 1e12);
+        controller.swapUSDSToUSDC(mintAmount);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)), mintAmount);
+        assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
+
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000_000e6);
+
+        (uint256 ustbShares,,) = ustb.calculateSuperstateTokenOut(mintAmount, address(usdc));
+
+        controller.subscribeSuperstate(mintAmount);
+        vm.stopPrank();
+
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000_000e6 - mintAmount);
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)), 0);
+        assertEq(ustb.balanceOf(address(ctx.proxy)), ustbShares);
+
+        // Doing a smaller redeem because there is not necessarily enough liquidity
+        vm.prank(ctx.relayer);
+        controller.redeemSuperstate(ustbShares / 100);
+
+        assertApproxEqAbs(usdc.balanceOf(address(ctx.proxy)), mintAmount * 1/100, 100);
+        assertApproxEqAbs(ustb.balanceOf(address(ctx.proxy)), ustbShares * 99/100, 1);
+
+        uint256 totalSupply = ustb.totalSupply();
+
+        // You can always burn the whole amount by doing it offchain
+        uint256 ustbBalance = ustb.balanceOf(address(ctx.proxy));
+        vm.prank(ctx.relayer);
+        controller.transferAsset(address(ustb), address(ustb), ustbBalance);
+
+        // Transferring to token contract burns the amount
+        assertEq(ustb.totalSupply(), totalSupply - ustbBalance);
+
+        // USDC will come back async
+        assertApproxEqAbs(usdc.balanceOf(address(ctx.proxy)), mintAmount * 1/100, 100);
+        assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
     }
 
 }
