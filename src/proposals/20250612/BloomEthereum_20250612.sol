@@ -8,13 +8,13 @@ import { MainnetController } from "lib/bloom-alm-controller/src/MainnetControlle
 import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
 
 /**
- * @title  May 29, 2025 Bloom Ethereum Proposal
- * @notice TODO: Add details
+ * @title  June 12, 2025 Bloom Ethereum Proposal
+ * @notice Onboarding of Centrifuge JTRSY, Blackrock BUIDL, and Superstate USTB
  * @author Steakhouse Financial
  * Forum: TODO: Add link
  * Vote:  TODO: Add link
  */
-contract BloomEthereum_20250529 is BloomPayloadEthereum {
+contract BloomEthereum_20250612 is BloomPayloadEthereum {
 
     address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
 
