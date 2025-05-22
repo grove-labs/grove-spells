@@ -18,11 +18,10 @@ import { BloomPayloadEthereum } from "src/libraries/BloomPayloadEthereum.sol";
  */
 contract BloomEthereum_20250612 is BloomPayloadEthereum {
 
-    address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
-
-    address internal constant BUIDL         = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041; // TODO: Confirm this address
-    address internal constant BUIDL_DEPOSIT = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312; // TODO: Confirm this address
-    address internal constant BUIDL_REDEEM  = 0x8780Dd016171B91E4Df47075dA0a947959C34200; // TODO: Confirm this address
+    address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50; // TODO: Confirm this address
+    address internal constant BUIDL            = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041; // TODO: Confirm this address
+    address internal constant BUIDL_DEPOSIT    = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312; // TODO: Confirm this address
+    address internal constant BUIDL_REDEEM     = 0x8780Dd016171B91E4Df47075dA0a947959C34200; // TODO: Confirm this address
 
     function _execute() internal override {
         _onboardCentrifugeJTRSY();
