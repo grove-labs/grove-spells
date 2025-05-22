@@ -1,17 +1,17 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.10;
 
-import "src/test-harness/BloomTestBase.sol";
-
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { Ethereum } from "lib/bloom-address-registry/src/Ethereum.sol";
+import { Ethereum as BloomContracts } from "lib/bloom-address-registry/src/Ethereum.sol";
+import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
 
 import { MainnetController } from "lib/bloom-alm-controller/src/MainnetController.sol";
-
-import { RateLimitHelpers } from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
+import { RateLimitHelpers }  from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
 
 import { BloomLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/BloomLiquidityLayerTests.sol";
+
+import "src/test-harness/BloomTestBase.sol";
 
 interface IBuidlLike is IERC20 {
     function issueTokens(address to, uint256 amount) external;
@@ -55,13 +55,16 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function test_blackrockBUIDLOnboarding() public {
+        // Skip before proper whitelisting is performed
+        vm.skip(true);
+
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
 
-        MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
+        MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
 
         bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
             controller.LIMIT_ASSET_TRANSFER(),
-            Ethereum.USDC,
+            BloomContracts.USDC,
             BUIDL_DEPOSIT
         );
         bytes32 withdrawKey = RateLimitHelpers.makeAssetDestinationKey(
@@ -78,7 +81,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
 
-        IERC20 usdc  = IERC20(Ethereum.USDC);
+        IERC20 usdc  = IERC20(BloomContracts.USDC);
         IERC20 buidl = IERC20(BUIDL);
 
         // Line can be raised to 100m, but currently set to 50m and will be raised to 100m automatically when used up
@@ -121,12 +124,15 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function test_superstateUSTBOnboarding() public {
+        // Skip before proper whitelisting is performed
+        vm.skip(true);
+
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
 
-        MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
+        MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
 
-        IERC20 usdc           = IERC20(Ethereum.USDC);
-        ISuperstateToken ustb = ISuperstateToken(Ethereum.USTB);
+        IERC20 usdc           = IERC20(BloomContracts.USDC);
+        ISuperstateToken ustb = ISuperstateToken(BloomContracts.USTB);
 
         bytes32 depositKey        = controller.LIMIT_SUPERSTATE_SUBSCRIBE();
         bytes32 withdrawKey       = controller.LIMIT_SUPERSTATE_REDEEM();
@@ -187,6 +193,36 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         // USDC will come back async
         assertApproxEqAbs(usdc.balanceOf(address(ctx.proxy)), mintAmount * 1/100, 100);
         assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
+    }
+
+    function test_sparkUSDSTransfers() public {
+        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+
+        MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
+
+        bytes32 key = RateLimitHelpers.makeAssetDestinationKey(
+            controller.LIMIT_ASSET_TRANSFER(),
+            BloomContracts.USDS,
+            SparkContracts.ALM_PROXY
+        );
+
+        _assertRateLimit(key, 0, 0);
+
+        executePayload();
+
+        _assertRateLimit(key, 50_000_000e18, 50_000_000e18 / uint256(1 days));
+
+        assertEq(IERC20(BloomContracts.USDS).balanceOf(address(ctx.proxy)), 0);
+
+        uint256 sparkProxyUsdsBalanceBefore = IERC20(SparkContracts.USDS).balanceOf(address(ctx.proxy));
+
+        vm.startPrank(ctx.relayer);
+        controller.mintUSDS(50_000_000e18);
+        controller.transferAsset(BloomContracts.USDS, SparkContracts.ALM_PROXY, 50_000_000e18);
+        vm.stopPrank();
+
+        assertEq(IERC20(BloomContracts.USDS).balanceOf(address(ctx.proxy)), 0);
+        assertEq(IERC20(BloomContracts.USDS).balanceOf(SparkContracts.ALM_PROXY), sparkProxyUsdsBalanceBefore + 50_000_000e18);
     }
 
 }

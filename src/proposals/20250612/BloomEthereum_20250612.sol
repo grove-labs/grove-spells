@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.25;
 
-import { Ethereum, BloomPayloadEthereum } from "src/libraries/BloomPayloadEthereum.sol";
+import { Ethereum as BloomContracts } from "lib/bloom-address-registry/src/Ethereum.sol";
+import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
 
-import { MainnetController } from "lib/bloom-alm-controller/src/MainnetController.sol";
-
+import { MainnetController }               from "lib/bloom-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
+
+import { BloomPayloadEthereum } from "src/libraries/BloomPayloadEthereum.sol";
 
 /**
  * @title  June 12, 2025 Bloom Ethereum Proposal
@@ -26,6 +28,7 @@ contract BloomEthereum_20250612 is BloomPayloadEthereum {
         _onboardCentrifugeJTRSY();
         _onboardBlackrockBUIDL();
         _onboardSuperstateUSTB();
+        _onboardSparkUSDSTransfers();
     }
 
     function _onboardCentrifugeJTRSY() private {
@@ -39,11 +42,11 @@ contract BloomEthereum_20250612 is BloomPayloadEthereum {
     function _onboardBlackrockBUIDL() private {
         RateLimitHelpers.setRateLimitData(
             RateLimitHelpers.makeAssetDestinationKey(
-                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-                Ethereum.USDC,
+                MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+                BloomContracts.USDC,
                 BUIDL_DEPOSIT
             ),
-            Ethereum.ALM_RATE_LIMITS,
+            BloomContracts.ALM_RATE_LIMITS,
             RateLimitData({
                 maxAmount : 50_000_000e6, // TODO: Get actual numbers
                 slope     : 50_000_000e6 / uint256(1 days) // TODO: Get actual numbers
@@ -54,11 +57,11 @@ contract BloomEthereum_20250612 is BloomPayloadEthereum {
 
         RateLimitHelpers.setRateLimitData(
             RateLimitHelpers.makeAssetDestinationKey(
-                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+                MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
                 BUIDL,
                 BUIDL_REDEEM
             ),
-            Ethereum.ALM_RATE_LIMITS,
+            BloomContracts.ALM_RATE_LIMITS,
             RateLimitHelpers.unlimitedRateLimit(),
             "buidlBurnLimit",
             6
@@ -67,8 +70,8 @@ contract BloomEthereum_20250612 is BloomPayloadEthereum {
 
     function _onboardSuperstateUSTB() private {
         RateLimitHelpers.setRateLimitData(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_SUPERSTATE_SUBSCRIBE(),
-            Ethereum.ALM_RATE_LIMITS,
+            MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_SUPERSTATE_SUBSCRIBE(),
+            BloomContracts.ALM_RATE_LIMITS,
             RateLimitData({
                 maxAmount : 50_000_000e6, // TODO: Get actual numbers
                 slope     : 50_000_000e6 / uint256(1 days) // TODO: Get actual numbers
@@ -78,8 +81,8 @@ contract BloomEthereum_20250612 is BloomPayloadEthereum {
         );
         // Instant liquidity redemption
         RateLimitHelpers.setRateLimitData(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_SUPERSTATE_REDEEM(),
-            Ethereum.ALM_RATE_LIMITS,
+            MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_SUPERSTATE_REDEEM(),
+            BloomContracts.ALM_RATE_LIMITS,
             RateLimitHelpers.unlimitedRateLimit(),
             "ustbBurnLimit",
             6
@@ -87,14 +90,31 @@ contract BloomEthereum_20250612 is BloomPayloadEthereum {
         // Offchain redemption
         RateLimitHelpers.setRateLimitData(
             RateLimitHelpers.makeAssetDestinationKey(
-                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-                Ethereum.USTB,
-                Ethereum.USTB
+                MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+                BloomContracts.USTB,
+                BloomContracts.USTB
             ),
-            Ethereum.ALM_RATE_LIMITS,
+            BloomContracts.ALM_RATE_LIMITS,
             RateLimitHelpers.unlimitedRateLimit(),
             "ustbOffchainBurnLimit",
             6
+        );
+    }
+
+    function _onboardSparkUSDSTransfers() private {
+        RateLimitHelpers.setRateLimitData(
+            RateLimitHelpers.makeAssetDestinationKey(
+                MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+                BloomContracts.USDS,
+                SparkContracts.ALM_PROXY
+            ),
+            BloomContracts.ALM_RATE_LIMITS,
+            RateLimitData({
+                maxAmount : 50_000_000e18, // TODO: Get actual numbers
+                slope     : 50_000_000e18 / uint256(1 days) // TODO: Get actual numbers
+            }),
+            "sparkUsdsTransferLimit",
+            18
         );
     }
 
