@@ -28,9 +28,6 @@ interface ISuperstateToken is IERC20 {
 
 contract BloomEthereum_20250529Test is BloomTestBase {
 
-    address internal constant DEPLOYER        = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
-    address internal constant CENTRIFUGE_ROOT = 0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC;
-
     address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
 
     address internal constant BUIDL         = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
@@ -43,24 +40,16 @@ contract BloomEthereum_20250529Test is BloomTestBase {
     }
 
     function setUp() public {
-        // May 2, 2025
-        setupDomain({ mainnetForkBlock: 22396975 });
+        // May 5, 2025
+        setupDomain({ mainnetForkBlock: 22418039 });
         deployPayload();
     }
 
     function test_centrifugeJTRSYOnboarding() public {
-        // Set DEPLOYER as a ward on CENTRIFUGE_ROOT to endorse the ALM_PROXY to be completed by Centrifuge
-        bytes32 key = keccak256(abi.encode(DEPLOYER, uint256(0)));
-        vm.store(CENTRIFUGE_ROOT, key, bytes32(uint256(1)));
-
-        vm.startPrank(DEPLOYER);
-        ICentrifugeRoot(CENTRIFUGE_ROOT).endorse(Ethereum.ALM_PROXY);
-        vm.stopPrank();
-
         _testCentrifugeOnboarding(
             CENTRIFUGE_JTRSY,
-            100_000_000e6,
-            100_000_000e6,
+            50_000_000e6,
+            50_000_000e6,
             50_000_000e6 / uint256(1 days)
         );
     }
@@ -86,7 +75,7 @@ contract BloomEthereum_20250529Test is BloomTestBase {
 
         executePayload();
 
-        _assertRateLimit(depositKey,  100_000_000e6,     50_000_000e6 / uint256(1 days));
+        _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
 
         IERC20 usdc  = IERC20(Ethereum.USDC);
@@ -104,7 +93,7 @@ contract BloomEthereum_20250529Test is BloomTestBase {
         assertEq(usdc.balanceOf(address(ctx.proxy)), mintAmount);
         assertEq(usdc.balanceOf(BUIDL_DEPOSIT),      buidlDepositBalance);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000_000e6);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6);
 
         controller.transferAsset(address(usdc), BUIDL_DEPOSIT, mintAmount);
         vm.stopPrank();
@@ -114,7 +103,7 @@ contract BloomEthereum_20250529Test is BloomTestBase {
 
         assertEq(buidl.balanceOf(address(ctx.proxy)), 0);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000_000e6 - mintAmount);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6 - mintAmount);
 
         // Emulate BUIDL deposit
         vm.startPrank(BUIDL_ADMIN);
@@ -153,7 +142,7 @@ contract BloomEthereum_20250529Test is BloomTestBase {
 
         executePayload();
 
-        _assertRateLimit(depositKey, 100_000_000e6, 50_000_000e6 / uint256(1 days));
+        _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
         _assertRateLimit(offchainRedeemKey, type(uint256).max, 0);
 
@@ -166,14 +155,14 @@ contract BloomEthereum_20250529Test is BloomTestBase {
         assertEq(usdc.balanceOf(address(ctx.proxy)), mintAmount);
         assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000_000e6);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6);
 
         (uint256 ustbShares,,) = ustb.calculateSuperstateTokenOut(mintAmount, address(usdc));
 
         controller.subscribeSuperstate(mintAmount);
         vm.stopPrank();
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 100_000_000e6 - mintAmount);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6 - mintAmount);
 
         assertEq(usdc.balanceOf(address(ctx.proxy)), 0);
         assertEq(ustb.balanceOf(address(ctx.proxy)), ustbShares);
