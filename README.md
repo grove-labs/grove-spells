@@ -1,4 +1,4 @@
-# 🌸🪄 Bloom Spells
+# 🌱🪄 Bloom Spells
 
 **Governance Spells for Bloom**
 
