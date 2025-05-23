@@ -9,6 +9,9 @@ import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ether
 import { MainnetController } from "lib/bloom-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
 
+import { IRateLimits } from "lib/bloom-alm-controller/src/interfaces/IRateLimits.sol";
+
+
 import { BloomLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/BloomLiquidityLayerTests.sol";
 
 import "src/test-harness/BloomTestBase.sol";
@@ -39,8 +42,8 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function setUp() public {
-        // May 5, 2025
-        setupDomain({ mainnetForkBlock: 22418039 });
+        // May 23, 2025
+        setupDomain({ mainnetForkBlock: 22545500 });
         deployPayload();
     }
 
@@ -195,33 +198,75 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function test_sparkUSDSTransfers() public {
+        // Skip before proper whitelisting is performed
+        vm.skip(true);
+
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
 
-        MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
+        MainnetController bloomController = MainnetController(BloomContracts.ALM_CONTROLLER);
+        MainnetController sparkController = MainnetController(SparkContracts.ALM_CONTROLLER);
 
-        bytes32 key = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_ASSET_TRANSFER(),
+        bytes32 sendUsdsToSparkKey = RateLimitHelpers.makeAssetDestinationKey(
+            bloomController.LIMIT_ASSET_TRANSFER(),
             BloomContracts.USDS,
             SparkContracts.ALM_PROXY
         );
 
-        _assertRateLimit(key, 0, 0);
+        _assertRateLimit(sendUsdsToSparkKey, 0, 0);
 
         executePayload();
 
-        _assertRateLimit(key, 50_000_000e18, 50_000_000e18 / uint256(1 days));
+        _assertRateLimit(sendUsdsToSparkKey, 50_000_000e18, 50_000_000e18 / uint256(1 days));
+
+        ////////////////////////////////////
+        // Send USDS to Spark //////////////
+        ////////////////////////////////////
 
         assertEq(IERC20(BloomContracts.USDS).balanceOf(address(ctx.proxy)), 0);
 
-        uint256 sparkProxyUsdsBalanceBefore = IERC20(SparkContracts.USDS).balanceOf(address(ctx.proxy));
+        uint256 sparkProxyUsdsBalanceBefore = IERC20(SparkContracts.USDS).balanceOf(SparkContracts.ALM_PROXY);
 
         vm.startPrank(ctx.relayer);
-        controller.mintUSDS(50_000_000e18);
-        controller.transferAsset(BloomContracts.USDS, SparkContracts.ALM_PROXY, 50_000_000e18);
+        bloomController.mintUSDS(40_000_000e18);
+        bloomController.transferAsset(BloomContracts.USDS, SparkContracts.ALM_PROXY, 40_000_000e18);
         vm.stopPrank();
 
         assertEq(IERC20(BloomContracts.USDS).balanceOf(address(ctx.proxy)), 0);
-        assertEq(IERC20(BloomContracts.USDS).balanceOf(SparkContracts.ALM_PROXY), sparkProxyUsdsBalanceBefore + 50_000_000e18);
+        assertEq(IERC20(BloomContracts.USDS).balanceOf(SparkContracts.ALM_PROXY), sparkProxyUsdsBalanceBefore + 40_000_000e18);
+
+        ////////////////////////////////////
+        // Spark burns received USDS ///////
+        ////////////////////////////////////
+
+        vm.prank(SparkContracts.ALM_RELAYER);
+        sparkController.burnUSDS(40_000_000e18);
+
+        assertEq(IERC20(BloomContracts.USDS).balanceOf(SparkContracts.ALM_PROXY), sparkProxyUsdsBalanceBefore);
+
+        ////////////////////////////////////
+        // Receive BUIDL from Spark ////////
+        ////////////////////////////////////
+
+        bytes32 sendBuidlToBloomKey = RateLimitHelpers.makeAssetDestinationKey(
+            sparkController.LIMIT_ASSET_TRANSFER(),
+            BUIDL,
+            BloomContracts.ALM_PROXY
+        );
+
+        vm.prank(SparkContracts.SPARK_PROXY);
+        IRateLimits(SparkContracts.ALM_RATE_LIMITS).setRateLimitData({
+            key:       sendBuidlToBloomKey,
+            maxAmount: 50_000_000e6,
+            slope:     50_000_000e6 / uint256(1 days)
+        });
+
+        uint256 sparkProxyBuidlBalanceBefore = IERC20(BUIDL).balanceOf(SparkContracts.ALM_PROXY);
+
+        vm.prank(SparkContracts.ALM_RELAYER);
+        sparkController.transferAsset(BUIDL, BloomContracts.ALM_PROXY, 40_000_000e6);
+
+        assertEq(IERC20(BUIDL).balanceOf(BloomContracts.ALM_PROXY), 40_000_000e6);
+        assertEq(IERC20(BUIDL).balanceOf(SparkContracts.ALM_PROXY), sparkProxyBuidlBalanceBefore - 40_000_000e6);
     }
 
 }
