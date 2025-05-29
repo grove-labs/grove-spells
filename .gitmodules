@@ -10,3 +10,9 @@
 [submodule "lib/spark-address-registry"]
 	path = lib/spark-address-registry
 	url = https://github.com/sparkdotfi/spark-address-registry
+[submodule "lib/bloom-gov-relay"]
+	path = lib/bloom-gov-relay
+	url = https://github.com/bloom-foundation/bloom-gov-relay
+[submodule "lib/xchain-helpers"]
+	path = lib/xchain-helpers
+	url = https://github.com/sparkdotfi/xchain-helpers
