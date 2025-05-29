@@ -42,8 +42,8 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function setUp() public {
-        // May 23, 2025
-        setupDomain({ mainnetForkBlock: 22545500 });
+        // May 29, 2025
+        setupDomain({ mainnetForkBlock: 22587865 });
         deployPayload();
     }
 
@@ -57,9 +57,6 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function test_blackrockBUIDLOnboarding() public {
-        // Skip before proper whitelisting is performed
-        vm.skip(true);
-
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
 
         MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
@@ -87,7 +84,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         IERC20 buidl = IERC20(BUIDL);
 
         // Line can be raised to 100m, but currently set to 50m and will be raised to 100m automatically when used up
-        uint256 mintAmount = 50_000_000e6;
+        uint256 mintAmount = 45_000_000e6;
         vm.startPrank(ctx.relayer);
         controller.mintUSDS(mintAmount * 1e12);
         controller.swapUSDSToUSDC(mintAmount);
@@ -155,7 +152,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         _assertRateLimit(offchainRedeemKey, type(uint256).max, 0);
 
         // Line can be raised to 100m, but currently set to 50m and will be raised to 100m automatically when used up
-        uint256 mintAmount = 50_000_000e6;
+        uint256 mintAmount = 45_000_000e6;
         vm.startPrank(ctx.relayer);
         controller.mintUSDS(mintAmount * 1e12);
         controller.swapUSDSToUSDC(mintAmount);
@@ -198,9 +195,6 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function test_sparkUSDSTransfers() public {
-        // Skip before proper whitelisting is performed
-        vm.skip(true);
-
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
 
         MainnetController bloomController = MainnetController(BloomContracts.ALM_CONTROLLER);
