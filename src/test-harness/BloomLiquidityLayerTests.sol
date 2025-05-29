@@ -149,7 +149,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
         // vm.expectRevert("RateLimits/zero-maxAmount");
         // MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
 
-        executePayload();
+        executeAllPayloadsAndBridges();
 
         _assertRateLimit(depositKey, depositMax, depositSlope);
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
@@ -220,7 +220,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
         _assertRateLimit(depositKey,  0, 0);
         _assertRateLimit(redeemKey,   0, 0);
 
-        executePayload();
+        executeAllPayloadsAndBridges();
 
         _assertRateLimit(depositKey, depositMax,        depositSlope);
         _assertRateLimit(redeemKey,  type(uint256).max, 0);

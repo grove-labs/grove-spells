@@ -11,6 +11,7 @@ import { RateLimitHelpers }  from "lib/bloom-alm-controller/src/RateLimitHelpers
 
 import { IRateLimits } from "lib/bloom-alm-controller/src/interfaces/IRateLimits.sol";
 
+import { ChainIdUtils } from '../../libraries/ChainId.sol';
 
 import { BloomLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/BloomLiquidityLayerTests.sol";
 
@@ -42,12 +43,11 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     }
 
     function setUp() public {
-        // May 29, 2025
-        setupDomain({ mainnetForkBlock: 22587865 });
-        deployPayload();
+        setupDomains("2025-05-29T00:00:00Z");
+        deployPayloads();
     }
 
-    function test_centrifugeJTRSYOnboarding() public {
+    function test_centrifugeJTRSYOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
         _testCentrifugeOnboarding(
             CENTRIFUGE_JTRSY,
             50_000_000e6,
@@ -56,7 +56,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         );
     }
 
-    function test_blackrockBUIDLOnboarding() public {
+    function test_blackrockBUIDLOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
 
         MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
@@ -75,7 +75,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         _assertRateLimit(depositKey,  0, 0);
         _assertRateLimit(withdrawKey, 0, 0);
 
-        executePayload();
+        executeAllPayloadsAndBridges();
 
         _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
@@ -122,7 +122,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         assertEq(buidl.balanceOf(BUIDL_REDEEM),       buidlRedeemBalance + mintAmount);
     }
 
-    function test_superstateUSTBOnboarding() public {
+    function test_superstateUSTBOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
         // Skip before proper whitelisting is performed
         vm.skip(true);
 
@@ -145,7 +145,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         _assertRateLimit(withdrawKey,       0, 0);
         _assertRateLimit(offchainRedeemKey, 0, 0);
 
-        executePayload();
+        executeAllPayloadsAndBridges();
 
         _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
@@ -194,7 +194,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
         assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
     }
 
-    function test_sparkUSDSTransfers() public {
+    function test_sparkUSDSTransfers() public  onChain(ChainIdUtils.Ethereum()) {
         BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
 
         MainnetController bloomController = MainnetController(BloomContracts.ALM_CONTROLLER);
@@ -208,7 +208,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
 
         _assertRateLimit(sendUsdsToSparkKey, 0, 0);
 
-        executePayload();
+        executeAllPayloadsAndBridges();
 
         _assertRateLimit(sendUsdsToSparkKey, 50_000_000e18, 50_000_000e18 / uint256(1 days));
 

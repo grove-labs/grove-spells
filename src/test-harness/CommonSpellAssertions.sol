@@ -5,18 +5,42 @@ import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 
 import { Ethereum } from "lib/bloom-address-registry/src/Ethereum.sol";
 
+import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
+
 import { SpellRunner } from "./SpellRunner.sol";
 
 abstract contract CommonSpellAssertions is SpellRunner {
-    function test_PayloadBytecodeMatches() public {
-        _assertPayloadBytecodeMatches();
+    function test_ETHEREUM_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Ethereum());
     }
 
-    function _assertPayloadBytecodeMatches() private {
-        address actualPayload = spellMetadata.payload;
+    // ADD MORE CHAINS HERE
+
+    // function test_BASE_PayloadBytecodeMatches() public {
+    //     _assertPayloadBytecodeMatches(ChainIdUtils.Base());
+    // }
+
+    // function test_GNOSIS_PayloadBytecodeMatches() public {
+    //     _assertPayloadBytecodeMatches(ChainIdUtils.Gnosis());
+    // }
+
+    // function test_ARBITRUM_ONE_PayloadBytecodeMatches() public {
+    //     _assertPayloadBytecodeMatches(ChainIdUtils.ArbitrumOne());
+    // }
+
+    // function test_OPTIMISM_PayloadBytecodeMatches() public {
+    //     _assertPayloadBytecodeMatches(ChainIdUtils.Optimism());
+    // }
+
+    // function test_UNICHAIN_PayloadBytecodeMatches() public {
+    //     _assertPayloadBytecodeMatches(ChainIdUtils.Unichain());
+    // }
+
+    function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
+        address actualPayload = chainData[chainId].payload;
         vm.skip(actualPayload == address(0));
         require(_isContract(actualPayload), "PAYLOAD IS NOT A CONTRACT");
-        address expectedPayload = deployPayload();
+        address expectedPayload = deployPayload(chainId);
 
         uint256 expectedBytecodeSize = expectedPayload.code.length;
         uint256 actualBytecodeSize   = actualPayload.code.length;

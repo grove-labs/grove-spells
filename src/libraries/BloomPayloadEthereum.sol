@@ -11,6 +11,15 @@ import { BloomLiquidityLayerHelpers } from "./BloomLiquidityLayerHelpers.sol";
  */
 abstract contract BloomPayloadEthereum {
 
+    // ADD SUPPORTED FOREIGN PAYLOADS HERE
+
+    // These need to be immutable (delegatecall) and can only be set in constructor
+    // address public immutable PAYLOAD_ARBITRUM;
+    // address public immutable PAYLOAD_BASE;
+    // address public immutable PAYLOAD_GNOSIS;
+    // address public immutable PAYLOAD_OPTIMISM;
+    // address public immutable PAYLOAD_UNICHAIN;
+
     function execute() external {
         _execute();
     }
