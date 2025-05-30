@@ -10,3 +10,6 @@
 [submodule "lib/spark-address-registry"]
 	path = lib/spark-address-registry
 	url = https://github.com/sparkdotfi/spark-address-registry
+[submodule "lib/dss-allocator"]
+	path = lib/dss-allocator
+	url = https://github.com/makerdao/dss-allocator
