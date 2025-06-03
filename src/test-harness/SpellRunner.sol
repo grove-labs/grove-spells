@@ -285,30 +285,32 @@ abstract contract SpellRunner is Test {
         for (uint256 i = 0; i < allChains.length; i++) {
             ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
             if (chainId == ChainIdUtils.Ethereum()) continue;  // Don't execute mainnet
-            address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
-            IExecutor executor = chainData[chainId].executor;
-            if (mainnetSpellPayload != address(0)) {
-                // We assume the payload has been queued in the executor (will revert otherwise)
-                chainData[chainId].domain.selectFork();
-                uint256 actionsSetId = executor.actionsSetCount() - 1;
-                uint256 prevTimestamp = block.timestamp;
-                vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
-                executor.execute(actionsSetId);
-                vm.warp(prevTimestamp);
-            } else {
-                // We will simulate execution until the real spell is deployed in the mainnet spell
-                address payload = chainData[chainId].payload;
-                if (payload != address(0)) {
-                    chainData[chainId].domain.selectFork();
-                    vm.prank(address(executor));
-                    executor.executeDelegateCall(
-                        payload,
-                        abi.encodeWithSignature('execute()')
-                    );
 
-                    console.log("simulating execution payload for network: ", chainId.toDomainString());
-                }
-            }
+            // UNCOMMENT AFTER OTHER DOMAINS ARE SET UP
+            // address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
+            // IExecutor executor = chainData[chainId].executor;
+            // if (mainnetSpellPayload != address(0)) {
+            //     // We assume the payload has been queued in the executor (will revert otherwise)
+            //     chainData[chainId].domain.selectFork();
+            //     uint256 actionsSetId = executor.actionsSetCount() - 1;
+            //     uint256 prevTimestamp = block.timestamp;
+            //     vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
+            //     executor.execute(actionsSetId);
+            //     vm.warp(prevTimestamp);
+            // } else {
+            //     // We will simulate execution until the real spell is deployed in the mainnet spell
+            //     address payload = chainData[chainId].payload;
+            //     if (payload != address(0)) {
+            //         chainData[chainId].domain.selectFork();
+            //         vm.prank(address(executor));
+            //         executor.executeDelegateCall(
+            //             payload,
+            //             abi.encodeWithSignature('execute()')
+            //         );
+
+            //         console.log("simulating execution payload for network: ", chainId.toDomainString());
+            //     }
+            // }
 
         }
     }
