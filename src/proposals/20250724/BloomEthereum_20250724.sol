@@ -15,13 +15,13 @@ import { AllocatorVault }  from 'lib/dss-allocator/src/AllocatorVault.sol';
 import { BloomPayloadEthereum } from "src/libraries/BloomPayloadEthereum.sol";
 
 /**
- * @title  June 12, 2025 Bloom Ethereum Proposal
- * @notice Onboarding of Centrifuge JTRSY, Blackrock BUIDL, and Superstate USTB
+ * @title  July 24, 2025 Bloom Ethereum Proposal
+ * @notice Onboarding of Centrifuge JTRSY, Blackrock BUIDL and Superstate USTB; transfer of USDS to Spark
  * @author Steakhouse Financial
  * Forum: TODO: Add link
  * Vote:  TODO: Add link
  */
-contract BloomEthereum_20250612 is BloomPayloadEthereum {
+contract BloomEthereum_20250724 is BloomPayloadEthereum {
 
     address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant BUIDL            = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;

@@ -29,7 +29,7 @@ interface ISuperstateToken is IERC20 {
         external view returns (uint256, uint256, uint256);
 }
 
-contract BloomEthereum_20250612Test is BloomTestBase {
+contract BloomEthereum_20250724Test is BloomTestBase {
 
     address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant BUIDL            = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
@@ -38,7 +38,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     address internal constant BUIDL_ADMIN      = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
 
     constructor() {
-        id = "20250612";
+        id = "20250724";
     }
 
     function setUp() public {
