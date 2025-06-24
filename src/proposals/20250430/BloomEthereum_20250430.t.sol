@@ -3,8 +3,7 @@ pragma solidity ^0.8.10;
 
 import "src/test-harness/BloomTestBase.sol";
 
-import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
-import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
+import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
 import { Ethereum } from "lib/bloom-address-registry/src/Ethereum.sol";
 
@@ -15,7 +14,7 @@ import { MainnetController } from "bloom-alm-controller/src/MainnetController.so
 import { IALMProxy }   from "bloom-alm-controller/src/interfaces/IALMProxy.sol";
 import { IRateLimits } from "bloom-alm-controller/src/interfaces/IRateLimits.sol";
 
-// import { AllocatorVault }  from 'dss-allocator/src/AllocatorVault.sol';
+import { AllocatorVault }  from 'dss-allocator/src/AllocatorVault.sol';
 
 import { BloomLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/BloomLiquidityLayerTests.sol";
 
