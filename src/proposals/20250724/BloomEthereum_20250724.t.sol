@@ -42,8 +42,8 @@ contract BloomEthereum_20250724Test is BloomTestBase {
     }
 
     function setUp() public {
-        // May 29, 2025
-        setupDomain({ mainnetForkBlock: 22587865 });
+        // June 26, 2025
+        setupDomain({ mainnetForkBlock: 22788140 });
         deployPayload();
     }
 
