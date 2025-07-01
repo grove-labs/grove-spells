@@ -31,11 +31,12 @@ interface ISuperstateToken is IERC20 {
 
 contract BloomEthereum_20250724Test is BloomTestBase {
 
-    address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
-    address internal constant BUIDL            = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
-    address internal constant BUIDL_DEPOSIT    = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
-    address internal constant BUIDL_REDEEM     = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
-    address internal constant BUIDL_ADMIN      = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
+    address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
+    address internal constant BUIDL_DEPOSIT           = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
+    address internal constant BUIDL_REDEEM            = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
+    address internal constant BUIDL_ADMIN             = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
+    address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
     constructor() {
         id = "20250724";
@@ -192,6 +193,15 @@ contract BloomEthereum_20250724Test is BloomTestBase {
         // USDC will come back async
         assertApproxEqAbs(usdc.balanceOf(address(ctx.proxy)), mintAmount * 1/100, 100);
         assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
+    }
+
+    function test_morphoSteakhouseVaultOnboarding() public {
+        _testERC4626Onboarding(
+            MORPHO_STEAKHOUSE_VAULT,
+            50_000_000e6,
+            50_000_000e6,
+            50_000_000e6 / uint256(1 days)
+        );
     }
 
 }
