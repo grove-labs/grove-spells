@@ -16,7 +16,7 @@ import { BloomPayloadEthereum } from "src/libraries/BloomPayloadEthereum.sol";
 
 /**
  * @title  July 24, 2025 Bloom Ethereum Proposal
- * @notice Onboarding of Centrifuge JTRSY, Blackrock BUIDL and Superstate USTB; transfer of USDS to Spark
+ * @notice Onboarding of Centrifuge JTRSY and Blackrock BUIDL; transfer of USDS to Spark
  * @author Steakhouse Financial
  * Forum: TODO: Add link
  * Vote:  TODO: Add link
@@ -34,7 +34,6 @@ contract BloomEthereum_20250724 is BloomPayloadEthereum {
     function _execute() internal override {
         _onboardCentrifugeJTRSY();
         _onboardBlackrockBUIDL();
-        _onboardSuperstateUSTB();
         _onboardMorphoSteakhouseVault();
         _sendUSDSToSpark();
     }
@@ -72,39 +71,6 @@ contract BloomEthereum_20250724 is BloomPayloadEthereum {
             BloomContracts.ALM_RATE_LIMITS,
             RateLimitHelpers.unlimitedRateLimit(),
             "buidlBurnLimit",
-            6
-        );
-    }
-
-    function _onboardSuperstateUSTB() private {
-        RateLimitHelpers.setRateLimitData(
-            MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_SUPERSTATE_SUBSCRIBE(),
-            BloomContracts.ALM_RATE_LIMITS,
-            RateLimitData({
-                maxAmount : 50_000_000e6,
-                slope     : 50_000_000e6 / uint256(1 days)
-            }),
-            "ustbMintLimit",
-            6
-        );
-        // Instant liquidity redemption
-        RateLimitHelpers.setRateLimitData(
-            MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_SUPERSTATE_REDEEM(),
-            BloomContracts.ALM_RATE_LIMITS,
-            RateLimitHelpers.unlimitedRateLimit(),
-            "ustbBurnLimit",
-            6
-        );
-        // Offchain redemption
-        RateLimitHelpers.setRateLimitData(
-            RateLimitHelpers.makeAssetDestinationKey(
-                MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-                BloomContracts.USTB,
-                BloomContracts.USTB
-            ),
-            BloomContracts.ALM_RATE_LIMITS,
-            RateLimitHelpers.unlimitedRateLimit(),
-            "ustbOffchainBurnLimit",
             6
         );
     }
