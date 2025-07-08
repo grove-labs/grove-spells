@@ -4,16 +4,16 @@ pragma solidity ^0.8.0;
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { Ethereum } from "bloom-address-registry/Ethereum.sol";
+import { Ethereum } from "grove-address-registry/Ethereum.sol";
 
-import { IALMProxy }         from "bloom-alm-controller/src/interfaces/IALMProxy.sol";
-import { IRateLimits }       from "bloom-alm-controller/src/interfaces/IRateLimits.sol";
-import { MainnetController } from "bloom-alm-controller/src/MainnetController.sol";
-import { RateLimitHelpers }  from "bloom-alm-controller/src/RateLimitHelpers.sol";
+import { IALMProxy }         from "grove-alm-controller/src/interfaces/IALMProxy.sol";
+import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
+import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
-struct BloomLiquidityLayerContext {
+struct GroveLiquidityLayerContext {
     address     controller;
     IALMProxy   proxy;
     IRateLimits rateLimits;
@@ -77,10 +77,10 @@ interface ICentrifugeVault {
     function poolId()    external view returns (uint64);
 }
 
-abstract contract BloomLiquidityLayerTests is SpellRunner {
+abstract contract GroveLiquidityLayerTests is SpellRunner {
 
-    function _getBloomLiquidityLayerContext() internal pure returns(BloomLiquidityLayerContext memory ctx) {
-        ctx = BloomLiquidityLayerContext(
+    function _getGroveLiquidityLayerContext() internal pure returns(GroveLiquidityLayerContext memory ctx) {
+        ctx = GroveLiquidityLayerContext(
             Ethereum.ALM_CONTROLLER,
             IALMProxy(Ethereum.ALM_PROXY),
             IRateLimits(Ethereum.ALM_RATE_LIMITS),
@@ -94,7 +94,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
        uint256 maxAmount,
        uint256 slope
     ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getBloomLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
         assertEq(rateLimit.maxAmount, maxAmount);
         assertEq(rateLimit.slope,     slope);
     }
@@ -102,7 +102,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
    function _assertUnlimitedRateLimit(
        bytes32 key
     ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getBloomLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
         assertEq(rateLimit.maxAmount, type(uint256).max);
         assertEq(rateLimit.slope,     0);
     }
@@ -114,7 +114,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
        uint256 lastAmount,
        uint256 lastUpdated
     ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getBloomLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
         assertEq(rateLimit.maxAmount,   maxAmount);
         assertEq(rateLimit.slope,       slope);
         assertEq(rateLimit.lastAmount,  lastAmount);
@@ -127,7 +127,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
         bool unlimitedDeposit = depositMax == type(uint256).max;
 
         // Note: ERC4626 signature is the same for mainnet and foreign
@@ -195,7 +195,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
         uint256 depositMax,
         uint256 depositSlope
     ) public {
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         address centrifugeInvestmentManager = ICentrifugeVault(centrifugeVault).manager();
         CentrifugeConfig memory centrifugeConfig = CentrifugeConfig({
@@ -281,7 +281,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
         uint256 assetAmount
     ) internal {
         uint128 _assetAmount = uint128(assetAmount);
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         // Fulfill request at price 2.0
         vm.prank(config.centrifugeRoot);
@@ -300,7 +300,7 @@ abstract contract BloomLiquidityLayerTests is SpellRunner {
         uint256 tokenAmount
     ) internal {
         uint128 _tokenAmount = uint128(tokenAmount);
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         // Fulfill request at price 2.0
         vm.prank(config.centrifugeRoot);

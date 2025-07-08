@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import { Test } from "forge-std/Test.sol";
 
-import { Ethereum } from "bloom-address-registry/Ethereum.sol";
+import { Ethereum } from "grove-address-registry/Ethereum.sol";
 
 abstract contract SpellRunner is Test {
 
@@ -19,11 +19,11 @@ abstract contract SpellRunner is Test {
     /// @dev to be called in setUp
     function setupDomain(uint256 mainnetForkBlock) internal {
         vm.createSelectFork(getChain("mainnet").rpcUrl, mainnetForkBlock);
-        spellMetadata.executor = Ethereum.BLOOM_PROXY;
+        spellMetadata.executor = Ethereum.GROVE_PROXY;
     }
 
     function spellIdentifier() private view returns(string memory){
-        string memory slug       = string(abi.encodePacked("BloomEthereum_", id));
+        string memory slug       = string(abi.encodePacked("GroveEthereum_", id));
         string memory identifier = string(abi.encodePacked(slug, ".sol:", slug));
         return identifier;
     }
