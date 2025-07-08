@@ -30,7 +30,7 @@ interface ISuperstateToken is IERC20 {
         external view returns (uint256, uint256, uint256);
 }
 
-contract BloomEthereum_20250612Test is BloomTestBase {
+contract BloomEthereum_20250724Test is BloomTestBase {
 
     address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant BUIDL            = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
@@ -39,7 +39,7 @@ contract BloomEthereum_20250612Test is BloomTestBase {
     address internal constant BUIDL_ADMIN      = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
 
     constructor() {
-        id = "20250612";
+        id = "20250724";
     }
 
     function setUp() public {
@@ -120,78 +120,6 @@ contract BloomEthereum_20250612Test is BloomTestBase {
 
         assertEq(buidl.balanceOf(address(ctx.proxy)), 0);
         assertEq(buidl.balanceOf(BUIDL_REDEEM),       buidlRedeemBalance + mintAmount);
-    }
-
-    function test_superstateUSTBOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
-        // Skip before proper whitelisting is performed
-        vm.skip(true);
-
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
-
-        MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
-
-        IERC20 usdc           = IERC20(BloomContracts.USDC);
-        ISuperstateToken ustb = ISuperstateToken(BloomContracts.USTB);
-
-        bytes32 depositKey        = controller.LIMIT_SUPERSTATE_SUBSCRIBE();
-        bytes32 withdrawKey       = controller.LIMIT_SUPERSTATE_REDEEM();
-        bytes32 offchainRedeemKey = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_ASSET_TRANSFER(),
-            address(ustb),
-            address(ustb)
-        );
-
-        _assertRateLimit(depositKey,        0, 0);
-        _assertRateLimit(withdrawKey,       0, 0);
-        _assertRateLimit(offchainRedeemKey, 0, 0);
-
-        executeAllPayloadsAndBridges();
-
-        _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
-        _assertRateLimit(withdrawKey, type(uint256).max, 0);
-        _assertRateLimit(offchainRedeemKey, type(uint256).max, 0);
-
-        // Line can be raised to 100m, but currently set to 50m and will be raised to 100m automatically when used up
-        uint256 mintAmount = 45_000_000e6;
-        vm.startPrank(ctx.relayer);
-        controller.mintUSDS(mintAmount * 1e12);
-        controller.swapUSDSToUSDC(mintAmount);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)), mintAmount);
-        assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
-
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6);
-
-        (uint256 ustbShares,,) = ustb.calculateSuperstateTokenOut(mintAmount, address(usdc));
-
-        controller.subscribeSuperstate(mintAmount);
-        vm.stopPrank();
-
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6 - mintAmount);
-
-        assertEq(usdc.balanceOf(address(ctx.proxy)), 0);
-        assertEq(ustb.balanceOf(address(ctx.proxy)), ustbShares);
-
-        // Doing a smaller redeem because there is not necessarily enough liquidity
-        vm.prank(ctx.relayer);
-        controller.redeemSuperstate(ustbShares / 100);
-
-        assertApproxEqAbs(usdc.balanceOf(address(ctx.proxy)), mintAmount * 1/100, 100);
-        assertApproxEqAbs(ustb.balanceOf(address(ctx.proxy)), ustbShares * 99/100, 1);
-
-        uint256 totalSupply = ustb.totalSupply();
-
-        // You can always burn the whole amount by doing it offchain
-        uint256 ustbBalance = ustb.balanceOf(address(ctx.proxy));
-        vm.prank(ctx.relayer);
-        controller.transferAsset(address(ustb), address(ustb), ustbBalance);
-
-        // Transferring to token contract burns the amount
-        assertEq(ustb.totalSupply(), totalSupply - ustbBalance);
-
-        // USDC will come back async
-        assertApproxEqAbs(usdc.balanceOf(address(ctx.proxy)), mintAmount * 1/100, 100);
-        assertEq(ustb.balanceOf(address(ctx.proxy)), 0);
     }
 
 }
