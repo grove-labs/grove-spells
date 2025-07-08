@@ -4,12 +4,12 @@ pragma solidity ^0.8.0;
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { RateLimitHelpers, RateLimitData } from "bloom-alm-controller/src/RateLimitHelpers.sol";
+import { RateLimitHelpers, RateLimitData } from "grove-alm-controller/src/RateLimitHelpers.sol";
 
 /**
- * @notice Helper functions for Bloom Liquidity Layer
+ * @notice Helper functions for Grove Liquidity Layer
  */
-library BloomLiquidityLayerHelpers {
+library GroveLiquidityLayerHelpers {
 
     // This is the same on all chains
     address private constant MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
