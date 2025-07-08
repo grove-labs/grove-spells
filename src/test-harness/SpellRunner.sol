@@ -23,7 +23,7 @@ import { Bridge, BridgeType }    from "xchain-helpers/testing/Bridge.sol";
 import { RecordedLogs }          from "xchain-helpers/testing/utils/RecordedLogs.sol";
 
 import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
-import { BloomPayloadEthereum }  from "../libraries/BloomPayloadEthereum.sol";
+import { GrovePayloadEthereum }  from "../libraries/GrovePayloadEthereum.sol";
 
 abstract contract SpellRunner is Test {
     using DomainHelpers for Domain;
@@ -31,17 +31,17 @@ abstract contract SpellRunner is Test {
 
     // ChainData is already taken in StdChains
     struct DomainData {
-        address                        payload;
-        IExecutor                      executor;
-        Domain                         domain;
+        address   payload;
+        IExecutor executor;
+        Domain    domain;
         /// @notice on mainnet: empty
         /// on L2s: bridges that'll include txs in the L2. there can be multiple
         /// bridges for a given chain, such as canonical OP bridge and CCTP
         /// USDC-specific bridge
-        Bridge[]                       bridges;
+        Bridge[]  bridges;
         // These are set only if there is a controller upgrade on this chain in this spell
-        address                        prevController;
-        address                        newController;
+        address   prevController;
+        address   newController;
     }
 
     mapping(ChainId => DomainData) internal chainData;
@@ -141,14 +141,14 @@ abstract contract SpellRunner is Test {
         // We default to Ethereum domain
         chainData[ChainIdUtils.Ethereum()].domain.selectFork();
 
-        chainData[ChainIdUtils.Ethereum()].executor = IExecutor(Ethereum.BLOOM_PROXY);
+        chainData[ChainIdUtils.Ethereum()].executor = IExecutor(Ethereum.GROVE_PROXY);
 
         // DEFINE FOREIGN EXECUTORS HERE
-        // chainData[ChainIdUtils.Base()].executor        = IExecutor(Base.BLOOM_EXECUTOR);
-        // chainData[ChainIdUtils.Gnosis()].executor      = IExecutor(Gnosis.BLOOM_EXECUTOR);
-        // chainData[ChainIdUtils.ArbitrumOne()].executor = IExecutor(Arbitrum.BLOOM_EXECUTOR);
-        // chainData[ChainIdUtils.Optimism()].executor    = IExecutor(Optimism.BLOOM_EXECUTOR);
-        // chainData[ChainIdUtils.Unichain()].executor    = IExecutor(Unichain.BLOOM_EXECUTOR);
+        // chainData[ChainIdUtils.Base()].executor        = IExecutor(Base.GROVE_EXECUTOR);
+        // chainData[ChainIdUtils.Gnosis()].executor      = IExecutor(Gnosis.GROVE_EXECUTOR);
+        // chainData[ChainIdUtils.ArbitrumOne()].executor = IExecutor(Arbitrum.GROVE_EXECUTOR);
+        // chainData[ChainIdUtils.Optimism()].executor    = IExecutor(Optimism.GROVE_EXECUTOR);
+        // chainData[ChainIdUtils.Unichain()].executor    = IExecutor(Unichain.GROVE_EXECUTOR);
 
         // CREATE BRIDGES HERE
 
@@ -226,7 +226,7 @@ abstract contract SpellRunner is Test {
     }
 
     function spellIdentifier(ChainId chainId) private view returns(string memory) {
-        string memory slug       = string(abi.encodePacked("Bloom", chainId.toDomainString(), "_", id));
+        string memory slug       = string(abi.encodePacked("Grove", chainId.toDomainString(), "_", id));
         string memory identifier = string(abi.encodePacked(slug, ".sol:", slug));
         return identifier;
     }
@@ -319,7 +319,7 @@ abstract contract SpellRunner is Test {
 
         // RETURN PAYLOAD ADDRESSES FROM THE MAINNET SPELL HERE
 
-        // BloomPayloadEthereum spell = BloomPayloadEthereum(chainData[ChainIdUtils.Ethereum()].payload);
+        // GrovePayloadEthereum spell = GrovePayloadEthereum(chainData[ChainIdUtils.Ethereum()].payload);
         // if (chainId == ChainIdUtils.Base()) {
         //     return spell.PAYLOAD_BASE();
         // } else if (chainId == ChainIdUtils.Gnosis()) {
