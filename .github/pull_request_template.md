@@ -1,4 +1,4 @@
-# YYYY-MM-DD Bloom Spell
+# YYYY-MM-DD Grove Spell
 
 ## Forum Post
 
