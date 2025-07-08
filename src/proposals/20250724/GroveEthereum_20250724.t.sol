@@ -3,18 +3,18 @@ pragma solidity ^0.8.10;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { Ethereum as BloomContracts } from "lib/bloom-address-registry/src/Ethereum.sol";
+import { Ethereum as GroveContracts } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
 
-import { MainnetController } from "lib/bloom-alm-controller/src/MainnetController.sol";
-import { RateLimitHelpers }  from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { IRateLimits } from "lib/bloom-alm-controller/src/interfaces/IRateLimits.sol";
+import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
 
-import { BloomLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/BloomLiquidityLayerTests.sol";
+import { GroveLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/GroveLiquidityLayerTests.sol";
 
-import "src/test-harness/BloomTestBase.sol";
+import "src/test-harness/GroveTestBase.sol";
 
 interface IBuidlLike is IERC20 {
     function issueTokens(address to, uint256 amount) external;
@@ -29,7 +29,7 @@ interface ISuperstateToken is IERC20 {
         external view returns (uint256, uint256, uint256);
 }
 
-contract BloomEthereum_20250724Test is BloomTestBase {
+contract GroveEthereum_20250724Test is GroveTestBase {
 
     address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
@@ -58,13 +58,13 @@ contract BloomEthereum_20250724Test is BloomTestBase {
     }
 
     function test_blackrockBUIDLOnboarding() public {
-        BloomLiquidityLayerContext memory ctx = _getBloomLiquidityLayerContext();
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        MainnetController controller = MainnetController(BloomContracts.ALM_CONTROLLER);
+        MainnetController controller = MainnetController(GroveContracts.ALM_CONTROLLER);
 
         bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
             controller.LIMIT_ASSET_TRANSFER(),
-            BloomContracts.USDC,
+            GroveContracts.USDC,
             BUIDL_DEPOSIT
         );
         bytes32 withdrawKey = RateLimitHelpers.makeAssetDestinationKey(
@@ -81,7 +81,7 @@ contract BloomEthereum_20250724Test is BloomTestBase {
         _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
 
-        IERC20 usdc  = IERC20(BloomContracts.USDC);
+        IERC20 usdc  = IERC20(GroveContracts.USDC);
         IERC20 buidl = IERC20(BUIDL);
 
         // Line can be raised to 100m, but currently set to 50m and will be raised to 100m automatically when used up

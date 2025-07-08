@@ -3,25 +3,25 @@ pragma solidity ^0.8.25;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { Ethereum as BloomContracts } from "lib/bloom-address-registry/src/Ethereum.sol";
+import { Ethereum as GroveContracts } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
 
-import { MainnetController }               from "lib/bloom-alm-controller/src/MainnetController.sol";
-import { RateLimitHelpers, RateLimitData } from "lib/bloom-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetController }               from "lib/grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers, RateLimitData } from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { AllocatorBuffer } from 'lib/dss-allocator/src/AllocatorBuffer.sol';
 import { AllocatorVault }  from 'lib/dss-allocator/src/AllocatorVault.sol';
 
-import { BloomPayloadEthereum } from "src/libraries/BloomPayloadEthereum.sol";
+import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
 
 /**
- * @title  July 24, 2025 Bloom Ethereum Proposal
+ * @title  July 24, 2025 Grove Ethereum Proposal
  * @notice Onboarding of Centrifuge JTRSY and Blackrock BUIDL; transfer of USDS to Spark
  * @author Steakhouse Financial
  * Forum: TODO: Add link
  * Vote:  TODO: Add link
  */
-contract BloomEthereum_20250724 is BloomPayloadEthereum {
+contract GroveEthereum_20250724 is GrovePayloadEthereum {
 
     address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
@@ -49,11 +49,11 @@ contract BloomEthereum_20250724 is BloomPayloadEthereum {
     function _onboardBlackrockBUIDL() private {
         RateLimitHelpers.setRateLimitData(
             RateLimitHelpers.makeAssetDestinationKey(
-                MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-                BloomContracts.USDC,
+                MainnetController(GroveContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+                GroveContracts.USDC,
                 BUIDL_DEPOSIT
             ),
-            BloomContracts.ALM_RATE_LIMITS,
+            GroveContracts.ALM_RATE_LIMITS,
             RateLimitData({
                 maxAmount : 50_000_000e6,
                 slope     : 50_000_000e6 / uint256(1 days)
@@ -64,11 +64,11 @@ contract BloomEthereum_20250724 is BloomPayloadEthereum {
 
         RateLimitHelpers.setRateLimitData(
             RateLimitHelpers.makeAssetDestinationKey(
-                MainnetController(BloomContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+                MainnetController(GroveContracts.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
                 BUIDL,
                 BUIDL_REDEEM
             ),
-            BloomContracts.ALM_RATE_LIMITS,
+            GroveContracts.ALM_RATE_LIMITS,
             RateLimitHelpers.unlimitedRateLimit(),
             "buidlBurnLimit",
             6
@@ -84,9 +84,9 @@ contract BloomEthereum_20250724 is BloomPayloadEthereum {
     }
 
     function _sendUSDSToSpark() private {
-        AllocatorVault(BloomContracts.ALLOCATOR_VAULT).draw(USDS_MINT_AMOUNT);
-        AllocatorBuffer(BloomContracts.ALLOCATOR_BUFFER).approve(BloomContracts.USDS, address(this), USDS_MINT_AMOUNT);
-        IERC20(BloomContracts.USDS).transferFrom(BloomContracts.ALLOCATOR_BUFFER, SparkContracts.ALLOCATOR_BUFFER, USDS_MINT_AMOUNT);
+        AllocatorVault(GroveContracts.ALLOCATOR_VAULT).draw(USDS_MINT_AMOUNT);
+        AllocatorBuffer(GroveContracts.ALLOCATOR_BUFFER).approve(GroveContracts.USDS, address(this), USDS_MINT_AMOUNT);
+        IERC20(GroveContracts.USDS).transferFrom(GroveContracts.ALLOCATOR_BUFFER, SparkContracts.ALLOCATOR_BUFFER, USDS_MINT_AMOUNT);
     }
 
 }
