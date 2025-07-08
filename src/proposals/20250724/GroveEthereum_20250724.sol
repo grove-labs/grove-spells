@@ -29,7 +29,7 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
     address internal constant BUIDL_REDEEM            = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
-    uint256 internal constant USDS_MINT_AMOUNT = 1_000_000e18; // TODO: Add the actual amount
+    uint256 internal constant USDS_MINT_AMOUNT = 1_209_000_000e18; // TODO: Add the actual amount
 
     function _execute() internal override {
         _onboardCentrifugeJTRSY();

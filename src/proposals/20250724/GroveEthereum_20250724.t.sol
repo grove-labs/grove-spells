@@ -2,6 +2,7 @@
 pragma solidity ^0.8.10;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+import { console } from "forge-std/console.sol";
 
 import { Ethereum as GroveContracts } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
@@ -29,6 +30,18 @@ interface ISuperstateToken is IERC20 {
         external view returns (uint256, uint256, uint256);
 }
 
+interface IVatLike {
+    function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256);
+    function Line() external view returns (uint256);
+    function file(bytes32, uint256) external;
+    function file(bytes32, bytes32, uint256) external;
+}
+
+interface AutoLineLike {
+    function exec(bytes32) external;
+    function ilks(bytes32) external view returns (uint256, uint256, uint48, uint48, uint48);
+}
+
 contract GroveEthereum_20250724Test is GroveTestBase {
 
     address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
@@ -38,14 +51,31 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     address internal constant BUIDL_ADMIN             = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
+    bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
+
+    uint256 internal constant USDS_MINT_AMOUNT = 1_209_000_000e18; // TODO: Add the actual amount
+    uint256 internal constant RAY = 10 ** 27;
+
+    IVatLike vat = IVatLike(GroveContracts.VAT);
+
     constructor() {
         id = "20250724";
     }
 
     function setUp() public {
-        // June 26, 2025
-        setupDomain({ mainnetForkBlock: 22788140 });
+        // July 8, 2025
+        setupDomain({ mainnetForkBlock: 22875932 });
         deployPayload();
+
+        (uint256 currentArt,,, uint256 currentLine,) = vat.ilks(ALLOCATOR_ILK);
+
+        uint256 neededLine = (currentArt + USDS_MINT_AMOUNT) * RAY;
+
+        // Sky PAUSE_PROXY sets line to allow for the mint
+        vm.startPrank(GroveContracts.PAUSE_PROXY);
+        vat.file(ALLOCATOR_ILK, "line", neededLine);
+        vat.file("Line", vat.Line() - currentLine + neededLine);
+        vm.stopPrank();
     }
 
     function test_centrifugeJTRSYOnboarding() public {
@@ -77,6 +107,8 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         _assertRateLimit(withdrawKey, 0, 0);
 
         executePayload();
+
+        AutoLineLike(GroveContracts.AUTO_LINE).exec(ALLOCATOR_ILK);
 
         _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
@@ -130,6 +162,28 @@ contract GroveEthereum_20250724Test is GroveTestBase {
             50_000_000e6,
             50_000_000e6 / uint256(1 days)
         );
+    }
+
+    function test_sendUSDSToSpark() public {
+        (uint256 beforeMintArt,,, uint256 beforeMintLine,) = vat.ilks(ALLOCATOR_ILK);
+
+        // Mint USDS
+        executePayload();
+
+        (uint256 afterMintArt,,, uint256 afterMintLine,) = vat.ilks(ALLOCATOR_ILK);
+
+        // Ensure line stays the same and art increases by the mint amount
+        assertEq(afterMintArt, beforeMintArt + USDS_MINT_AMOUNT);
+        assertEq(afterMintLine, beforeMintLine);
+
+        AutoLineLike(GroveContracts.AUTO_LINE).exec(ALLOCATOR_ILK);
+
+        (,,, uint256 afterExecLine,) = vat.ilks(ALLOCATOR_ILK);
+
+        (,uint256 gap,,,) = AutoLineLike(GroveContracts.AUTO_LINE).ilks(ALLOCATOR_ILK);
+
+        // Ensure line increases by the gap after the mint
+        assertEq(afterExecLine, afterMintLine + gap);
     }
 
 }
