@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 
-import { Ethereum } from "lib/bloom-address-registry/src/Ethereum.sol";
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
 

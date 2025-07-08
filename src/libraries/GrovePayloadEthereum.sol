@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Ethereum } from "lib/bloom-address-registry/src/Ethereum.sol";
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
-import { BloomLiquidityLayerHelpers } from "./BloomLiquidityLayerHelpers.sol";
+import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
 
 /**
  * @dev Base smart contract for Ethereum.
  * @author Steakhouse Financial
  */
-abstract contract BloomPayloadEthereum {
+abstract contract GrovePayloadEthereum {
 
     // ADD SUPPORTED FOREIGN PAYLOADS HERE
 
@@ -27,7 +27,7 @@ abstract contract BloomPayloadEthereum {
     function _execute() internal virtual;
 
     function _onboardERC4626Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
-        BloomLiquidityLayerHelpers.onboardERC4626Vault(
+        GroveLiquidityLayerHelpers.onboardERC4626Vault(
             Ethereum.ALM_RATE_LIMITS,
             vault,
             depositMax,
@@ -36,7 +36,7 @@ abstract contract BloomPayloadEthereum {
     }
 
     function _onboardERC7540Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
-        BloomLiquidityLayerHelpers.onboardERC7540Vault(
+        GroveLiquidityLayerHelpers.onboardERC7540Vault(
             Ethereum.ALM_RATE_LIMITS,
             vault,
             depositMax,
@@ -45,7 +45,7 @@ abstract contract BloomPayloadEthereum {
     }
 
     function _setUSDSMintRateLimit(uint256 maxAmount, uint256 slope) internal {
-        BloomLiquidityLayerHelpers.setUSDSMintRateLimit(
+        GroveLiquidityLayerHelpers.setUSDSMintRateLimit(
             Ethereum.ALM_RATE_LIMITS,
             maxAmount,
             slope
@@ -53,7 +53,7 @@ abstract contract BloomPayloadEthereum {
     }
 
     function _setUSDSToUSDCRateLimit(uint256 maxAmount, uint256 slope) internal {
-        BloomLiquidityLayerHelpers.setUSDSToUSDCRateLimit(
+        GroveLiquidityLayerHelpers.setUSDSToUSDCRateLimit(
             Ethereum.ALM_RATE_LIMITS,
             maxAmount,
             slope

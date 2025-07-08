@@ -5,14 +5,14 @@ import { Test }      from "forge-std/Test.sol";
 import { StdChains } from "forge-std/StdChains.sol";
 import { console }   from "forge-std/console.sol";
 
-import { Ethereum } from 'bloom-address-registry/Ethereum.sol';
-// import { Arbitrum } from 'bloom-address-registry/Arbitrum.sol';
-// import { Base }     from 'bloom-address-registry/Base.sol';
-// import { Gnosis }   from 'bloom-address-registry/Gnosis.sol';
-// import { Optimism } from 'bloom-address-registry/Optimism.sol';
-// import { Unichain } from 'bloom-address-registry/Unichain.sol';
+import { Ethereum } from 'grove-address-registry/Ethereum.sol';
+// import { Arbitrum } from 'grove-address-registry/Arbitrum.sol';
+// import { Base }     from 'grove-address-registry/Base.sol';
+// import { Gnosis }   from 'grove-address-registry/Gnosis.sol';
+// import { Optimism } from 'grove-address-registry/Optimism.sol';
+// import { Unichain } from 'grove-address-registry/Unichain.sol';
 
-import { IExecutor } from 'lib/bloom-gov-relay/src/interfaces/IExecutor.sol';
+import { IExecutor } from 'lib/grove-gov-relay/src/interfaces/IExecutor.sol';
 
 import { Domain, DomainHelpers } from "xchain-helpers/testing/Domain.sol";
 import { OptimismBridgeTesting } from "xchain-helpers/testing/bridges/OptimismBridgeTesting.sol";
