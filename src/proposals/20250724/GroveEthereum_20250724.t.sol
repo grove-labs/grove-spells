@@ -54,7 +54,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
     bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
-    uint256 internal constant JTRSY_USDS_MINT_AMOUNT = 404_000_000e18; // TODO: Add the actual amount
+    uint256 internal constant JTRSY_USDS_MINT_AMOUNT = 404_057_823e18;
     uint256 internal constant RAY = 10 ** 27;
 
     IVatLike vat = IVatLike(GroveContracts.VAT);
