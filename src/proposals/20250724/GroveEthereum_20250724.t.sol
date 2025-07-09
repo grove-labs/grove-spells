@@ -54,10 +54,12 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
     bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
-    uint256 internal constant USDS_MINT_AMOUNT = 1_209_000_000e18; // TODO: Add the actual amount
+    uint256 internal constant JTRSY_USDS_MINT_AMOUNT = 404_000_000e18; // TODO: Add the actual amount
     uint256 internal constant RAY = 10 ** 27;
 
     IVatLike vat = IVatLike(GroveContracts.VAT);
+
+    uint256 totalUsdsMintAmount;
 
     constructor() {
         id = "20250724";
@@ -70,7 +72,11 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
         (uint256 currentArt,,,,) = vat.ilks(ALLOCATOR_ILK);
 
-        uint256 neededLine = (currentArt + USDS_MINT_AMOUNT) * RAY;
+        uint256 buidlUsdsMintAmount = IERC20(BUIDL).balanceOf(SparkContracts.ALM_PROXY) * 1e12;
+
+        totalUsdsMintAmount = buidlUsdsMintAmount + JTRSY_USDS_MINT_AMOUNT;
+
+        uint256 neededLine = (currentArt + totalUsdsMintAmount) * RAY;
 
         // Sky PAUSE_PROXY sets line to allow for the mint
         vm.startPrank(GroveContracts.PAUSE_PROXY);
@@ -188,7 +194,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         (uint256 afterMintArt,,, uint256 afterMintLine,) = vat.ilks(ALLOCATOR_ILK);
 
         // Assert line stays the same and art increases by the mint amount
-        assertEq(afterMintArt,  beforeMintArt + USDS_MINT_AMOUNT);
+        assertEq(afterMintArt,  beforeMintArt + totalUsdsMintAmount);
         assertEq(afterMintLine, beforeMintLine);
 
         // Assert Grove proxy has all of the BUIDL and JTRSY from Spark
