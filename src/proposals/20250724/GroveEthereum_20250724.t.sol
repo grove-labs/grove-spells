@@ -45,6 +45,7 @@ interface AutoLineLike {
 contract GroveEthereum_20250724Test is GroveTestBase {
 
     address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant CENTRIFUGE_JTRSY_SHARES = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
     address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
     address internal constant BUIDL_DEPOSIT           = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
     address internal constant BUIDL_REDEEM            = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
@@ -67,14 +68,13 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         setupDomain({ mainnetForkBlock: 22875932 });
         deployPayload();
 
-        (uint256 currentArt,,, uint256 currentLine,) = vat.ilks(ALLOCATOR_ILK);
+        (uint256 currentArt,,,,) = vat.ilks(ALLOCATOR_ILK);
 
         uint256 neededLine = (currentArt + USDS_MINT_AMOUNT) * RAY;
 
         // Sky PAUSE_PROXY sets line to allow for the mint
         vm.startPrank(GroveContracts.PAUSE_PROXY);
         vat.file(ALLOCATOR_ILK, "line", neededLine);
-        vat.file("Line", vat.Line() - currentLine + neededLine);
         vm.stopPrank();
     }
 
@@ -165,24 +165,48 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     }
 
     function test_sendUSDSToSpark() public {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
         (uint256 beforeMintArt,,, uint256 beforeMintLine,) = vat.ilks(ALLOCATOR_ILK);
 
-        // Mint USDS
+        uint256 totalSparkJtrsyBalance = IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(SparkContracts.ALM_PROXY);
+        uint256 totalSparkBuidlBalance = IERC20(                  BUIDL).balanceOf(SparkContracts.ALM_PROXY);
+
+        // Assert Grove proxy has no BUIDL or JTRSY
+        assertEq(IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(address(ctx.proxy)), 0);
+        assertEq(IERC20(                  BUIDL).balanceOf(address(ctx.proxy)), 0);
+
+        // Mint USDS and send to Spark
         executePayload();
+
+        // Spark sends BUIDL and JTRSY to Grove proxy
+        vm.startPrank(SparkContracts.ALM_PROXY);
+        IERC20(CENTRIFUGE_JTRSY_SHARES).transfer(address(ctx.proxy), totalSparkJtrsyBalance);
+        IERC20(                  BUIDL).transfer(address(ctx.proxy), totalSparkBuidlBalance);
+        vm.stopPrank();
 
         (uint256 afterMintArt,,, uint256 afterMintLine,) = vat.ilks(ALLOCATOR_ILK);
 
-        // Ensure line stays the same and art increases by the mint amount
-        assertEq(afterMintArt, beforeMintArt + USDS_MINT_AMOUNT);
+        // Assert line stays the same and art increases by the mint amount
+        assertEq(afterMintArt,  beforeMintArt + USDS_MINT_AMOUNT);
         assertEq(afterMintLine, beforeMintLine);
 
+        // Assert Grove proxy has all of the BUIDL and JTRSY from Spark
+        assertEq(IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(address(ctx.proxy)), totalSparkJtrsyBalance);
+        assertEq(IERC20(                  BUIDL).balanceOf(address(ctx.proxy)), totalSparkBuidlBalance);
+
+        // Assert Spark has no BUIDL or JTRSY
+        assertEq(IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(SparkContracts.ALM_PROXY), 0);
+        assertEq(IERC20(                  BUIDL).balanceOf(SparkContracts.ALM_PROXY), 0);
+
+        // AutoLine raises the line to the gap
         AutoLineLike(GroveContracts.AUTO_LINE).exec(ALLOCATOR_ILK);
 
         (,,, uint256 afterExecLine,) = vat.ilks(ALLOCATOR_ILK);
 
         (,uint256 gap,,,) = AutoLineLike(GroveContracts.AUTO_LINE).ilks(ALLOCATOR_ILK);
 
-        // Ensure line increases by the gap after the mint
+        // Assert line increases by the gap after the mint
         assertEq(afterExecLine, afterMintLine + gap);
     }
 
