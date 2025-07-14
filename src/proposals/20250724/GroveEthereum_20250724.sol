@@ -34,7 +34,6 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
     function _execute() internal override {
         _onboardCentrifugeJTRSY();
         _onboardBlackrockBUIDL();
-        _onboardMorphoSteakhouseVault();
         _sendUSDSToSpark();
     }
 
@@ -72,14 +71,6 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
             RateLimitHelpers.unlimitedRateLimit(),
             "buidlBurnLimit",
             6
-        );
-    }
-
-    function _onboardMorphoSteakhouseVault() private {
-        _onboardERC4626Vault(
-            MORPHO_STEAKHOUSE_VAULT,
-            50_000_000e6,
-            50_000_000e6 / uint256(1 days)
         );
     }
 

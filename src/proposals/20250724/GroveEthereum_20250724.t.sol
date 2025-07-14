@@ -161,15 +161,6 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         assertEq(buidl.balanceOf(BUIDL_REDEEM),       buidlRedeemBalance + mintAmount);
     }
 
-    function test_morphoSteakhouseVaultOnboarding() public {
-        _testERC4626Onboarding(
-            MORPHO_STEAKHOUSE_VAULT,
-            50_000_000e6,
-            50_000_000e6,
-            50_000_000e6 / uint256(1 days)
-        );
-    }
-
     function test_sendUSDSToSpark() public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
