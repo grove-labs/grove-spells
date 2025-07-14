@@ -19,7 +19,7 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  * @notice Onboarding of Centrifuge JTRSY and Blackrock BUIDL; transfer of USDS to Spark
  * @author Steakhouse Financial
  * Forum: https://forum.sky.money/t/tokenized-t-bills-transfer-from-spark-to-grove/26785
- * Vote:  TODO: Add link
+ * Vote:  https://vote.sky.money/polling/Qme5qebN
  */
 contract GroveEthereum_20250724 is GrovePayloadEthereum {
 
