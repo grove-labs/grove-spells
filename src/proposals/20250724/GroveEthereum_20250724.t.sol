@@ -169,12 +169,18 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         uint256 totalSparkJtrsyBalance = IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(SparkContracts.ALM_PROXY);
         uint256 totalSparkBuidlBalance = IERC20(                  BUIDL).balanceOf(SparkContracts.ALM_PROXY);
 
+        uint256 beforeSparkProxyUsdsBalance = IERC20(GroveContracts.USDS).balanceOf(SparkContracts.ALM_PROXY);
+
         // Assert Grove proxy has no BUIDL or JTRSY
         assertEq(IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(address(ctx.proxy)), 0);
         assertEq(IERC20(                  BUIDL).balanceOf(address(ctx.proxy)), 0);
 
         // Mint USDS and send to Spark
         executePayload();
+
+        // Assert Spark ALM Proxy received the minted USDS
+        uint256 afterSparkProxyUsdsBalance = IERC20(GroveContracts.USDS).balanceOf(SparkContracts.ALM_PROXY);
+        assertEq(afterSparkProxyUsdsBalance, beforeSparkProxyUsdsBalance + totalUsdsMintAmount);
 
         // Spark sends BUIDL and JTRSY to Grove proxy
         vm.startPrank(SparkContracts.ALM_PROXY);

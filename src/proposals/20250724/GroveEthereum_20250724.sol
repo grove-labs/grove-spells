@@ -80,7 +80,7 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
 
         AllocatorVault(GroveContracts.ALLOCATOR_VAULT).draw(totalUsdsMintAmount);
         AllocatorBuffer(GroveContracts.ALLOCATOR_BUFFER).approve(GroveContracts.USDS, address(this), totalUsdsMintAmount);
-        IERC20(GroveContracts.USDS).transferFrom(GroveContracts.ALLOCATOR_BUFFER, SparkContracts.ALLOCATOR_BUFFER, totalUsdsMintAmount);
+        IERC20(GroveContracts.USDS).transferFrom(GroveContracts.ALLOCATOR_BUFFER, SparkContracts.ALM_PROXY, totalUsdsMintAmount);
     }
 
 }
