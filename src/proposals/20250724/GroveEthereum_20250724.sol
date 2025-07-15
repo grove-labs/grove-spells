@@ -18,8 +18,9 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  * @title  July 24, 2025 Grove Ethereum Proposal
  * @notice Onboarding of Centrifuge JTRSY and Blackrock BUIDL; transfer of USDS to Spark
  * @author Steakhouse Financial
- * Forum: https://forum.sky.money/t/tokenized-t-bills-transfer-from-spark-to-grove/26785
- * Vote:  https://vote.sky.money/polling/Qme5qebN
+ * Forum (JTRSY and BUIDL onboarding): https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805:
+ * Forum (Transfer of USDS to Spark):  https://forum.sky.money/t/tokenized-t-bills-transfer-from-spark-to-grove/26785
+ * Vote: https://vote.sky.money/polling/Qme5qebN
  */
 contract GroveEthereum_20250724 is GrovePayloadEthereum {
 
