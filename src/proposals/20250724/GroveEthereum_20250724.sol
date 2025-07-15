@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.25;
+pragma solidity 0.8.25;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
@@ -30,18 +30,27 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
     uint256 internal constant JTRSY_USDS_MINT_AMOUNT = 404_016_484e18;
+    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant BUIDL_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant BUIDL_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function _execute() internal override {
+        // Onboard Centrifuge JTRSY - set rate limit for deposits and unlimited rate limit for withdrawals
         _onboardCentrifugeJTRSY();
+
+        // Onboard Blackrock BUIDL - set rate limit for deposits and unlimited rate limit for withdrawals
         _onboardBlackrockBUIDL();
+
+        // Send USDS to Spark ALM Proxy as a payment for the JTRSY and BUIDL assets sent to Grove in the following Spark Spell
         _sendUSDSToSpark();
     }
 
     function _onboardCentrifugeJTRSY() private {
         _onboardERC7540Vault(
             CENTRIFUGE_JTRSY,
-            50_000_000e6,
-            50_000_000e6 / uint256(1 days)
+            JTRSY_RATE_LIMIT_MAX,
+            JTRSY_RATE_LIMIT_SLOPE
         );
     }
 
@@ -54,8 +63,8 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
             ),
             GroveContracts.ALM_RATE_LIMITS,
             RateLimitData({
-                maxAmount : 50_000_000e6,
-                slope     : 50_000_000e6 / uint256(1 days)
+                maxAmount : BUIDL_RATE_LIMIT_MAX,
+                slope     : BUIDL_RATE_LIMIT_SLOPE
             }),
             "buidlMintLimit",
             6
