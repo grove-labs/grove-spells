@@ -55,6 +55,11 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
     uint256 internal constant JTRSY_USDS_MINT_AMOUNT = 404_016_484e18;
+    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant BUIDL_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant BUIDL_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
     uint256 internal constant RAY = 10 ** 27;
 
     IVatLike vat = IVatLike(GroveContracts.VAT);
@@ -85,12 +90,12 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     }
 
     function test_centrifugeJTRSYOnboarding() public {
-        _testCentrifugeOnboarding(
-            CENTRIFUGE_JTRSY,
-            50_000_000e6,
-            50_000_000e6,
-            50_000_000e6 / uint256(1 days)
-        );
+        _testCentrifugeOnboarding({
+            centrifugeVault:       CENTRIFUGE_JTRSY,
+            expectedDepositAmount: 50_000_000e6,
+            depositMax:            JTRSY_RATE_LIMIT_MAX,
+            depositSlope:          JTRSY_RATE_LIMIT_SLOPE
+        });
     }
 
     function test_blackrockBUIDLOnboarding() public {
@@ -116,7 +121,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
         AutoLineLike(GroveContracts.AUTO_LINE).exec(ALLOCATOR_ILK);
 
-        _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
+        _assertRateLimit(depositKey, BUIDL_RATE_LIMIT_MAX, BUIDL_RATE_LIMIT_SLOPE);
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
 
         IERC20 usdc  = IERC20(GroveContracts.USDC);
@@ -134,7 +139,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         assertEq(usdc.balanceOf(address(ctx.proxy)), mintAmount);
         assertEq(usdc.balanceOf(BUIDL_DEPOSIT),      buidlDepositBalance);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), BUIDL_RATE_LIMIT_MAX);
 
         controller.transferAsset(address(usdc), BUIDL_DEPOSIT, mintAmount);
         vm.stopPrank();
@@ -144,7 +149,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
         assertEq(buidl.balanceOf(address(ctx.proxy)), 0);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6 - mintAmount);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), BUIDL_RATE_LIMIT_MAX - mintAmount);
 
         // Emulate BUIDL deposit
         vm.startPrank(BUIDL_ADMIN);
