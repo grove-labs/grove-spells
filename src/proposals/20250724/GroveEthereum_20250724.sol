@@ -37,13 +37,19 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
     uint256 internal constant BUIDL_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function _execute() internal override {
-        // Onboard Centrifuge JTRSY - set rate limit for deposits and unlimited rate limit for withdrawals
+        // ---------- Grove Liquidity Layer - Onboard Centrifuge JTRSY ----------
+        // Forum: https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
+        // Poll: TODO
         _onboardCentrifugeJTRSY();
 
-        // Onboard Blackrock BUIDL - set rate limit for deposits and unlimited rate limit for withdrawals
+        // ---------- Grove Liquidity Layer - Onboard BlackRock BUIDL-I ----------
+        // Forum: https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
+        // Poll: TODO
         _onboardBlackrockBUIDL();
 
-        // Send USDS to Spark ALM Proxy as a payment for the JTRSY and BUIDL assets sent to Grove in the following Spark Spell
+        // ---------- Mint USDS for BUIDL and JTRSY tokens and send it to Spark Allocator Buffer ----------
+        // Forum: https://forum.sky.money/t/july-24-2025-proposed-changes-to-spark-for-upcoming-spell/26796
+        // Poll: https://vote.sky.money/polling/Qme5qebN
         _sendUSDSToSpark();
     }
 
