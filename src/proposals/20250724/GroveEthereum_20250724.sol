@@ -18,9 +18,10 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  * @title  July 24, 2025 Grove Ethereum Proposal
  * @notice Onboarding of Centrifuge JTRSY and Blackrock BUIDL; transfer of USDS to Spark
  * @author Steakhouse Financial
- * Forum (JTRSY and BUIDL onboarding): https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805:
- * Forum (Transfer of USDS to Spark):  https://forum.sky.money/t/tokenized-t-bills-transfer-from-spark-to-grove/26785
- * Vote: https://vote.sky.money/polling/Qme5qebN
+ * Forum (JTRSY and BUIDL onboarding) : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805:
+ * Forum (Transfer of USDS to Spark)  : https://forum.sky.money/t/tokenized-t-bills-transfer-from-spark-to-grove/26785
+ * Vote (JTRSY and BUIDL onboarding)  : TODO
+ * Vote (Transfer of USDS to Spark)   : https://vote.sky.money/polling/Qme5qebN
  */
 contract GroveEthereum_20250724 is GrovePayloadEthereum {
 
@@ -38,18 +39,18 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // ---------- Grove Liquidity Layer - Onboard Centrifuge JTRSY ----------
-        // Forum: https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
-        // Poll: TODO
+        // Forum : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
+        // Poll  : TODO
         _onboardCentrifugeJTRSY();
 
         // ---------- Grove Liquidity Layer - Onboard BlackRock BUIDL-I ----------
-        // Forum: https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
-        // Poll: TODO
+        // Forum : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
+        // Poll  : TODO
         _onboardBlackrockBUIDL();
 
         // ---------- Mint USDS for BUIDL and JTRSY tokens and send it to Spark Allocator Buffer ----------
-        // Forum: https://forum.sky.money/t/july-24-2025-proposed-changes-to-spark-for-upcoming-spell/26796
-        // Poll: https://vote.sky.money/polling/Qme5qebN
+        // Forum : https://forum.sky.money/t/july-24-2025-proposed-changes-to-spark-for-upcoming-spell/26796
+        // Poll  : https://vote.sky.money/polling/Qme5qebN
         _sendUSDSToSpark();
     }
 
