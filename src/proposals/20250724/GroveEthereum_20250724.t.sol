@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.10;
+pragma solidity 0.8.25;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+import { console } from "forge-std/console.sol";
 
 import { Ethereum as GroveContracts } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
@@ -30,31 +31,71 @@ interface ISuperstateToken is IERC20 {
         external view returns (uint256, uint256, uint256);
 }
 
+interface IVatLike {
+    function ilks(bytes32) external view returns (uint256, uint256, uint256, uint256, uint256);
+    function Line() external view returns (uint256);
+    function file(bytes32, uint256) external;
+    function file(bytes32, bytes32, uint256) external;
+}
+
+interface AutoLineLike {
+    function exec(bytes32) external;
+    function ilks(bytes32) external view returns (uint256, uint256, uint48, uint48, uint48);
+}
+
 contract GroveEthereum_20250724Test is GroveTestBase {
 
     address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant CENTRIFUGE_JTRSY_SHARES = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
     address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
     address internal constant BUIDL_DEPOSIT           = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
     address internal constant BUIDL_REDEEM            = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
     address internal constant BUIDL_ADMIN             = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
     address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
+    bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
+
+    uint256 internal constant JTRSY_USDS_MINT_AMOUNT = 404_016_484e18;
+    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant BUIDL_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant BUIDL_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant RAY = 10 ** 27;
+
+    IVatLike vat = IVatLike(GroveContracts.VAT);
+
+    uint256 totalUsdsMintAmount;
+
     constructor() {
         id = "20250724";
     }
 
     function setUp() public {
-        setupDomains("2025-05-29T00:00:00Z");
+        setupDomains("2025-07-17T00:00:00Z");
         deployPayloads();
+
+        (uint256 currentArt,,,,) = vat.ilks(ALLOCATOR_ILK);
+
+        uint256 buidlUsdsMintAmount = IERC20(BUIDL).balanceOf(SparkContracts.ALM_PROXY) * 1e12;
+
+        totalUsdsMintAmount = buidlUsdsMintAmount + JTRSY_USDS_MINT_AMOUNT;
+
+        uint256 neededLine = (currentArt + totalUsdsMintAmount) * RAY;
+
+        // Sky PAUSE_PROXY sets line to allow for the mint
+        vm.startPrank(GroveContracts.PAUSE_PROXY);
+        vat.file(ALLOCATOR_ILK, "line", neededLine);
+        vm.stopPrank();
     }
 
-    function test_centrifugeJTRSYOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
-        _testCentrifugeOnboarding(
-            CENTRIFUGE_JTRSY,
-            50_000_000e6,
-            50_000_000e6,
-            50_000_000e6 / uint256(1 days)
-        );
+    function test_centrifugeJTRSYOnboarding() public onChain(ChainIdUtils.Ethereum()) {
+        _testCentrifugeOnboarding({
+            centrifugeVault:       CENTRIFUGE_JTRSY,
+            expectedDepositAmount: 50_000_000e6,
+            depositMax:            JTRSY_RATE_LIMIT_MAX,
+            depositSlope:          JTRSY_RATE_LIMIT_SLOPE
+        });
     }
 
     function test_blackrockBUIDLOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
@@ -78,7 +119,9 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
         executeAllPayloadsAndBridges();
 
-        _assertRateLimit(depositKey, 50_000_000e6, 50_000_000e6 / uint256(1 days));
+        AutoLineLike(GroveContracts.AUTO_LINE).exec(ALLOCATOR_ILK);
+
+        _assertRateLimit(depositKey, BUIDL_RATE_LIMIT_MAX, BUIDL_RATE_LIMIT_SLOPE);
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
 
         IERC20 usdc  = IERC20(GroveContracts.USDC);
@@ -96,7 +139,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         assertEq(usdc.balanceOf(address(ctx.proxy)), mintAmount);
         assertEq(usdc.balanceOf(BUIDL_DEPOSIT),      buidlDepositBalance);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), BUIDL_RATE_LIMIT_MAX);
 
         controller.transferAsset(address(usdc), BUIDL_DEPOSIT, mintAmount);
         vm.stopPrank();
@@ -106,7 +149,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
         assertEq(buidl.balanceOf(address(ctx.proxy)), 0);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 50_000_000e6 - mintAmount);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), BUIDL_RATE_LIMIT_MAX - mintAmount);
 
         // Emulate BUIDL deposit
         vm.startPrank(BUIDL_ADMIN);
@@ -123,13 +166,56 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         assertEq(buidl.balanceOf(BUIDL_REDEEM),       buidlRedeemBalance + mintAmount);
     }
 
-    function test_morphoSteakhouseVaultOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
-        _testERC4626Onboarding(
-            MORPHO_STEAKHOUSE_VAULT,
-            50_000_000e6,
-            50_000_000e6,
-            50_000_000e6 / uint256(1 days)
-        );
+    function test_sendUSDSToSpark() public onChain(ChainIdUtils.Ethereum()) {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        (uint256 beforeMintArt,,, uint256 beforeMintLine,) = vat.ilks(ALLOCATOR_ILK);
+
+        uint256 totalSparkJtrsyBalance = IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(SparkContracts.ALM_PROXY);
+        uint256 totalSparkBuidlBalance = IERC20(                  BUIDL).balanceOf(SparkContracts.ALM_PROXY);
+
+        uint256 beforeSparkProxyUsdsBalance = IERC20(GroveContracts.USDS).balanceOf(SparkContracts.ALM_PROXY);
+
+        // Assert Grove proxy has no BUIDL or JTRSY
+        assertEq(IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(address(ctx.proxy)), 0);
+        assertEq(IERC20(                  BUIDL).balanceOf(address(ctx.proxy)), 0);
+
+        // Mint USDS and send to Spark
+        executeAllPayloadsAndBridges();
+
+        // Assert Spark ALM Proxy received the minted USDS
+        uint256 afterSparkProxyUsdsBalance = IERC20(GroveContracts.USDS).balanceOf(SparkContracts.ALM_PROXY);
+        assertEq(afterSparkProxyUsdsBalance, beforeSparkProxyUsdsBalance + totalUsdsMintAmount);
+
+        // Spark sends BUIDL and JTRSY to Grove proxy
+        vm.startPrank(SparkContracts.ALM_PROXY);
+        IERC20(CENTRIFUGE_JTRSY_SHARES).transfer(address(ctx.proxy), totalSparkJtrsyBalance);
+        IERC20(                  BUIDL).transfer(address(ctx.proxy), totalSparkBuidlBalance);
+        vm.stopPrank();
+
+        (uint256 afterMintArt,,, uint256 afterMintLine,) = vat.ilks(ALLOCATOR_ILK);
+
+        // Assert line stays the same and art increases by the mint amount
+        assertEq(afterMintArt,  beforeMintArt + totalUsdsMintAmount);
+        assertEq(afterMintLine, beforeMintLine);
+
+        // Assert Grove proxy has all of the BUIDL and JTRSY from Spark
+        assertEq(IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(address(ctx.proxy)), totalSparkJtrsyBalance);
+        assertEq(IERC20(                  BUIDL).balanceOf(address(ctx.proxy)), totalSparkBuidlBalance);
+
+        // Assert Spark has no BUIDL or JTRSY
+        assertEq(IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(SparkContracts.ALM_PROXY), 0);
+        assertEq(IERC20(                  BUIDL).balanceOf(SparkContracts.ALM_PROXY), 0);
+
+        // AutoLine raises the line to the gap
+        AutoLineLike(GroveContracts.AUTO_LINE).exec(ALLOCATOR_ILK);
+
+        (,,, uint256 afterExecLine,) = vat.ilks(ALLOCATOR_ILK);
+
+        (,uint256 gap,,,) = AutoLineLike(GroveContracts.AUTO_LINE).ilks(ALLOCATOR_ILK);
+
+        // Assert line increases by the gap after the mint
+        assertEq(afterExecLine, afterMintLine + gap);
     }
 
 }
