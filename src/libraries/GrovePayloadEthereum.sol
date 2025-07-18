@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 
-import { IExecutor } from 'grove-gov-relay/interfaces/IExecutor.sol';
+import { IExecutor } from 'grove-gov-relay/src/interfaces/IExecutor.sol';
 
 import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
 
