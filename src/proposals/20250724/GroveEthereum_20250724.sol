@@ -41,12 +41,12 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
     function _execute() internal override {
         // ---------- Grove Liquidity Layer - Onboard Centrifuge JTRSY ----------
         // Forum : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmdKd2se
         _onboardCentrifugeJTRSY();
 
         // ---------- Grove Liquidity Layer - Onboard BlackRock BUIDL-I ----------
         // Forum : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmdkNnmE
         _onboardBlackrockBUIDL();
 
         // ---------- Mint USDS for BUIDL and JTRSY tokens and send it to Spark Allocator Buffer ----------
