@@ -12,7 +12,6 @@ import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers
 
 import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
-import { ChainIdUtils } from '../../libraries/ChainId.sol';
 
 import { GroveLiquidityLayerContext, CentrifugeConfig } from "../../test-harness/GroveLiquidityLayerTests.sol";
 
@@ -72,8 +71,9 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-07-17T00:00:00Z");
-        deployPayloads();
+        // July 8, 2025
+        setupDomain({ mainnetForkBlock: 22875932 });
+        deployPayload();
 
         (uint256 currentArt,,,,) = vat.ilks(ALLOCATOR_ILK);
 
@@ -89,7 +89,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         vm.stopPrank();
     }
 
-    function test_centrifugeJTRSYOnboarding() public onChain(ChainIdUtils.Ethereum()) {
+    function test_centrifugeJTRSYOnboarding() public {
         _testCentrifugeOnboarding({
             centrifugeVault:       CENTRIFUGE_JTRSY,
             expectedDepositAmount: 50_000_000e6,
@@ -98,7 +98,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         });
     }
 
-    function test_blackrockBUIDLOnboarding() public  onChain(ChainIdUtils.Ethereum()) {
+    function test_blackrockBUIDLOnboarding() public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         MainnetController controller = MainnetController(GroveContracts.ALM_CONTROLLER);
@@ -117,7 +117,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         _assertRateLimit(depositKey,  0, 0);
         _assertRateLimit(withdrawKey, 0, 0);
 
-        executeAllPayloadsAndBridges();
+        executePayload();
 
         AutoLineLike(GroveContracts.AUTO_LINE).exec(ALLOCATOR_ILK);
 
@@ -166,7 +166,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         assertEq(buidl.balanceOf(BUIDL_REDEEM),       buidlRedeemBalance + mintAmount);
     }
 
-    function test_sendUSDSToSpark() public onChain(ChainIdUtils.Ethereum()) {
+    function test_sendUSDSToSpark() public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         (uint256 beforeMintArt,,, uint256 beforeMintLine,) = vat.ilks(ALLOCATOR_ILK);
@@ -181,7 +181,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
         assertEq(IERC20(                  BUIDL).balanceOf(address(ctx.proxy)), 0);
 
         // Mint USDS and send to Spark
-        executeAllPayloadsAndBridges();
+        executePayload();
 
         // Assert Spark ALM Proxy received the minted USDS
         uint256 afterSparkProxyUsdsBalance = IERC20(GroveContracts.USDS).balanceOf(SparkContracts.ALM_PROXY);
