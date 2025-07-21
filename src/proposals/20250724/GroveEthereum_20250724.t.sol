@@ -169,6 +169,9 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     function test_sendUSDSToSpark() public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
+        // Assert totalUsdsMintAmount is greater than 1.2B USDS
+        assertGe(totalUsdsMintAmount, 1_200_000_000e18);
+
         (uint256 beforeMintArt,,, uint256 beforeMintLine,) = vat.ilks(ALLOCATOR_ILK);
 
         uint256 totalSparkJtrsyBalance = IERC20(CENTRIFUGE_JTRSY_SHARES).balanceOf(SparkContracts.ALM_PROXY);
