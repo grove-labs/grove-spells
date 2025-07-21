@@ -20,7 +20,8 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  * @author Steakhouse Financial
  * Forum (JTRSY and BUIDL onboarding) : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805:
  * Forum (Transfer of USDS to Spark)  : https://forum.sky.money/t/tokenized-t-bills-transfer-from-spark-to-grove/26785
- * Vote (JTRSY and BUIDL onboarding)  : TODO
+ * Vote (BUIDL onboarding)            : https://vote.sky.money/polling/QmdkNnmE
+ * Vote (JTRSY onboarding)            : https://vote.sky.money/polling/QmdKd2se
  * Vote (Transfer of USDS to Spark)   : https://vote.sky.money/polling/Qme5qebN
  */
 contract GroveEthereum_20250724 is GrovePayloadEthereum {
