@@ -7,3 +7,9 @@
 [submodule "lib/grove-address-registry"]
 	path = lib/grove-address-registry
 	url = https://github.com/grove-labs/grove-address-registry
+[submodule "lib/spark-address-registry"]
+	path = lib/spark-address-registry
+	url = https://github.com/sparkdotfi/spark-address-registry
+[submodule "lib/dss-allocator"]
+	path = lib/dss-allocator
+	url = https://github.com/makerdao/dss-allocator

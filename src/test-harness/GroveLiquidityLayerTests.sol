@@ -61,6 +61,20 @@ interface IInvestmentManager {
         uint128 assets,
         uint128 shares
     ) external;
+    function poolManager() external view returns (address);
+}
+
+interface IPoolManager {
+    function assetToId(address asset) external view returns (uint128);
+}
+
+interface ICentrifugeVault {
+    function asset()     external view returns (address);
+    function manager()   external view returns (address);
+    function root()      external view returns (address);
+    function share()     external view returns (address);
+    function trancheId() external view returns (bytes16);
+    function poolId()    external view returns (uint64);
 }
 
 abstract contract GroveLiquidityLayerTests is SpellRunner {
@@ -177,13 +191,21 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
 
     function _testCentrifugeOnboarding(
         address centrifugeVault,
-        address centrifugeToken,
-        CentrifugeConfig memory centrifugeConfig,
         uint256 expectedDepositAmount,
         uint256 depositMax,
         uint256 depositSlope
     ) public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        address centrifugeInvestmentManager = ICentrifugeVault(centrifugeVault).manager();
+        CentrifugeConfig memory centrifugeConfig = CentrifugeConfig({
+            centrifugeRoot: ICentrifugeVault(centrifugeVault).root(),
+            centrifugeInvestmentManager: centrifugeInvestmentManager,
+            centrifugeTrancheId: ICentrifugeVault(centrifugeVault).trancheId(),
+            centrifugeAssetId: IPoolManager(IInvestmentManager(centrifugeInvestmentManager).poolManager()).assetToId(ICentrifugeVault(centrifugeVault).asset()),
+            centrifugePoolId: ICentrifugeVault(centrifugeVault).poolId()
+        });
+
 
         deal(IERC4626(centrifugeVault).asset(), address(ctx.proxy), expectedDepositAmount);
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
@@ -196,15 +218,15 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         );
 
         _assertRateLimit(depositKey,  0, 0);
-        _assertRateLimit(redeemKey, 0, 0);
+        _assertRateLimit(redeemKey,   0, 0);
 
         executePayload();
 
-        _assertRateLimit(depositKey, depositMax, depositSlope);
-        _assertRateLimit(redeemKey, type(uint256).max, 0);
+        _assertRateLimit(depositKey, depositMax,        depositSlope);
+        _assertRateLimit(redeemKey,  type(uint256).max, 0);
 
         IERC20 usdc       = IERC20(Ethereum.USDC);
-        IERC20 vaultToken = IERC20(centrifugeToken);
+        IERC20 vaultToken = IERC20(ICentrifugeVault(centrifugeVault).share());
 
         assertEq(usdc.balanceOf(address(ctx.proxy)),       expectedDepositAmount);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), 0);
