@@ -51,7 +51,6 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     address internal constant BUIDL_DEPOSIT           = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
     address internal constant BUIDL_REDEEM            = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
     address internal constant BUIDL_ADMIN             = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
-    address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
     bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
