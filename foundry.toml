@@ -7,7 +7,7 @@ fs_permissions = [
     { access = "write", path = "./reports" }
 ]
 solc = "0.8.25"
-optimizer = true
+optimizer = false
 ffi = true
 evm_version = "cancun"
 
