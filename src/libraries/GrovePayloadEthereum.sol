@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
+
+import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
+
+import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
 
 import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
 
@@ -11,11 +16,47 @@ import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
  */
 abstract contract GrovePayloadEthereum {
 
+    // ADD SUPPORTED FOREIGN PAYLOADS HERE
+
+    // These need to be immutable (delegatecall) and can only be set in constructor
+    address public immutable PAYLOAD_AVALANCHE;
+
     function execute() external {
         _execute();
+
+        if (PAYLOAD_AVALANCHE != address(0)) {
+            CCTPForwarder.sendMessage({
+                messageTransmitter:  CCTPForwarder.MESSAGE_TRANSMITTER_CIRCLE_ETHEREUM,
+                destinationDomainId: CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
+                recipient:           Avalanche.GROVE_RECEIVER,
+                messageBody:         _encodePayloadQueue(PAYLOAD_AVALANCHE)
+            });
+        }
     }
 
     function _execute() internal virtual;
+
+    function _encodePayloadQueue(address _payload) internal pure returns (bytes memory) {
+        address[] memory targets        = new address[](1);
+        uint256[] memory values         = new uint256[](1);
+        string[] memory signatures      = new string[](1);
+        bytes[] memory calldatas        = new bytes[](1);
+        bool[] memory withDelegatecalls = new bool[](1);
+
+        targets[0]           = _payload;
+        values[0]            = 0;
+        signatures[0]        = 'execute()';
+        calldatas[0]         = '';
+        withDelegatecalls[0] = true;
+
+        return abi.encodeCall(IExecutor.queue, (
+            targets,
+            values,
+            signatures,
+            calldatas,
+            withDelegatecalls
+        ));
+    }
 
     function _onboardERC4626Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
         GroveLiquidityLayerHelpers.onboardERC4626Vault(

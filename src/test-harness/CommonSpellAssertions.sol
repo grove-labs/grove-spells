@@ -5,18 +5,24 @@ import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
+import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
+
 import { SpellRunner } from "./SpellRunner.sol";
 
 abstract contract CommonSpellAssertions is SpellRunner {
-    function test_PayloadBytecodeMatches() public {
-        _assertPayloadBytecodeMatches();
+    function test_ETHEREUM_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Ethereum());
     }
 
-    function _assertPayloadBytecodeMatches() private {
-        address actualPayload = spellMetadata.payload;
+    function test_AVALANCHE_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Avalanche());
+    }
+
+    function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
+        address actualPayload = chainData[chainId].payload;
         vm.skip(actualPayload == address(0));
         require(_isContract(actualPayload), "PAYLOAD IS NOT A CONTRACT");
-        address expectedPayload = deployPayload();
+        address expectedPayload = deployPayload(chainId);
 
         uint256 expectedBytecodeSize = expectedPayload.code.length;
         uint256 actualBytecodeSize   = actualPayload.code.length;

@@ -4,7 +4,9 @@ pragma solidity ^0.8.0;
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { RateLimitHelpers, RateLimitData } from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { RateLimitHelpers } from "grove-alm-controller/src/RateLimitHelpers.sol";
+
+import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 
 /**
  * @notice Helper functions for Grove Liquidity Layer
@@ -34,29 +36,18 @@ library GroveLiquidityLayerHelpers {
     ) internal {
         IERC20 asset = IERC20(IERC4626(vault).asset());
 
-        RateLimitHelpers.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(
-                LIMIT_4626_DEPOSIT,
-                vault
-            ),
-            rateLimits,
-            RateLimitData({
-                maxAmount : depositMax,
-                slope     : depositSlope
-            }),
-            "erc4626VaultDepositLimit",
-            asset.decimals()
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_4626_DEPOSIT,
+            vault
         );
-        RateLimitHelpers.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(
-                LIMIT_4626_WITHDRAW,
-                vault
-            ),
-            rateLimits,
-            RateLimitHelpers.unlimitedRateLimit(),
-            "erc4626VaultWithdrawLimit",
-            asset.decimals()
+        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_4626_WITHDRAW,
+            vault
         );
+
+        IRateLimits(rateLimits).setRateLimitData(depositKey, depositMax, depositSlope);
+
+        IRateLimits(rateLimits).setUnlimitedRateLimitData(withdrawKey);
     }
 
     /**
@@ -73,30 +64,17 @@ library GroveLiquidityLayerHelpers {
         // ERC7540 vaults are obliged to implement ERC4626 as well
         IERC20 asset = IERC20(IERC4626(vault).asset());
 
-        RateLimitHelpers.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(
-                LIMIT_7540_DEPOSIT,
-                vault
-            ),
-            rateLimits,
-            RateLimitData({
-                maxAmount : depositMax,
-                slope     : depositSlope
-            }),
-            "erc7540VaultDepositLimit",
-            asset.decimals()
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_7540_DEPOSIT,
+            vault
+        );
+        bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_7540_REDEEM,
+            vault
         );
 
-        RateLimitHelpers.setRateLimitData(
-            RateLimitHelpers.makeAssetKey(
-                LIMIT_7540_REDEEM,
-                vault
-            ),
-            rateLimits,
-            RateLimitHelpers.unlimitedRateLimit(),
-            "erc7540VaultRedeemLimit",
-            asset.decimals()
-        );
+        IRateLimits(rateLimits).setRateLimitData(depositKey, depositMax, depositSlope);
+        IRateLimits(rateLimits).setUnlimitedRateLimitData(redeemKey);
     }
 
     function setUSDSMintRateLimit(
@@ -104,16 +82,12 @@ library GroveLiquidityLayerHelpers {
         uint256 maxAmount,
         uint256 slope
     ) internal {
-        RateLimitHelpers.setRateLimitData(
+        bytes32 mintKey = RateLimitHelpers.makeAssetKey(
             LIMIT_USDS_MINT,
-            rateLimits,
-            RateLimitData({
-                maxAmount : maxAmount,
-                slope     : slope
-            }),
-            "USDS mint limit",
-            18
+            MORPHO
         );
+
+        IRateLimits(rateLimits).setRateLimitData(mintKey, maxAmount, slope);
     }
 
     function setUSDSToUSDCRateLimit(
@@ -121,15 +95,11 @@ library GroveLiquidityLayerHelpers {
         uint256 maxUsdcAmount,
         uint256 slope
     ) internal {
-        RateLimitHelpers.setRateLimitData(
+        bytes32 usdsToUsdcKey = RateLimitHelpers.makeAssetKey(
             LIMIT_USDS_TO_USDC,
-            rateLimits,
-            RateLimitData({
-                maxAmount : maxUsdcAmount,
-                slope     : slope
-            }),
-            "Swap USDS to USDC limit",
-            6
+            MORPHO
         );
+
+        IRateLimits(rateLimits).setRateLimitData(usdsToUsdcKey, maxUsdcAmount, slope);
     }
 }
