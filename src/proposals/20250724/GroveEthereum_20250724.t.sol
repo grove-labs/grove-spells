@@ -44,7 +44,7 @@ interface AutoLineLike {
 
 contract GroveEthereum_20250724Test is GroveTestBase {
 
-    address internal constant GROVE_ETHEREUM_20250724 = 0xb4d75F9AB177bbC68f9d0e6F6779e468162Cd067;
+    address internal constant GROVE_ETHEREUM_20250724 = 0xe069f56033Ed646aF3B4024501FF47BBce67CfD1;
     address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant CENTRIFUGE_JTRSY_SHARES = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
     address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
@@ -72,7 +72,7 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
     function setUp() public {
         // July 22, 2025
-        setupDomain({ mainnetForkBlock: 22973220 });
+        setupDomain({ mainnetForkBlock: 22973578 });
         spellMetadata.payload = GROVE_ETHEREUM_20250724;
 
         (uint256 currentArt,,,,) = vat.ilks(ALLOCATOR_ILK);
