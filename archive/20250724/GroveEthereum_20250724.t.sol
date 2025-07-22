@@ -44,13 +44,13 @@ interface AutoLineLike {
 
 contract GroveEthereum_20250724Test is GroveTestBase {
 
+    address internal constant GROVE_ETHEREUM_20250724 = 0xe069f56033Ed646aF3B4024501FF47BBce67CfD1;
     address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
     address internal constant CENTRIFUGE_JTRSY_SHARES = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
     address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
     address internal constant BUIDL_DEPOSIT           = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
     address internal constant BUIDL_REDEEM            = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
     address internal constant BUIDL_ADMIN             = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
-    address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
 
     bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
@@ -71,9 +71,9 @@ contract GroveEthereum_20250724Test is GroveTestBase {
     }
 
     function setUp() public {
-        // July 8, 2025
-        setupDomain({ mainnetForkBlock: 22875932 });
-        deployPayload();
+        // July 22, 2025
+        setupDomain({ mainnetForkBlock: 22973578 });
+        spellMetadata.payload = GROVE_ETHEREUM_20250724;
 
         (uint256 currentArt,,,,) = vat.ilks(ALLOCATOR_ILK);
 
@@ -168,6 +168,9 @@ contract GroveEthereum_20250724Test is GroveTestBase {
 
     function test_sendUSDSToSpark() public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        // Assert totalUsdsMintAmount is greater than 1B USDS
+        assertGe(totalUsdsMintAmount, 1_000_000_000e18);
 
         (uint256 beforeMintArt,,, uint256 beforeMintLine,) = vat.ilks(ALLOCATOR_ILK);
 

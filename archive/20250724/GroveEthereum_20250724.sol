@@ -20,16 +20,16 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  * @author Steakhouse Financial
  * Forum (JTRSY and BUIDL onboarding) : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805:
  * Forum (Transfer of USDS to Spark)  : https://forum.sky.money/t/tokenized-t-bills-transfer-from-spark-to-grove/26785
- * Vote (JTRSY and BUIDL onboarding)  : TODO
+ * Vote (BUIDL onboarding)            : https://vote.sky.money/polling/QmdkNnmE
+ * Vote (JTRSY onboarding)            : https://vote.sky.money/polling/QmdKd2se
  * Vote (Transfer of USDS to Spark)   : https://vote.sky.money/polling/Qme5qebN
  */
 contract GroveEthereum_20250724 is GrovePayloadEthereum {
 
-    address internal constant CENTRIFUGE_JTRSY        = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
-    address internal constant BUIDL                   = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
-    address internal constant BUIDL_DEPOSIT           = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
-    address internal constant BUIDL_REDEEM            = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
-    address internal constant MORPHO_STEAKHOUSE_VAULT = 0xBEEF01735c132Ada46AA9aA4c54623cAA92A64CB;
+    address internal constant CENTRIFUGE_JTRSY = 0x36036fFd9B1C6966ab23209E073c68Eb9A992f50;
+    address internal constant BUIDL            = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
+    address internal constant BUIDL_DEPOSIT    = 0xD1917664bE3FdAea377f6E8D5BF043ab5C3b1312;
+    address internal constant BUIDL_REDEEM     = 0x8780Dd016171B91E4Df47075dA0a947959C34200;
 
     uint256 internal constant JTRSY_USDS_MINT_AMOUNT = 404_016_484e18;
     uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
@@ -40,12 +40,12 @@ contract GroveEthereum_20250724 is GrovePayloadEthereum {
     function _execute() internal override {
         // ---------- Grove Liquidity Layer - Onboard Centrifuge JTRSY ----------
         // Forum : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmdKd2se
         _onboardCentrifugeJTRSY();
 
         // ---------- Grove Liquidity Layer - Onboard BlackRock BUIDL-I ----------
         // Forum : https://forum.sky.money/t/july-24-2025-proposed-onboardings-for-grove-in-upcoming-spell/26805
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmdkNnmE
         _onboardBlackrockBUIDL();
 
         // ---------- Mint USDS for BUIDL and JTRSY tokens and send it to Spark Allocator Buffer ----------
