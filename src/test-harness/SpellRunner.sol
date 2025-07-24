@@ -5,7 +5,8 @@ import { Test }      from "forge-std/Test.sol";
 import { StdChains } from "forge-std/StdChains.sol";
 import { console }   from "forge-std/console.sol";
 
-import { Ethereum } from 'grove-address-registry/Ethereum.sol';
+import { Ethereum }  from 'grove-address-registry/Ethereum.sol';
+import { Avalanche } from 'grove-address-registry/Avalanche.sol';
 // import { Arbitrum } from 'grove-address-registry/Arbitrum.sol';
 // import { Base }     from 'grove-address-registry/Base.sol';
 // import { Gnosis }   from 'grove-address-registry/Gnosis.sol';
@@ -86,7 +87,7 @@ abstract contract SpellRunner is Test {
             inputs[2] = "--request";
             inputs[3] = "GET";
             inputs[4] = "--url";
-            inputs[5] = string(abi.encodePacked("https://api.g.alchemy.com/data/v1/", vm.envString("ALCHEMY_API_KEY"), "/utility/blocks/by-timestamp?", networks, "&timestamp=", date, "&direction=AFTER"));
+            inputs[5] = string(abi.encodePacked("https://api.g.alchemy.com/data/v1/", vm.envString("ALCHEMY_APIKEY"), "/utility/blocks/by-timestamp?", networks, "&timestamp=", date, "&direction=AFTER"));
             inputs[6] = "--header";
             inputs[7] = "accept: application/json";
 
@@ -100,20 +101,21 @@ abstract contract SpellRunner is Test {
     }
 
     function setupBlocksFromDate(string memory date) internal {
-        string[] memory chains = new string[](1);
-        chains[0] = "eth-mainnet";
-
         // ADD MORE CHAINS HERE
-        // chains[1] = "base-mainnet";
-        // chains[2] = "arb-mainnet";
-        // chains[3] = "opt-mainnet";
+        string[] memory chains = new string[](5);
+        chains[0] = "eth-mainnet";
+        chains[1] = "base-mainnet";
+        chains[2] = "arb-mainnet";
+        chains[3] = "opt-mainnet";
+        chains[4] = "avax-mainnet";
 
         uint256[] memory blocks = getBlocksFromDate(date, chains);
 
-        console.log("Mainnet block: ", blocks[0]);
-        // console.log("Base block: ", blocks[1]);
-        // console.log("Arbitrum block: ", blocks[2]);
-        // console.log("Optimism block: ", blocks[3]);
+        console.log("   Mainnet block:", blocks[0]);
+        console.log("      Base block:", blocks[1]);
+        console.log("  Arbitrum block:", blocks[2]);
+        console.log("  Optimism block:", blocks[3]);
+        console.log(" Avalanche block:", blocks[4]);
 
         // DEFINE CUSTOM CHAINS HERE
         // setChain("unichain", ChainData({
@@ -122,12 +124,12 @@ abstract contract SpellRunner is Test {
         //     chainId: 130
         // }));
 
-        chainData[ChainIdUtils.Ethereum()].domain    = getChain("mainnet").createFork(blocks[0]);
-
         // CREATE FORKS WITH DYNAMICALLY DERIVED BLOCKS HERE
-        // chainData[ChainIdUtils.Base()].domain        = getChain("base").createFork(blocks[1]);
-        // chainData[ChainIdUtils.ArbitrumOne()].domain = getChain("arbitrum_one").createFork(blocks[2]);
-        // chainData[ChainIdUtils.Optimism()].domain    = getChain("optimism").createFork(blocks[3]);
+        chainData[ChainIdUtils.Ethereum()].domain    = getChain("mainnet").createFork(blocks[0]);
+        chainData[ChainIdUtils.Base()].domain        = getChain("base").createFork(blocks[1]);
+        chainData[ChainIdUtils.ArbitrumOne()].domain = getChain("arbitrum_one").createFork(blocks[2]);
+        chainData[ChainIdUtils.Optimism()].domain    = getChain("optimism").createFork(blocks[3]);
+        chainData[ChainIdUtils.Avalanche()].domain   = getChain("avalanche").createFork(blocks[4]);
 
         // CREATE FORKS WITH STATICALLY CHOSEN BLOCKS HERE
         // chainData[ChainIdUtils.Gnosis()].domain      = getChain("gnosis_chain").createFork(39404891);  // Gnosis block lookup is not supported by Alchemy
@@ -144,6 +146,7 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Ethereum()].executor = IExecutor(Ethereum.GROVE_PROXY);
 
         // DEFINE FOREIGN EXECUTORS HERE
+        chainData[ChainIdUtils.Avalanche()].executor = IExecutor(Avalanche.GROVE_EXECUTOR);
         // chainData[ChainIdUtils.Base()].executor        = IExecutor(Base.GROVE_EXECUTOR);
         // chainData[ChainIdUtils.Gnosis()].executor      = IExecutor(Gnosis.GROVE_EXECUTOR);
         // chainData[ChainIdUtils.ArbitrumOne()].executor = IExecutor(Arbitrum.GROVE_EXECUTOR);
@@ -216,8 +219,17 @@ abstract contract SpellRunner is Test {
         //     )
         // );
 
+        // Avalanche
+        chainData[ChainIdUtils.Avalanche()].bridges.push(
+            CCTPBridgeTesting.createCircleBridge(
+                chainData[ChainIdUtils.Ethereum()].domain,
+                chainData[ChainIdUtils.Avalanche()].domain
+            )
+        );
+
         // REGISTER CHAINS HERE
         allChains.push(ChainIdUtils.Ethereum());
+        allChains.push(ChainIdUtils.Avalanche());
         // allChains.push(ChainIdUtils.Base());
         // allChains.push(ChainIdUtils.Gnosis());
         // allChains.push(ChainIdUtils.ArbitrumOne());
@@ -241,6 +253,8 @@ abstract contract SpellRunner is Test {
             string memory identifier = spellIdentifier(chainId);
             try vm.getCode(identifier) {
                 chainData[chainId].payload = deployPayload(chainId);
+                console.log("deployed payload for network: ", chainId.toDomainString());
+                console.log("             payload address: ", chainData[chainId].payload);
             } catch {
                 console.log("skipping spell deployment for network: ", chainId.toDomainString());
             }
@@ -287,30 +301,30 @@ abstract contract SpellRunner is Test {
             if (chainId == ChainIdUtils.Ethereum()) continue;  // Don't execute mainnet
 
             // UNCOMMENT AFTER OTHER DOMAINS ARE SET UP
-            // address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
-            // IExecutor executor = chainData[chainId].executor;
-            // if (mainnetSpellPayload != address(0)) {
-            //     // We assume the payload has been queued in the executor (will revert otherwise)
-            //     chainData[chainId].domain.selectFork();
-            //     uint256 actionsSetId = executor.actionsSetCount() - 1;
-            //     uint256 prevTimestamp = block.timestamp;
-            //     vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
-            //     executor.execute(actionsSetId);
-            //     vm.warp(prevTimestamp);
-            // } else {
-            //     // We will simulate execution until the real spell is deployed in the mainnet spell
-            //     address payload = chainData[chainId].payload;
-            //     if (payload != address(0)) {
-            //         chainData[chainId].domain.selectFork();
-            //         vm.prank(address(executor));
-            //         executor.executeDelegateCall(
-            //             payload,
-            //             abi.encodeWithSignature('execute()')
-            //         );
+            address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
+            IExecutor executor = chainData[chainId].executor;
+            if (mainnetSpellPayload != address(0)) {
+                // We assume the payload has been queued in the executor (will revert otherwise)
+                chainData[chainId].domain.selectFork();
+                uint256 actionsSetId = executor.actionsSetCount() - 1;
+                uint256 prevTimestamp = block.timestamp;
+                vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
+                executor.execute(actionsSetId);
+                vm.warp(prevTimestamp);
+            } else {
+                // We will simulate execution until the real spell is deployed in the mainnet spell
+                address payload = chainData[chainId].payload;
+                if (payload != address(0)) {
+                    chainData[chainId].domain.selectFork();
+                    vm.prank(address(executor));
+                    executor.executeDelegateCall(
+                        payload,
+                        abi.encodeWithSignature('execute()')
+                    );
 
-            //         console.log("simulating execution payload for network: ", chainId.toDomainString());
-            //     }
-            // }
+                    console.log("simulating execution payload for network: ", chainId.toDomainString());
+                }
+            }
 
         }
     }
@@ -319,8 +333,10 @@ abstract contract SpellRunner is Test {
 
         // RETURN PAYLOAD ADDRESSES FROM THE MAINNET SPELL HERE
 
-        // GrovePayloadEthereum spell = GrovePayloadEthereum(chainData[ChainIdUtils.Ethereum()].payload);
-        // if (chainId == ChainIdUtils.Base()) {
+        GrovePayloadEthereum spell = GrovePayloadEthereum(chainData[ChainIdUtils.Ethereum()].payload);
+        if (chainId == ChainIdUtils.Avalanche()) {
+            return spell.PAYLOAD_AVALANCHE();
+        // } else if (chainId == ChainIdUtils.Base()) {
         //     return spell.PAYLOAD_BASE();
         // } else if (chainId == ChainIdUtils.Gnosis()) {
         //     return spell.PAYLOAD_GNOSIS();
@@ -330,9 +346,9 @@ abstract contract SpellRunner is Test {
         //     return spell.PAYLOAD_OPTIMISM();
         // } else if (chainId == ChainIdUtils.Unichain()) {
         //     return spell.PAYLOAD_UNICHAIN();
-        // } else {
+        } else {
             revert("Unsupported chainId");
-        // }
+        }
     }
 
     function executeMainnetPayload() internal onChain(ChainIdUtils.Ethereum()) {
