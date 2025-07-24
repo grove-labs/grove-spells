@@ -7,19 +7,17 @@ import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
 
 /**
  * @dev Base smart contract for Avalanche.
- * @author Phoenix Labs
+ * @author Steakhouse Financial
  */
 abstract contract GrovePayloadAvalanche {
 
-    // TODO: Uncomment and use when RATE_LIMITS is deployed on Avalanche
-
-    // function _onboardERC7540Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
-    //     GroveLiquidityLayerHelpers.onboardERC7540Vault(
-    //         Avalanche.ALM_RATE_LIMITS,
-    //         vault,
-    //         depositMax,
-    //         depositSlope
-    //     );
-    // }
+    function _onboardERC7540Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
+        GroveLiquidityLayerHelpers.onboardERC7540Vault(
+            Avalanche.ALM_RATE_LIMITS,
+            vault,
+            depositMax,
+            depositSlope
+        );
+    }
 
 }
