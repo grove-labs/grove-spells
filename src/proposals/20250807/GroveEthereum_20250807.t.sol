@@ -59,7 +59,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-07-25T00:00:00Z");
+        setupDomains("2025-07-25T18:15:00Z");
         deployPayloads();
 
         chainData[ChainIdUtils.Avalanche()].payload = 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
