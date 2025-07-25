@@ -34,8 +34,6 @@ library GroveLiquidityLayerHelpers {
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
-        IERC20 asset = IERC20(IERC4626(vault).asset());
-
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             LIMIT_4626_DEPOSIT,
             vault
@@ -61,9 +59,6 @@ library GroveLiquidityLayerHelpers {
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
-        // ERC7540 vaults are obliged to implement ERC4626 as well
-        IERC20 asset = IERC20(IERC4626(vault).asset());
-
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             LIMIT_7540_DEPOSIT,
             vault
