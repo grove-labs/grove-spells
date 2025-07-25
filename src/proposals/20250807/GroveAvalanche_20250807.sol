@@ -23,6 +23,7 @@ contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
 
     function execute() external {
         _initializeLiquidityLayer();
+        _onboardCctpTransfersToEthereum();
         _onboardCentrifugeJtrsy();
         _onboardCentrifugeJaaa();
         _onboardCentrifugeCrosschainTransfers();
@@ -60,6 +61,10 @@ contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
             mintRecipients,
             new ForeignControllerInit.LayerZeroRecipient[](0)
         );
+    }
+
+    function _onboardCctpTransfersToEthereum() internal {
+        // TODO: Implement
     }
 
     function _onboardCentrifugeJtrsy() internal {

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
+import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
+
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 
@@ -51,16 +53,6 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         // TODO: Implement
     }
 
-    function test_ETHEREUM_onboardStakedUSDCVault() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
-    }
-
-    function test_ETHEREUM_onboardSparkLend() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
-    }
-
     function test_ETHEREUM_onboardEthena() public onChain(ChainIdUtils.Ethereum()) {
         vm.skip(true);
         // TODO: Implement
@@ -87,6 +79,23 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function test_AVALANCHE_almSystemInitialization() public onChain(ChainIdUtils.Avalanche()) {
+        IALMProxy         almProxy   = IALMProxy(Avalanche.ALM_PROXY);
+        IRateLimits       rateLimits = IRateLimits(Avalanche.ALM_RATE_LIMITS);
+        ForeignController controller = ForeignController(Avalanche.ALM_CONTROLLER);
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(almProxy.hasRole(almProxy.CONTROLLER(), Avalanche.ALM_CONTROLLER), true, "incorrect-controller-almProxy");
+
+        assertEq(rateLimits.hasRole(rateLimits.CONTROLLER(), Avalanche.ALM_CONTROLLER), true, "incorrect-controller-rateLimits");
+
+        assertEq(controller.hasRole(controller.FREEZER(), Avalanche.ALM_FREEZER), true, "incorrect-freezer-controller");
+        assertEq(controller.hasRole(controller.RELAYER(), Avalanche.ALM_RELAYER), true, "incorrect-relayer-controller");
+
+        assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
+    }
+
+    function test_AVALANCHE_onboardCctpTransfersToEthereum() public onChain(ChainIdUtils.Avalanche()) {
         vm.skip(true);
         // TODO: Implement
     }

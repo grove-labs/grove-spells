@@ -23,11 +23,10 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
 
     function _execute() internal override {
         _upgradeController();
+        _onboardCctpTransfersToAvalanche();
         _migrateCentrifugeJtrsy();
         _migrateCentrifugeJaaa();
         _onboardCentrifugeCrosschainTransfers();
-        _onboardStakedUSDCVault();
-        _onboardSparkLend();
         _onboardEthena();
     }
 
@@ -68,6 +67,10 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
         );
     }
 
+    function _onboardCctpTransfersToAvalanche() internal {
+        // TODO: Implement
+    }
+
     function _migrateCentrifugeJtrsy() internal {
         // TODO: Implement
     }
@@ -77,14 +80,6 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
     }
 
     function _onboardCentrifugeCrosschainTransfers() internal {
-        // TODO: Implement
-    }
-
-    function _onboardStakedUSDCVault() internal {
-        // TODO: Implement
-    }
-
-    function _onboardSparkLend() internal {
         // TODO: Implement
     }
 
