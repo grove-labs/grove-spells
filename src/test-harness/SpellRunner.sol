@@ -87,7 +87,7 @@ abstract contract SpellRunner is Test {
             inputs[2] = "--request";
             inputs[3] = "GET";
             inputs[4] = "--url";
-            inputs[5] = string(abi.encodePacked("https://api.g.alchemy.com/data/v1/", vm.envString("ALCHEMY_APIKEY"), "/utility/blocks/by-timestamp?", networks, "&timestamp=", date, "&direction=AFTER"));
+            inputs[5] = string(abi.encodePacked("https://api.g.alchemy.com/data/v1/", vm.envString("ALCHEMY_API_KEY"), "/utility/blocks/by-timestamp?", networks, "&timestamp=", date, "&direction=AFTER"));
             inputs[6] = "--header";
             inputs[7] = "accept: application/json";
 
