@@ -4,12 +4,17 @@ pragma solidity ^0.8.0;
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { Ethereum } from "grove-address-registry/Ethereum.sol";
+import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
+
+import { Avalanche } from "grove-address-registry/Avalanche.sol";
+import { Ethereum }  from "grove-address-registry/Ethereum.sol";
 
 import { IALMProxy }         from "grove-alm-controller/src/interfaces/IALMProxy.sol";
 import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+
+import { ChainId, ChainIdUtils } from "../libraries/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
@@ -314,4 +319,48 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         );
     }
 
+    function _testControllerUpgrade(address oldController, address newController) internal {
+        ChainId currentChain = ChainIdUtils.fromUint(block.chainid);
+
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        // Note the functions used are interchangable with mainnet and foreign controllers
+        MainnetController controller = MainnetController(newController);
+
+        bytes32 CONTROLLER = ctx.proxy.CONTROLLER();
+        bytes32 RELAYER    = controller.RELAYER();
+        bytes32 FREEZER    = controller.FREEZER();
+
+        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false);
+
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false);
+
+        assertEq(controller.hasRole(RELAYER, ctx.relayer),        false);
+        assertEq(controller.hasRole(FREEZER, ctx.freezer),        false);
+
+        if (currentChain == ChainIdUtils.Ethereum()) {
+            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(address(0)))));
+        } else {
+            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(address(0)))));
+        }
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), false);
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), true);
+
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), false);
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), true);
+
+        assertEq(controller.hasRole(RELAYER, ctx.relayer),        true);
+        assertEq(controller.hasRole(FREEZER, ctx.freezer),        true);
+
+        if (currentChain == ChainIdUtils.Ethereum()) {
+            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
+        } else {
+            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
+        }
+    }
 }
