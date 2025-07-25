@@ -194,6 +194,17 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         }
     }
 
+    function _testCentrifugeV3Onboarding(
+        address centrifugeVault,
+        uint256 expectedDepositAmount,
+        uint256 depositMax,
+        uint256 depositSlope
+    ) public {
+        // TODO: Implement this
+        // Mimic _testCentrifugeOnboarding() but for Centrifuge V3
+        revert("Centrifuge V3 onboarding tests not implemented");
+    }
+
     function _testCentrifugeOnboarding(
         address centrifugeVault,
         uint256 expectedDepositAmount,

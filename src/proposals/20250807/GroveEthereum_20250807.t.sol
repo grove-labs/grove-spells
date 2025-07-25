@@ -95,8 +95,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         // TODO: Unskip after proxy is onboarded to the new JTRSY vault
         vm.skip(true);
 
-        // TODO: Change to _testCentrifugeV3Onboarding()
-        _testCentrifugeOnboarding({
+        _testCentrifugeV3Onboarding({
             centrifugeVault        : NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
             expectedDepositAmount  : 50_000_000e6,
             depositMax             : NEW_MAINNET_JTRSY_RATE_LIMIT_MAX,
@@ -131,8 +130,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         // TODO: Unskip after proxy is onboarded to the new JAAA vault
         vm.skip(true);
 
-        // TODO: Change to _testCentrifugeV3Onboarding()
-        _testCentrifugeOnboarding({
+        _testCentrifugeV3Onboarding({
             centrifugeVault        : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
             expectedDepositAmount  : 50_000_000e6,
             depositMax             : NEW_MAINNET_JAAA_RATE_LIMIT_MAX,
@@ -142,7 +140,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
     function test_ETHEREUM_onboardEthena() public onChain(ChainIdUtils.Ethereum()) {
         vm.skip(true);
-        // TODO: Add more tests !!!!!!!!
+        // TODO: Add actual tests !!!!!!!!
 
         executeAllPayloadsAndBridges();
 
@@ -208,8 +206,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         // TODO: Unskip after proxy is onboarded to the new JTRSY vault
         vm.skip(true);
 
-        // TODO: Change to _testCentrifugeV3Onboarding()
-        _testCentrifugeOnboarding({
+        _testCentrifugeV3Onboarding({
             centrifugeVault        : NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT,
             expectedDepositAmount  : 50_000_000e6,
             depositMax             : NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX,
@@ -221,8 +218,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         // TODO: Unskip after proxy is onboarded to the new JAAA vault
         vm.skip(true);
 
-        // TODO: Change to _testCentrifugeV3Onboarding()
-        _testCentrifugeOnboarding({
+        _testCentrifugeV3Onboarding({
             centrifugeVault        : NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT,
             expectedDepositAmount  : 50_000_000e6,
             depositMax             : NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX,
