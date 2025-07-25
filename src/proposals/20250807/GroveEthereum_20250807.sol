@@ -6,6 +6,8 @@ import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.s
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 
+import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
+
 import { MainnetControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/MainnetControllerInit.sol";
 
 import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
@@ -84,7 +86,32 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
     }
 
     function _onboardEthena() internal {
-        // TODO: Implement
+        // USDe mint/burn
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            MainnetController(NEW_MAINNET_CONTROLLER).LIMIT_USDE_MINT(),
+            maxAmount : 250_000_000e6,
+            slope     : 100_000_000e6 / uint256(1 days)
+        );
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            MainnetController(NEW_MAINNET_CONTROLLER).LIMIT_USDE_BURN(),
+            maxAmount : 500_000_000e18,
+            slope     : 200_000_000e18 / uint256(1 days)
+        );
+
+        // sUSDe deposit (no need for withdrawal because of cooldown)
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            RateLimitHelpers.makeAssetKey(
+                MainnetController(NEW_MAINNET_CONTROLLER).LIMIT_4626_DEPOSIT(),
+                Ethereum.SUSDE
+            ),
+            maxAmount : 250_000_000e18,
+            slope     : 100_000_000e18 / uint256(1 days)
+        );
+
+        // Cooldown
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setUnlimitedRateLimitData(
+            MainnetController(NEW_MAINNET_CONTROLLER).LIMIT_SUSDE_COOLDOWN()
+        )
     }
 
 }
