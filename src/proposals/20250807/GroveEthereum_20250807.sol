@@ -22,8 +22,8 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  */
 contract GroveEthereum_20250807 is GrovePayloadEthereum {
 
-    address internal constant NEW_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
     address internal constant NEW_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
+    address internal constant NEW_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
     uint256 internal constant ZERO = 0;
 
