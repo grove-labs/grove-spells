@@ -28,79 +28,76 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
     address internal constant FAKE_PSM3_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
 
-    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
     address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
+    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
-    address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
     address internal constant NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784;
+    address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
     uint256 internal constant ZERO = 0;
 
-    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
     uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
     uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
     uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant ETHENA_MINT_RATE_LIMIT_MAX   = 250_000_000e6;
+    uint256 internal constant ETHENA_MINT_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    uint256 internal constant ETHENA_BURN_RATE_LIMIT_MAX   = 500_000_000e18;
+    uint256 internal constant ETHENA_BURN_RATE_LIMIT_SLOPE = 200_000_000e18 / uint256(1 days);
+
+    uint256 internal constant ETHENA_DEPOSIT_RATE_LIMIT_MAX   = 250_000_000e18;
+    uint256 internal constant ETHENA_DEPOSIT_RATE_LIMIT_SLOPE = 100_000_000e18 / uint256(1 days);
 
     constructor() {
         id = "20250807";
     }
 
     function setUp() public {
-        setupDomains("2025-07-25T18:15:00Z");
+        setupDomains("2025-07-27T12:00:00Z");
         deployPayloads();
 
         chainData[ChainIdUtils.Avalanche()].payload = 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
     }
 
-    function test_ETHEREUM_offboardOldCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip after the old JTRSY is onboarded
-        vm.skip(true);
+    function test_ETHEREUM_onboardCctpTransfersToAvalanche() public onChain(ChainIdUtils.Ethereum()) {
+        bytes32 generalCctpKey   = MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
+        bytes32 avalancheCctpKey = RateLimitHelpers.makeDomainKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE
+        );
 
-        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+        _assertRateLimit(avalancheCctpKey, 0, 0);
+        _assertRateLimit(generalCctpKey,   0, 0);
 
-        bytes32 oldJtrsyDepositKey = RateLimitHelpers.makeAssetKey({
-            key   : MainnetController(ctx.controller).LIMIT_7540_DEPOSIT(),
-            asset : Ethereum.CENTRIFUGE_JTRSY
-        });
-
-        _assertRateLimit({
-            key       : oldJtrsyDepositKey,
-            maxAmount : OLD_MAINNET_JTRSY_RATE_LIMIT_MAX,
-            slope     : OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE
-        });
+        assertEq(MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(0));
 
         executeAllPayloadsAndBridges();
 
-        _assertRateLimit({
-            key       : oldJtrsyDepositKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-    }
+        _assertUnlimitedRateLimit(generalCctpKey);
+        _assertRateLimit(avalancheCctpKey, ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_MAX, ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_SLOPE);
 
-    function test_ETHEREUM_onboardNewCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip after proxy is onboarded to the new JTRSY vault
-        vm.skip(true);
-
-        _testCentrifugeV3Onboarding({
-            centrifugeVault        : NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
-            expectedDepositAmount  : 50_000_000e6,
-            depositMax             : NEW_MAINNET_JTRSY_RATE_LIMIT_MAX,
-            depositSlope           : NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE
-        });
+        assertEq(MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
     }
 
     function test_ETHEREUM_offboardOldCentrifugeJaaa() public onChain(ChainIdUtils.Ethereum()) {
@@ -126,22 +123,61 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         });
     }
 
+    function test_ETHEREUM_offboardOldCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        bytes32 oldJtrsyDepositKey = RateLimitHelpers.makeAssetKey({
+            key   : MainnetController(ctx.controller).LIMIT_7540_DEPOSIT(),
+            asset : Ethereum.CENTRIFUGE_JTRSY
+        });
+
+        // TODO: Uncomment after the spell onboarding the old JTRSY is actually executed
+
+        // _assertRateLimit({
+        //     key       : oldJtrsyDepositKey,
+        //     maxAmount : OLD_MAINNET_JTRSY_RATE_LIMIT_MAX,
+        //     slope     : OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE
+        // });
+
+        executeAllPayloadsAndBridges();
+
+        _assertRateLimit({
+            key       : oldJtrsyDepositKey,
+            maxAmount : ZERO,
+            slope     : ZERO
+        });
+    }
+
     function test_ETHEREUM_onboardNewCentrifugeJaaa() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip after proxy is onboarded to the new JAAA vault
+        // TODO: Unskip after fixing the test
         vm.skip(true);
 
         _testCentrifugeV3Onboarding({
-            centrifugeVault        : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+            centrifugeVaultAddress : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+            usdcAddress            : Ethereum.USDC,
             expectedDepositAmount  : 50_000_000e6,
             depositMax             : NEW_MAINNET_JAAA_RATE_LIMIT_MAX,
             depositSlope           : NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE
         });
     }
 
+    function test_ETHEREUM_onboardNewCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Unskip after fixing the test
+        vm.skip(true);
+
+        _testCentrifugeV3Onboarding({
+            centrifugeVaultAddress : NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
+            usdcAddress            : Ethereum.USDC,
+            expectedDepositAmount  : 50_000_000e6,
+            depositMax             : NEW_MAINNET_JTRSY_RATE_LIMIT_MAX,
+            depositSlope           : NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE
+        });
+    }
+
     function test_ETHEREUM_onboardEthena() public onChain(ChainIdUtils.Ethereum()) {
         MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
         IRateLimits rateLimits = IRateLimits(Ethereum.ALM_RATE_LIMITS);
-        
+
         bytes32 ethenaMintKey     = controller.LIMIT_USDE_MINT();
         bytes32 ethenaBurnKey     = controller.LIMIT_USDE_BURN();
         bytes32 susdeCooldownKey  = controller.LIMIT_SUSDE_COOLDOWN();
@@ -149,7 +185,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         bytes32 susdeDepositKey   = RateLimitHelpers.makeAssetKey(
             controller.LIMIT_4626_DEPOSIT(), Ethereum.SUSDE
         );
-        
+
         bytes32 susdeWithdrawKey = RateLimitHelpers.makeAssetKey(
             controller.LIMIT_4626_WITHDRAW(),
             Ethereum.SUSDE
@@ -164,9 +200,9 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         executeAllPayloadsAndBridges();
 
         // Ethena rate limits after should be properly set
-        _assertRateLimit(ethenaMintKey,   250_000_000e6,  100_000_000e6 / uint256(1 days));
-        _assertRateLimit(ethenaBurnKey,   500_000_000e18, 200_000_000e18 / uint256(1 days));
-        _assertRateLimit(susdeDepositKey, 250_000_000e18, 100_000_000e18 / uint256(1 days));
+        _assertRateLimit(ethenaMintKey,   ETHENA_MINT_RATE_LIMIT_MAX,    ETHENA_MINT_RATE_LIMIT_SLOPE);
+        _assertRateLimit(ethenaBurnKey,   ETHENA_BURN_RATE_LIMIT_MAX,    ETHENA_BURN_RATE_LIMIT_SLOPE);
+        _assertRateLimit(susdeDepositKey, ETHENA_DEPOSIT_RATE_LIMIT_MAX, ETHENA_DEPOSIT_RATE_LIMIT_SLOPE);
 
         _assertUnlimitedRateLimit(susdeCooldownKey);
 
@@ -178,7 +214,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
         // Mint
 
-        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),              250_000_000e6);
+        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),               ETHENA_MINT_RATE_LIMIT_MAX);
         assertEq(usdc.allowance(Ethereum.ALM_PROXY, Ethereum.ETHENA_MINTER), 0);
 
         controller.prepareUSDeMint(250_000_000e6);
@@ -188,7 +224,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
         // Burn
 
-        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),              500_000_000e18);
+        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),               ETHENA_BURN_RATE_LIMIT_MAX);
         assertEq(usde.allowance(Ethereum.ALM_PROXY, Ethereum.ETHENA_MINTER), 0);
 
         controller.prepareUSDeBurn(500_000_000e18);
@@ -212,10 +248,10 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
         // sUSDe Cooldown
 
-        deal(Ethereum.SUSDE, Ethereum.ALM_PROXY, susde.convertToShares(500_000_000e18) + 1);
+        deal(Ethereum.SUSDE, Ethereum.ALM_PROXY, susde.convertToShares(500_000_000e18) + 1);  // Rounding
 
         _assertUnlimitedRateLimit(susdeCooldownKey);
-        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18 + 1);  // Rounding
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18);
         assertEq(rateLimits.getCurrentRateLimit(susdeWithdrawKey),           0);
 
         controller.cooldownAssetsSUSDe(500_000_000e18);
@@ -234,9 +270,9 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         // All limits should be reset in 3 days + 1 (rounding)
         skip(71 hours + 1);
 
-        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),   250_000_000e6);
-        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),   500_000_000e18);
-        assertEq(rateLimits.getCurrentRateLimit(susdeDepositKey), 250_000_000e18);
+        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),    ETHENA_MINT_RATE_LIMIT_MAX);
+        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),    ETHENA_BURN_RATE_LIMIT_MAX);
+        assertEq(rateLimits.getCurrentRateLimit(susdeDepositKey),  ETHENA_DEPOSIT_RATE_LIMIT_MAX);
         _assertUnlimitedRateLimit(susdeCooldownKey);
     }
 
@@ -278,32 +314,95 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function test_AVALANCHE_onboardCctpTransfersToEthereum() public onChain(ChainIdUtils.Avalanche()) {
-        vm.skip(true);
-        // TODO: Implement
+        bytes32 generalCctpKey  = ForeignController(Avalanche.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
+        bytes32 ethereumCctpKey = RateLimitHelpers.makeDomainKey(
+            ForeignController(Avalanche.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
+        );
+
+        _assertRateLimit(generalCctpKey,  0, 0);
+        _assertRateLimit(ethereumCctpKey, 0, 0);
+
+        assertEq(ForeignController(Avalanche.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM), bytes32(0));
+
+        executeAllPayloadsAndBridges();
+
+        _assertUnlimitedRateLimit(generalCctpKey);
+        _assertRateLimit(ethereumCctpKey, AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_MAX, AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_SLOPE);
+
+        assertEq(ForeignController(Avalanche.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM), bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
+    }
+
+    function test_AVALANCHE_onboardCentrifugeJaaa() public onChain(ChainIdUtils.Avalanche()) {
+        _testCentrifugeV3Onboarding({
+            centrifugeVaultAddress : NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT,
+            usdcAddress            : Avalanche.USDC,
+            expectedDepositAmount  : 50_000_000e6,
+            depositMax             : NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX,
+            depositSlope           : NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE
+        });
     }
 
     function test_AVALANCHE_onboardCentrifugeJtrsy() public onChain(ChainIdUtils.Avalanche()) {
-        // TODO: Unskip after proxy is onboarded to the new JTRSY vault
-        vm.skip(true);
-
         _testCentrifugeV3Onboarding({
-            centrifugeVault        : NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT,
+            centrifugeVaultAddress : NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT,
+            usdcAddress            : Avalanche.USDC,
             expectedDepositAmount  : 50_000_000e6,
             depositMax             : NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX,
             depositSlope           : NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE
         });
     }
 
-    function test_AVALANCHE_onboardCentrifugeJaaa() public onChain(ChainIdUtils.Avalanche()) {
-        // TODO: Unskip after proxy is onboarded to the new JAAA vault
-        vm.skip(true);
+    function test_ETHEREUM_AVALANCHE_cctpTransferE2E() public onChain(ChainIdUtils.Ethereum()) {
 
-        _testCentrifugeV3Onboarding({
-            centrifugeVault        : NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT,
-            expectedDepositAmount  : 50_000_000e6,
-            depositMax             : NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX,
-            depositSlope           : NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE
-        });
+        executeAllPayloadsAndBridges();
+
+        IERC20 avalancheUsdc = IERC20(Avalanche.USDC);
+        IERC20 ethereumUsdc  = IERC20(Ethereum.USDC);
+
+        MainnetController mainnetController   = MainnetController(Ethereum.ALM_CONTROLLER);
+        ForeignController avalancheController = ForeignController(Avalanche.ALM_CONTROLLER);
+
+        // --- Step 1: Mint and bridge 10m USDC to Avalanche ---
+
+        uint256 usdcAmount = 50_000_000e6;
+
+        vm.startPrank(Ethereum.ALM_RELAYER);
+        mainnetController.mintUSDS(usdcAmount * 1e12);
+        mainnetController.swapUSDSToUSDC(usdcAmount);
+        mainnetController.transferUSDCToCCTP(usdcAmount, CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE);
+        vm.stopPrank();
+
+        selectChain(ChainIdUtils.Avalanche());
+
+        assertEq(avalancheUsdc.balanceOf(Avalanche.ALM_PROXY), 0);
+
+        _relayMessageOverBridges();
+
+        assertEq(avalancheUsdc.balanceOf(Avalanche.ALM_PROXY), usdcAmount);
+
+        // --- Step 2: Bridge USDC back to mainnet and burn USDS
+
+        vm.startPrank(Avalanche.ALM_RELAYER);
+        avalancheController.transferUSDCToCCTP(usdcAmount, CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM);
+        vm.stopPrank();
+
+        assertEq(avalancheUsdc.balanceOf(Avalanche.ALM_PROXY), 0);
+
+        selectChain(ChainIdUtils.Ethereum());
+
+        uint256 usdcPrevBalance = ethereumUsdc.balanceOf(Ethereum.ALM_PROXY);
+
+        _relayMessageOverBridges();
+
+        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance + usdcAmount);
+
+        vm.startPrank(Ethereum.ALM_RELAYER);
+        mainnetController.swapUSDCToUSDS(usdcAmount);
+        mainnetController.burnUSDS(usdcAmount * 1e12);
+        vm.stopPrank();
+
+        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance);
     }
 
 }

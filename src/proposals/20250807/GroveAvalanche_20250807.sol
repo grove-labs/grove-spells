@@ -6,33 +6,56 @@ import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.s
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 
+import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
+
+import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
+
 import { ForeignControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/ForeignControllerInit.sol";
 
 import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
 
 /**
  * @title  August 7, 2025 Grove Avalanche Proposal
- * @notice TODO
+ * @notice Avalanche Grove Liquidity Layer initialization; onboarding of CCTP transfers to Ethereum; onboarding of Centrifuge JAAA and JTRSY vaults
  * @author Steakhouse Financial
- * Forum : TODO
+ * Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
  * Vote  : TODO
  */
 contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
 
     address internal constant FAKE_PSM3_PLACEHOLDER  = 0x00000000000000000000000000000000DeaDBeef;
-    address internal constant CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
     address internal constant CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784;
+    address internal constant CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
-    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
     uint256 internal constant JAAA_RATE_LIMIT_MAX    = 100_000_000e6;
     uint256 internal constant JAAA_RATE_LIMIT_SLOPE  = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function execute() external {
+        // ---------- Grove Liquidity Layer - Initialization ----------
+        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        // Poll  : TODO
         _initializeLiquidityLayer();
+
+        // ---------- Grove Liquidity Layer - Onboard CCTP transfers to Ethereum ----------
+        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        // Poll  : TODO
         _onboardCctpTransfersToEthereum();
-        _onboardCentrifugeJtrsy();
+
+        // ---------- Grove Liquidity Layer - Onboard Centrifuge JAAA ----------
+        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        // Poll  : TODO
         _onboardCentrifugeJaaa();
+
+        // ---------- Grove Liquidity Layer - Onboard Centrifuge JTRSY ----------
+        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        // Poll  : TODO
+        _onboardCentrifugeJtrsy();
     }
 
     function _initializeLiquidityLayer() internal {
@@ -70,15 +93,21 @@ contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
     }
 
     function _onboardCctpTransfersToEthereum() internal {
-        // TODO: Implement
-    }
-
-    function _onboardCentrifugeJtrsy() internal {
-        _onboardERC7540Vault(
-            CENTRIFUGE_JTRSY_VAULT,
-            JTRSY_RATE_LIMIT_MAX,
-            JTRSY_RATE_LIMIT_SLOPE
+        bytes32 generalCctpKey = ForeignController(Avalanche.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
+        bytes32 ethereumCctpKey = RateLimitHelpers.makeDomainKey(
+            ForeignController(Avalanche.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
         );
+
+        IRateLimits(Avalanche.ALM_RATE_LIMITS).setUnlimitedRateLimitData(generalCctpKey);
+
+        IRateLimits(Avalanche.ALM_RATE_LIMITS).setRateLimitData({
+            key       : ethereumCctpKey,
+            maxAmount : CCTP_RATE_LIMIT_MAX,
+            slope     : CCTP_RATE_LIMIT_SLOPE
+        });
+
+        // Mint recipients are set during the ForeignController initialization
     }
 
     function _onboardCentrifugeJaaa() internal {
@@ -86,6 +115,14 @@ contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
             CENTRIFUGE_JAAA_VAULT,
             JAAA_RATE_LIMIT_MAX,
             JAAA_RATE_LIMIT_SLOPE
+        );
+    }
+
+    function _onboardCentrifugeJtrsy() internal {
+        _onboardERC7540Vault(
+            CENTRIFUGE_JTRSY_VAULT,
+            JTRSY_RATE_LIMIT_MAX,
+            JTRSY_RATE_LIMIT_SLOPE
         );
     }
 
