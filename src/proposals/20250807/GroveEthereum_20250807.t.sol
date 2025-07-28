@@ -65,7 +65,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-07-28T16:00:00Z");
+        setupDomains("2025-07-28T16:15:00Z");
         deployPayloads();
 
         chainData[ChainIdUtils.Avalanche()].payload = 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
@@ -122,13 +122,11 @@ contract GroveEthereum_20250807Test is GroveTestBase {
             asset : Ethereum.CENTRIFUGE_JTRSY
         });
 
-        // TODO: Uncomment after the spell onboarding the old JTRSY is actually executed
-
-        // _assertRateLimit({
-        //     key       : oldJtrsyDepositKey,
-        //     maxAmount : OLD_JTRSY_RATE_LIMIT_MAX,
-        //     slope     : OLD_JTRSY_RATE_LIMIT_SLOPE
-        // });
+        _assertRateLimit({
+            key       : oldJtrsyDepositKey,
+            maxAmount : OLD_JTRSY_RATE_LIMIT_MAX,
+            slope     : OLD_JTRSY_RATE_LIMIT_SLOPE
+        });
 
         executeAllPayloadsAndBridges();
 
