@@ -303,16 +303,19 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
             centrifugeAssetId: centrifugeSpoke.assetToId(centrifugeVault.asset(), 0)
         });
 
-        // TODO: Remove this once the Centrifuge fully migrates to V3, setting a new root address on Mainnet
-        if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
-            centrifugeConfig.centrifugeRoot = address(0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC);
-        }
-
         ICentrifugeV3ShareLike vaultToken = ICentrifugeV3ShareLike(centrifugeVault.share());
 
-        vm.startPrank(centrifugeConfig.centrifugeRoot);
-        IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
-        vm.stopPrank();
+        // TODO: Remove this once the Centrifuge fully migrates to V3, setting a new root address on Mainnet
+        if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
+            vm.startPrank(0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC);
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
+            vm.stopPrank();
+        } else {
+            vm.startPrank(centrifugeConfig.centrifugeRoot);
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
+            vm.stopPrank();
+        }
+
 
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             MainnetController(ctx.controller).LIMIT_7540_DEPOSIT(),
