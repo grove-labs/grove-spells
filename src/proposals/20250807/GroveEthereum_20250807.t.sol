@@ -139,25 +139,105 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardEthena() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Add actual tests !!!!!!!!
+        MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
+        IRateLimits rateLimits = IRateLimits(Ethereum.ALM_RATE_LIMITS);
+        
+        bytes32 ethenaMintKey     = controller.LIMIT_USDE_MINT();
+        bytes32 ethenaBurnKey     = controller.LIMIT_USDE_BURN();
+        bytes32 susdeCooldownKey  = controller.LIMIT_SUSDE_COOLDOWN();
+
+        bytes32 susdeDepositKey   = RateLimitHelpers.makeAssetKey(
+            controller.LIMIT_4626_DEPOSIT(), Ethereum.SUSDE
+        );
+        
+        bytes32 susdeWithdrawKey = RateLimitHelpers.makeAssetKey(
+            controller.LIMIT_4626_WITHDRAW(),
+            Ethereum.SUSDE
+        );
+
+        // Ethena rate limits before should be zero
+        _assertRateLimit(ethenaMintKey,    0, 0);
+        _assertRateLimit(ethenaBurnKey,    0, 0);
+        _assertRateLimit(susdeDepositKey,  0, 0);
+        _assertRateLimit(susdeCooldownKey, 0, 0);
 
         executeAllPayloadsAndBridges();
 
-        MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
+        // Ethena rate limits after should be properly set
+        _assertRateLimit(ethenaMintKey,   250_000_000e6,  100_000_000e6 / uint256(1 days));
+        _assertRateLimit(ethenaBurnKey,   500_000_000e18, 200_000_000e18 / uint256(1 days));
+        _assertRateLimit(susdeDepositKey, 250_000_000e18, 100_000_000e18 / uint256(1 days));
+
+        _assertUnlimitedRateLimit(susdeCooldownKey);
 
         IERC20 usdc    = IERC20(Ethereum.USDC);
         IERC20 usde    = IERC20(Ethereum.USDE);
         IERC4626 susde = IERC4626(Ethereum.SUSDE);
 
-        // Use realistic numbers to check the rate limits
-        uint256 usdcAmount = 5_000_000e6;
-        uint256 usdeAmount = usdcAmount * 1e12;
+        vm.startPrank(Ethereum.ALM_RELAYER);
 
-        // Use deal2 for USDC because storage is not set in a common way
-        deal2(Ethereum.USDC, Ethereum.ALM_PROXY, usdcAmount);
+        // Mint
 
+        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),              250_000_000e6);
         assertEq(usdc.allowance(Ethereum.ALM_PROXY, Ethereum.ETHENA_MINTER), 0);
+
+        controller.prepareUSDeMint(250_000_000e6);
+
+        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),              0);
+        assertEq(usdc.allowance(Ethereum.ALM_PROXY, Ethereum.ETHENA_MINTER), 250_000_000e6);
+
+        // Burn
+
+        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),              500_000_000e18);
+        assertEq(usde.allowance(Ethereum.ALM_PROXY, Ethereum.ETHENA_MINTER), 0);
+
+        controller.prepareUSDeBurn(500_000_000e18);
+
+        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),              0);
+        assertEq(usde.allowance(Ethereum.ALM_PROXY, Ethereum.ETHENA_MINTER), 500_000_000e18);
+
+        // sUSDe Deposit
+
+        deal(Ethereum.USDE, Ethereum.ALM_PROXY, 250_000_000e18);
+
+        assertEq(rateLimits.getCurrentRateLimit(susdeDepositKey),            250_000_000e18);
+        assertEq(usde.balanceOf(Ethereum.ALM_PROXY),                         250_000_000e18);
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 0);
+
+        controller.depositERC4626(address(susde), 250_000_000e18);
+
+        assertEq(rateLimits.getCurrentRateLimit(susdeDepositKey),            0);
+        assertEq(usde.balanceOf(Ethereum.ALM_PROXY),                         0);
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 250_000_000e18 - 1);  // Rounding
+
+        // sUSDe Cooldown
+
+        deal(Ethereum.SUSDE, Ethereum.ALM_PROXY, susde.convertToShares(500_000_000e18) + 1);
+
+        _assertUnlimitedRateLimit(susdeCooldownKey);
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18 + 1);  // Rounding
+        assertEq(rateLimits.getCurrentRateLimit(susdeWithdrawKey),           0);
+
+        controller.cooldownAssetsSUSDe(500_000_000e18);
+
+        _assertUnlimitedRateLimit(susdeCooldownKey);
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 0);
+
+        // Confirm proper recharge rate
+        skip(1 hours);
+
+        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),   100_000_000e6 / uint256(1 days) * 1 hours);
+        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),   200_000_000e18 / uint256(1 days) * 1 hours);
+        assertEq(rateLimits.getCurrentRateLimit(susdeDepositKey), 100_000_000e18 / uint256(1 days) * 1 hours);
+        _assertUnlimitedRateLimit(susdeCooldownKey);
+
+        // All limits should be reset in 3 days + 1 (rounding)
+        skip(71 hours + 1);
+
+        assertEq(rateLimits.getCurrentRateLimit(ethenaMintKey),   250_000_000e6);
+        assertEq(rateLimits.getCurrentRateLimit(ethenaBurnKey),   500_000_000e18);
+        assertEq(rateLimits.getCurrentRateLimit(susdeDepositKey), 250_000_000e18);
+        _assertUnlimitedRateLimit(susdeCooldownKey);
     }
 
     function test_AVALANCHE_almSystemDeployment() public onChain(ChainIdUtils.Avalanche()) {
