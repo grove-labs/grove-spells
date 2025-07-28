@@ -18,7 +18,7 @@ import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
 /**
  * @title  August 7, 2025 Grove Avalanche Proposal
  * @notice Avalanche Grove Liquidity Layer initialization; onboarding of CCTP transfers to Ethereum
- * @author Steakhouse Financial
+ * @author Grove Labs
  * Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
  * Vote  : TODO
  */
