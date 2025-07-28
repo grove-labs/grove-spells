@@ -31,9 +31,6 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
     address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
-    address internal constant NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784;
-    address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
-
     uint256 internal constant ZERO = 0;
 
     uint256 internal constant ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
@@ -53,12 +50,6 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
     uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
-    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
-    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
-    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant ETHENA_MINT_RATE_LIMIT_MAX   = 250_000_000e6;
     uint256 internal constant ETHENA_MINT_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days);
@@ -331,26 +322,6 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         _assertRateLimit(ethereumCctpKey, AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_MAX, AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_SLOPE);
 
         assertEq(ForeignController(Avalanche.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM), bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
-    }
-
-    function test_AVALANCHE_onboardCentrifugeJaaa() public onChain(ChainIdUtils.Avalanche()) {
-        _testCentrifugeV3Onboarding({
-            centrifugeVaultAddress : NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT,
-            usdcAddress            : Avalanche.USDC,
-            expectedDepositAmount  : 50_000_000e6,
-            depositMax             : NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX,
-            depositSlope           : NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE
-        });
-    }
-
-    function test_AVALANCHE_onboardCentrifugeJtrsy() public onChain(ChainIdUtils.Avalanche()) {
-        _testCentrifugeV3Onboarding({
-            centrifugeVaultAddress : NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT,
-            usdcAddress            : Avalanche.USDC,
-            expectedDepositAmount  : 50_000_000e6,
-            depositMax             : NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX,
-            depositSlope           : NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE
-        });
     }
 
     function test_ETHEREUM_AVALANCHE_cctpTransferE2E() public onChain(ChainIdUtils.Ethereum()) {

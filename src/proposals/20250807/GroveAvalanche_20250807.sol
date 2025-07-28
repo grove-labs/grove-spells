@@ -46,16 +46,6 @@ contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
         // Poll  : TODO
         _onboardCctpTransfersToEthereum();
-
-        // ---------- Grove Liquidity Layer - Onboard Centrifuge JAAA ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
-        _onboardCentrifugeJaaa();
-
-        // ---------- Grove Liquidity Layer - Onboard Centrifuge JTRSY ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
-        _onboardCentrifugeJtrsy();
     }
 
     function _initializeLiquidityLayer() internal {
@@ -108,22 +98,6 @@ contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
         });
 
         // Mint recipients are set during the ForeignController initialization
-    }
-
-    function _onboardCentrifugeJaaa() internal {
-        _onboardERC7540Vault(
-            CENTRIFUGE_JAAA_VAULT,
-            JAAA_RATE_LIMIT_MAX,
-            JAAA_RATE_LIMIT_SLOPE
-        );
-    }
-
-    function _onboardCentrifugeJtrsy() internal {
-        _onboardERC7540Vault(
-            CENTRIFUGE_JTRSY_VAULT,
-            JTRSY_RATE_LIMIT_MAX,
-            JTRSY_RATE_LIMIT_SLOPE
-        );
     }
 
 }
