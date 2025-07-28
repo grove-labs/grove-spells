@@ -25,16 +25,9 @@ import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
 contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
 
     address internal constant FAKE_PSM3_PLACEHOLDER  = 0x00000000000000000000000000000000DeaDBeef;
-    address internal constant CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784;
-    address internal constant CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
-    uint256 internal constant JAAA_RATE_LIMIT_MAX    = 100_000_000e6;
-    uint256 internal constant JAAA_RATE_LIMIT_SLOPE  = 50_000_000e6 / uint256(1 days);
-    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function execute() external {
         // ---------- Grove Liquidity Layer - Initialization ----------
