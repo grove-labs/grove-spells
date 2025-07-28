@@ -140,9 +140,6 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardNewCentrifugeJaaa() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip after fixing the test
-        // vm.skip(true);
-
         _testCentrifugeV3Onboarding({
             centrifugeVault       : NEW_CENTRIFUGE_JAAA_VAULT,
             usdcAddress           : Ethereum.USDC,
@@ -153,9 +150,6 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardNewCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip after fixing the test
-        // vm.skip(true);
-
         _testCentrifugeV3Onboarding({
             centrifugeVault       : NEW_CENTRIFUGE_JTRSY_VAULT,
             usdcAddress           : Ethereum.USDC,
