@@ -28,8 +28,8 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
     address internal constant FAKE_PSM3_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
 
-    address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
-    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
+    address internal constant NEW_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
+    address internal constant NEW_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
     uint256 internal constant ZERO = 0;
 
@@ -39,17 +39,17 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     uint256 internal constant AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant AVALANCHE_TO_ETHEREUM_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
-    uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant OLD_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
+    uint256 internal constant OLD_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant OLD_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant OLD_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
-    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant NEW_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
+    uint256 internal constant NEW_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant NEW_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant NEW_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant ETHENA_MINT_RATE_LIMIT_MAX   = 250_000_000e6;
     uint256 internal constant ETHENA_MINT_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days);
@@ -65,7 +65,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-07-27T12:00:00Z");
+        setupDomains("2025-07-28T14:45:00Z");
         deployPayloads();
 
         chainData[ChainIdUtils.Avalanche()].payload = 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
@@ -101,8 +101,8 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
         _assertRateLimit({
             key       : oldJaaaDepositKey,
-            maxAmount : OLD_MAINNET_JAAA_RATE_LIMIT_MAX,
-            slope     : OLD_MAINNET_JAAA_RATE_LIMIT_SLOPE
+            maxAmount : OLD_JAAA_RATE_LIMIT_MAX,
+            slope     : OLD_JAAA_RATE_LIMIT_SLOPE
         });
 
         executeAllPayloadsAndBridges();
@@ -126,8 +126,8 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
         // _assertRateLimit({
         //     key       : oldJtrsyDepositKey,
-        //     maxAmount : OLD_MAINNET_JTRSY_RATE_LIMIT_MAX,
-        //     slope     : OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE
+        //     maxAmount : OLD_JTRSY_RATE_LIMIT_MAX,
+        //     slope     : OLD_JTRSY_RATE_LIMIT_SLOPE
         // });
 
         executeAllPayloadsAndBridges();
@@ -144,11 +144,11 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         vm.skip(true);
 
         _testCentrifugeV3Onboarding({
-            centrifugeVaultAddress : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+            centrifugeVaultAddress : NEW_CENTRIFUGE_JAAA_VAULT,
             usdcAddress            : Ethereum.USDC,
             expectedDepositAmount  : 50_000_000e6,
-            depositMax             : NEW_MAINNET_JAAA_RATE_LIMIT_MAX,
-            depositSlope           : NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE
+            depositMax             : NEW_JAAA_RATE_LIMIT_MAX,
+            depositSlope           : NEW_JAAA_RATE_LIMIT_SLOPE
         });
     }
 
@@ -157,11 +157,11 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         vm.skip(true);
 
         _testCentrifugeV3Onboarding({
-            centrifugeVaultAddress : NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
+            centrifugeVaultAddress : NEW_CENTRIFUGE_JTRSY_VAULT,
             usdcAddress            : Ethereum.USDC,
             expectedDepositAmount  : 50_000_000e6,
-            depositMax             : NEW_MAINNET_JTRSY_RATE_LIMIT_MAX,
-            depositSlope           : NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE
+            depositMax             : NEW_JTRSY_RATE_LIMIT_MAX,
+            depositSlope           : NEW_JTRSY_RATE_LIMIT_SLOPE
         });
     }
 
@@ -242,7 +242,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         deal(Ethereum.SUSDE, Ethereum.ALM_PROXY, susde.convertToShares(500_000_000e18) + 1);  // Rounding
 
         _assertUnlimitedRateLimit(susdeCooldownKey);
-        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18);
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18 + 1);  // Rounding
         assertEq(rateLimits.getCurrentRateLimit(susdeWithdrawKey),           0);
 
         controller.cooldownAssetsSUSDe(500_000_000e18);
