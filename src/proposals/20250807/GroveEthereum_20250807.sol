@@ -106,11 +106,12 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
         });
 
         // sUSDe deposit (no need for withdrawal because of cooldown)
+        bytes32 susdeDepositKey = RateLimitHelpers.makeAssetKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_4626_DEPOSIT(),
+            Ethereum.SUSDE
+        );
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
-            key       : RateLimitHelpers.makeAssetKey(
-                MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_4626_DEPOSIT(),
-                Ethereum.SUSDE
-            ),
+            key       : susdeDepositKey,
             maxAmount : 250_000_000e18,
             slope     : 100_000_000e18 / uint256(1 days)
         });
