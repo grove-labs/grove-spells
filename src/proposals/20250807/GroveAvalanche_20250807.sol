@@ -20,7 +20,7 @@ import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
  * @notice Avalanche Grove Liquidity Layer initialization; onboarding of CCTP transfers to Ethereum
  * @author Grove Labs
  * Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
- * Vote  : TODO
+ * Vote  : https://vote.sky.money/polling/QmX2CAp2
  */
 contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
 
@@ -32,12 +32,12 @@ contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
     function execute() external {
         // ---------- Grove Liquidity Layer - Initialization ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmX2CAp2
         _initializeLiquidityLayer();
 
         // ---------- Grove Liquidity Layer - Onboard CCTP transfers to Ethereum ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmX2CAp2
         _onboardCctpTransfersToEthereum();
     }
 

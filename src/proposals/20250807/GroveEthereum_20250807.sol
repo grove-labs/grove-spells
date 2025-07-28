@@ -17,8 +17,10 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  * @title  August 7, 2025 Grove Ethereum Proposal
  * @notice Onboarding of CCTP transfers to Avalanche; migration of Centrifuge JAAA and JTRSY vaults from V2 to V3; onboarding of Ethena
  * @author Grove Labs
- * Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
- * Vote  : TODO
+ * Forum               : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+ * Vote (USDe & sUSDe) : https://vote.sky.money/polling/QmNsimEt
+ * Vote (JAAA & JTRSY) : https://vote.sky.money/polling/QmUnyNn4
+ * Vote (CCTP)         : https://vote.sky.money/polling/QmX2CAp2
  */
 contract GroveEthereum_20250807 is GrovePayloadEthereum {
 
@@ -46,32 +48,32 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
     function _execute() internal override {
         // ---------- Grove Liquidity Layer - Onboard CCTP transfers to Avalanche ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmX2CAp2
         _onboardCctpTransfersToAvalanche();
 
         // ---------- Grove Liquidity Layer - Offboard old Centrifuge JAAA ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmUnyNn4
         _offboardOldCentrifugeJaaa();
 
         // ---------- Grove Liquidity Layer - Offboard old Centrifuge JTRSY ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmUnyNn4
         _offboardOldCentrifugeJtrsy();
 
         // ---------- Grove Liquidity Layer - Onboard new Centrifuge JAAA ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmUnyNn4
         _onboardNewCentrifugeJaaa();
 
         // ---------- Grove Liquidity Layer - Onboard new Centrifuge JTRSY ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmUnyNn4
         _onboardNewCentrifugeJtrsy();
 
         // ---------- Grove Liquidity Layer - Onboard Ethena ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : TODO
+        // Poll  : https://vote.sky.money/polling/QmNsimEt
         _onboardEthena();
     }
 
