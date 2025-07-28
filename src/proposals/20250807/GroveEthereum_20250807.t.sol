@@ -65,7 +65,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-07-28T14:45:00Z");
+        setupDomains("2025-07-28T16:00:00Z");
         deployPayloads();
 
         chainData[ChainIdUtils.Avalanche()].payload = 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
@@ -236,7 +236,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         deal(Ethereum.SUSDE, Ethereum.ALM_PROXY, susde.convertToShares(500_000_000e18) + 1);  // Rounding
 
         _assertUnlimitedRateLimit(susdeCooldownKey);
-        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18 + 1);  // Rounding
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18);
         assertEq(rateLimits.getCurrentRateLimit(susdeWithdrawKey),           0);
 
         controller.cooldownAssetsSUSDe(500_000_000e18);
