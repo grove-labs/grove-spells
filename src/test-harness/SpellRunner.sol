@@ -116,9 +116,9 @@ abstract contract SpellRunner is Test {
         uint256[] memory blocks = getBlocksFromDate(date, chains);
 
         console.log("   Mainnet block:", blocks[0]);
-        console.log("      Base block:", blocks[1]);
-        console.log("  Arbitrum block:", blocks[2]);
-        console.log("  Optimism block:", blocks[3]);
+        // console.log("      Base block:", blocks[1]);
+        // console.log("  Arbitrum block:", blocks[2]);
+        // console.log("  Optimism block:", blocks[3]);
         console.log(" Avalanche block:", blocks[4]);
 
         // DEFINE CUSTOM CHAINS HERE
