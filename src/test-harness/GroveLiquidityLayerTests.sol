@@ -4,8 +4,6 @@ pragma solidity ^0.8.0;
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
-
 import { Avalanche } from "grove-address-registry/Avalanche.sol";
 import { Ethereum }  from "grove-address-registry/Ethereum.sol";
 
@@ -334,4 +332,5 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
             _tokenAmount
         );
     }
+
 }

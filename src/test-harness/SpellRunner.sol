@@ -130,9 +130,9 @@ abstract contract SpellRunner is Test {
 
         // CREATE FORKS WITH DYNAMICALLY DERIVED BLOCKS HERE
         chainData[ChainIdUtils.Ethereum()].domain    = getChain("mainnet").createFork(blocks[0]);
-        chainData[ChainIdUtils.Base()].domain        = getChain("base").createFork(blocks[1]);
-        chainData[ChainIdUtils.ArbitrumOne()].domain = getChain("arbitrum_one").createFork(blocks[2]);
-        chainData[ChainIdUtils.Optimism()].domain    = getChain("optimism").createFork(blocks[3]);
+        // chainData[ChainIdUtils.Base()].domain        = getChain("base").createFork(blocks[1]);
+        // chainData[ChainIdUtils.ArbitrumOne()].domain = getChain("arbitrum_one").createFork(blocks[2]);
+        // chainData[ChainIdUtils.Optimism()].domain    = getChain("optimism").createFork(blocks[3]);
         chainData[ChainIdUtils.Avalanche()].domain   = getChain("avalanche").createFork(blocks[4]);
 
         // CREATE FORKS WITH STATICALLY CHOSEN BLOCKS HERE
