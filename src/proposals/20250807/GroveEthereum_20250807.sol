@@ -19,24 +19,14 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  * @author Grove Labs
  * Forum               : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
  * Vote (USDe & sUSDe) : https://vote.sky.money/polling/QmNsimEt
- * Vote (JAAA & JTRSY) : https://vote.sky.money/polling/QmUnyNn4
  * Vote (CCTP)         : https://vote.sky.money/polling/QmX2CAp2
  */
 contract GroveEthereum_20250807 is GrovePayloadEthereum {
-
-    address internal constant NEW_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
-    address internal constant NEW_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
     uint256 internal constant ZERO = 0;
 
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
-    uint256 internal constant NEW_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant NEW_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
-    uint256 internal constant NEW_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
-    uint256 internal constant NEW_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant ETHENA_MINT_RATE_LIMIT_MAX      = 250_000_000e6;
     uint256 internal constant ETHENA_MINT_RATE_LIMIT_SLOPE    = 100_000_000e6 / uint256(1 days);
@@ -50,26 +40,6 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
         // Poll  : https://vote.sky.money/polling/QmX2CAp2
         _onboardCctpTransfersToAvalanche();
-
-        // ---------- Grove Liquidity Layer - Offboard old Centrifuge JAAA ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmUnyNn4
-        _offboardOldCentrifugeJaaa();
-
-        // ---------- Grove Liquidity Layer - Offboard old Centrifuge JTRSY ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmUnyNn4
-        _offboardOldCentrifugeJtrsy();
-
-        // ---------- Grove Liquidity Layer - Onboard new Centrifuge JAAA ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmUnyNn4
-        _onboardNewCentrifugeJaaa();
-
-        // ---------- Grove Liquidity Layer - Onboard new Centrifuge JTRSY ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmUnyNn4
-        _onboardNewCentrifugeJtrsy();
 
         // ---------- Grove Liquidity Layer - Onboard Ethena ----------
         // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
@@ -95,48 +65,6 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
         MainnetController(Ethereum.ALM_CONTROLLER).setMintRecipient(
             CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
             bytes32(uint256(uint160(Avalanche.ALM_PROXY)))
-        );
-    }
-
-    function _offboardOldCentrifugeJaaa() internal {
-        bytes32 oldJaaaDepositKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_DEPOSIT(),
-            Ethereum.CENTRIFUGE_JAAA
-        );
-
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
-            key       : oldJaaaDepositKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-    }
-
-    function _offboardOldCentrifugeJtrsy() internal {
-        bytes32 oldJtrsyDepositKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_DEPOSIT(),
-            Ethereum.CENTRIFUGE_JTRSY
-        );
-
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
-            key       : oldJtrsyDepositKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-    }
-
-    function _onboardNewCentrifugeJaaa() internal {
-        _onboardERC7540Vault(
-            NEW_CENTRIFUGE_JAAA_VAULT,
-            NEW_JAAA_RATE_LIMIT_MAX,
-            NEW_JAAA_RATE_LIMIT_SLOPE
-        );
-    }
-
-    function _onboardNewCentrifugeJtrsy() internal {
-        _onboardERC7540Vault(
-            NEW_CENTRIFUGE_JTRSY_VAULT,
-            NEW_JTRSY_RATE_LIMIT_MAX,
-            NEW_JTRSY_RATE_LIMIT_SLOPE
         );
     }
 
