@@ -48,10 +48,8 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-07-28T16:15:00Z");
+        setupDomains("2025-07-30T19:45:00Z");
         deployPayloads();
-
-        chainData[ChainIdUtils.Avalanche()].payload = 0xF62849F9A0B5Bf2913b396098F7c7019b51A820a;
     }
 
     function test_ETHEREUM_onboardCctpTransfersToAvalanche() public onChain(ChainIdUtils.Ethereum()) {
@@ -144,7 +142,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
         assertEq(rateLimits.getCurrentRateLimit(susdeDepositKey),            0);
         assertEq(usde.balanceOf(Ethereum.ALM_PROXY),                         0);
-        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 250_000_000e18 - 1);  // Rounding
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 250_000_000e18 - 2);  // Rounding
 
         // sUSDe Cooldown
 
@@ -176,24 +174,38 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         _assertUnlimitedRateLimit(susdeCooldownKey);
     }
 
+    function test_AVALANCHE_governanceDeployment() public onChain(ChainIdUtils.Avalanche()) {
+        _verifyForeignDomainExecutorDeployment({
+            _executor : Avalanche.GROVE_EXECUTOR,
+            _receiver : Avalanche.GROVE_RECEIVER,
+            _deployer : DEPLOYER
+        });
+        _verifyCctpReceiverDeployment({
+            _executor               : Avalanche.GROVE_EXECUTOR,
+            _receiver               : Avalanche.GROVE_RECEIVER,
+            _cctpMessageTransmitter : CCTPForwarder.MESSAGE_TRANSMITTER_CIRCLE_AVALANCHE
+        });
+    }
+
     function test_AVALANCHE_almSystemDeployment() public onChain(ChainIdUtils.Avalanche()) {
-        IALMProxy         almProxy   = IALMProxy(Avalanche.ALM_PROXY);
-        IRateLimits       rateLimits = IRateLimits(Avalanche.ALM_RATE_LIMITS);
-        ForeignController controller = ForeignController(Avalanche.ALM_CONTROLLER);
-
-        assertEq(almProxy.hasRole(0x0, Avalanche.GROVE_EXECUTOR),   true, "incorrect-admin-almProxy");
-        assertEq(rateLimits.hasRole(0x0, Avalanche.GROVE_EXECUTOR), true, "incorrect-admin-rateLimits");
-        assertEq(controller.hasRole(0x0, Avalanche.GROVE_EXECUTOR), true, "incorrect-admin-controller");
-
-        assertEq(almProxy.hasRole(0x0, DEPLOYER),   false, "incorrect-admin-almProxy");
-        assertEq(rateLimits.hasRole(0x0, DEPLOYER), false, "incorrect-admin-rateLimits");
-        assertEq(controller.hasRole(0x0, DEPLOYER), false, "incorrect-admin-controller");
-
-        assertEq(address(controller.proxy()),      Avalanche.ALM_PROXY,            "incorrect-almProxy");
-        assertEq(address(controller.rateLimits()), Avalanche.ALM_RATE_LIMITS,      "incorrect-rateLimits");
-        assertEq(address(controller.cctp()),       Avalanche.CCTP_TOKEN_MESSENGER, "incorrect-cctpMessenger");
-        assertEq(address(controller.usdc()),       Avalanche.USDC,                 "incorrect-usdc");
-        assertEq(address(controller.psm()),        FAKE_PSM3_PLACEHOLDER,          "incorrect-psm");
+        _verifyAlmSystemDeployment(
+            AlmSystemContracts({
+                executor   : Avalanche.GROVE_EXECUTOR,
+                proxy      : Avalanche.ALM_PROXY,
+                rateLimits : Avalanche.ALM_RATE_LIMITS,
+                controller : Avalanche.ALM_CONTROLLER
+            }),
+            AlmSystemActors({
+                deployer : DEPLOYER,
+                freezer  : Avalanche.ALM_FREEZER,
+                relayer  : Avalanche.ALM_RELAYER
+            }),
+            AlmSystemDependencies({
+                psm           : FAKE_PSM3_PLACEHOLDER,
+                usdc          : Avalanche.USDC,
+                cctpMessenger : Avalanche.CCTP_TOKEN_MESSENGER
+            })
+        );
     }
 
     function test_AVALANCHE_almSystemInitialization() public onChain(ChainIdUtils.Avalanche()) {
