@@ -13,6 +13,8 @@ import { ForeignController } from "grove-alm-controller/src/ForeignController.so
 
 import { ForeignControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/ForeignControllerInit.sol";
 
+import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
+
 /**
  * @title  August 7, 2025 Grove Avalanche Proposal
  * @notice Avalanche Grove Liquidity Layer initialization; onboarding of CCTP transfers to Ethereum
@@ -20,7 +22,7 @@ import { ForeignControllerInit, ControllerInstance } from "lib/grove-alm-control
  * Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
  * Vote  : https://vote.sky.money/polling/QmX2CAp2
  */
-contract GroveAvalanche_20250807 {
+contract GroveAvalanche_20250807 is GrovePayloadAvalanche {
 
     address internal constant FAKE_PSM3_PLACEHOLDER  = 0x00000000000000000000000000000000DeaDBeef;
 
