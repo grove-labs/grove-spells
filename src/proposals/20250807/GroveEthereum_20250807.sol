@@ -23,8 +23,6 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  */
 contract GroveEthereum_20250807 is GrovePayloadEthereum {
 
-    uint256 internal constant ZERO = 0;
-
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
@@ -36,14 +34,14 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
     uint256 internal constant ETHENA_DEPOSIT_RATE_LIMIT_SLOPE = 100_000_000e18 / uint256(1 days);
 
     function _execute() internal override {
-        // ---------- Grove Liquidity Layer - Onboard CCTP transfers to Avalanche ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmX2CAp2
+        // [Mainnet and Avalanche] Deploy Grove Liquidity Layer on Avalanche
+        //   Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        //   Poll  : https://vote.sky.money/polling/QmX2CAp2
         _onboardCctpTransfersToAvalanche();
 
-        // ---------- Grove Liquidity Layer - Onboard Ethena ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmNsimEt
+        // [Mainnet] Onboard Ethena USDe and sUSDe to the GLL
+        //   Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        //   Poll  : https://vote.sky.money/polling/QmNsimEt
         _onboardEthena();
     }
 

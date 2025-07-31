@@ -28,14 +28,14 @@ contract GroveAvalanche_20250807 {
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function execute() external {
-        // ---------- Grove Liquidity Layer - Initialization ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmX2CAp2
+        // [Mainnet and Avalanche] Deploy Grove Liquidity Layer on Avalanche
+        //   Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        //   Poll  : https://vote.sky.money/polling/QmX2CAp2
         _initializeLiquidityLayer();
 
-        // ---------- Grove Liquidity Layer - Onboard CCTP transfers to Ethereum ----------
-        // Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
-        // Poll  : https://vote.sky.money/polling/QmX2CAp2
+        // [Mainnet and Avalanche] Deploy Grove Liquidity Layer on Avalanche
+        //   Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
+        //   Poll  : https://vote.sky.money/polling/QmX2CAp2
         _onboardCctpTransfersToEthereum();
     }
 

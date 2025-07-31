@@ -26,8 +26,6 @@ contract GroveEthereum_20250807Test is GroveTestBase {
 
     address internal constant FAKE_PSM3_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
 
-    uint256 internal constant ZERO = 0;
-
     uint256 internal constant ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
