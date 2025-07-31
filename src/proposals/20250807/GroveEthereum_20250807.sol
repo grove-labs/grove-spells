@@ -33,6 +33,10 @@ contract GroveEthereum_20250807 is GrovePayloadEthereum {
     uint256 internal constant ETHENA_DEPOSIT_RATE_LIMIT_MAX   = 250_000_000e18;
     uint256 internal constant ETHENA_DEPOSIT_RATE_LIMIT_SLOPE = 100_000_000e18 / uint256(1 days);
 
+    constructor() {
+        PAYLOAD_AVALANCHE = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
+    }
+
     function _execute() internal override {
         // [Mainnet and Avalanche] Deploy Grove Liquidity Layer on Avalanche
         //   Forum : https://forum.sky.money/t/august-7-2025-proposed-changes-to-grove-for-upcoming-spell/26883
