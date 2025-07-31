@@ -4,12 +4,15 @@ pragma solidity ^0.8.0;
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { Ethereum } from "grove-address-registry/Ethereum.sol";
+import { Avalanche } from "grove-address-registry/Avalanche.sol";
+import { Ethereum }  from "grove-address-registry/Ethereum.sol";
 
 import { IALMProxy }         from "grove-alm-controller/src/interfaces/IALMProxy.sol";
 import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+
+import { ChainId, ChainIdUtils } from "../libraries/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
@@ -79,14 +82,30 @@ interface ICentrifugeVault {
 
 abstract contract GroveLiquidityLayerTests is SpellRunner {
 
-    function _getGroveLiquidityLayerContext() internal pure returns(GroveLiquidityLayerContext memory ctx) {
-        ctx = GroveLiquidityLayerContext(
-            Ethereum.ALM_CONTROLLER,
-            IALMProxy(Ethereum.ALM_PROXY),
-            IRateLimits(Ethereum.ALM_RATE_LIMITS),
-            Ethereum.ALM_RELAYER,
-            Ethereum.ALM_FREEZER
+    function _getGroveLiquidityLayerContext(ChainId chain) internal pure returns(GroveLiquidityLayerContext memory ctx) {
+        if (chain == ChainIdUtils.Ethereum()) {
+            ctx = GroveLiquidityLayerContext(
+                Ethereum.ALM_CONTROLLER,
+                IALMProxy(Ethereum.ALM_PROXY),
+                IRateLimits(Ethereum.ALM_RATE_LIMITS),
+                Ethereum.ALM_RELAYER,
+                Ethereum.ALM_FREEZER
         );
+        } else if (chain == ChainIdUtils.Avalanche()) {
+            ctx = GroveLiquidityLayerContext(
+                Avalanche.ALM_CONTROLLER,
+                IALMProxy(Avalanche.ALM_PROXY),
+                IRateLimits(Avalanche.ALM_RATE_LIMITS),
+                Avalanche.ALM_RELAYER,
+                Avalanche.ALM_FREEZER
+            );
+        } else {
+            revert("Chain not supported by GroveLiquidityLayerTests context");
+        }
+    }
+
+    function _getGroveLiquidityLayerContext() internal view returns(GroveLiquidityLayerContext memory) {
+        return _getGroveLiquidityLayerContext(ChainIdUtils.fromUint(block.chainid));
     }
 
    function _assertRateLimit(
