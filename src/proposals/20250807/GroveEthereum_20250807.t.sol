@@ -26,6 +26,9 @@ interface AutoLineLike {
 
 contract GroveEthereum_20250807Test is GroveTestBase {
 
+    address internal constant ETHEREUM_PAYLOAD  = 0xa25127f759B6F07020bf2206D31bEb6Ed04D1550;
+    address internal constant AVALANCHE_PAYLOAD = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
+
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
     address internal constant FAKE_PSM3_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
@@ -54,8 +57,8 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     function setUp() public {
         setupDomains("2025-07-31T16:50:00Z");
 
-        chainData[ChainIdUtils.Ethereum()].payload  = 0xa25127f759B6F07020bf2206D31bEb6Ed04D1550;
-        chainData[ChainIdUtils.Avalanche()].payload = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
+        chainData[ChainIdUtils.Ethereum()].payload  = ETHEREUM_PAYLOAD;
+        chainData[ChainIdUtils.Avalanche()].payload = AVALANCHE_PAYLOAD;
 
         // Warp to ensure all rate limits and autoline cooldown are reset
         vm.warp(block.timestamp + 1 days);
