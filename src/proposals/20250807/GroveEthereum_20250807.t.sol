@@ -20,13 +20,18 @@ import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
 
 import "src/test-harness/GroveTestBase.sol";
 
+interface AutoLineLike {
+    function exec(bytes32) external;
+}
+
 contract GroveEthereum_20250807Test is GroveTestBase {
+
+    address internal constant ETHEREUM_PAYLOAD  = 0xa25127f759B6F07020bf2206D31bEb6Ed04D1550;
+    address internal constant AVALANCHE_PAYLOAD = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
     address internal constant FAKE_PSM3_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
-
-    uint256 internal constant ZERO = 0;
 
     uint256 internal constant ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant ETHEREUM_TO_AVALANCHE_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
@@ -43,13 +48,20 @@ contract GroveEthereum_20250807Test is GroveTestBase {
     uint256 internal constant ETHENA_DEPOSIT_RATE_LIMIT_MAX   = 250_000_000e18;
     uint256 internal constant ETHENA_DEPOSIT_RATE_LIMIT_SLOPE = 100_000_000e18 / uint256(1 days);
 
+    bytes32 internal constant ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
+
     constructor() {
         id = "20250807";
     }
 
     function setUp() public {
-        setupDomains("2025-07-28T16:15:00Z");
-        deployPayloads();
+        setupDomains("2025-07-31T16:50:00Z");
+
+        chainData[ChainIdUtils.Ethereum()].payload  = ETHEREUM_PAYLOAD;
+        chainData[ChainIdUtils.Avalanche()].payload = AVALANCHE_PAYLOAD;
+
+        // Warp to ensure all rate limits and autoline cooldown are reset
+        vm.warp(block.timestamp + 1 days);
     }
 
     function test_ETHEREUM_onboardCctpTransfersToAvalanche() public onChain(ChainIdUtils.Ethereum()) {
@@ -149,7 +161,7 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         deal(Ethereum.SUSDE, Ethereum.ALM_PROXY, susde.convertToShares(500_000_000e18) + 1);  // Rounding
 
         _assertUnlimitedRateLimit(susdeCooldownKey);
-        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18);
+        assertEq(susde.convertToAssets(susde.balanceOf(Ethereum.ALM_PROXY)), 500_000_000e18 + 1);  // Rounding
         assertEq(rateLimits.getCurrentRateLimit(susdeWithdrawKey),           0);
 
         controller.cooldownAssetsSUSDe(500_000_000e18);
@@ -174,24 +186,38 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         _assertUnlimitedRateLimit(susdeCooldownKey);
     }
 
+    function test_AVALANCHE_governanceDeployment() public onChain(ChainIdUtils.Avalanche()) {
+        _verifyForeignDomainExecutorDeployment({
+            _executor : Avalanche.GROVE_EXECUTOR,
+            _receiver : Avalanche.GROVE_RECEIVER,
+            _deployer : DEPLOYER
+        });
+        _verifyCctpReceiverDeployment({
+            _executor               : Avalanche.GROVE_EXECUTOR,
+            _receiver               : Avalanche.GROVE_RECEIVER,
+            _cctpMessageTransmitter : CCTPForwarder.MESSAGE_TRANSMITTER_CIRCLE_AVALANCHE
+        });
+    }
+
     function test_AVALANCHE_almSystemDeployment() public onChain(ChainIdUtils.Avalanche()) {
-        IALMProxy         almProxy   = IALMProxy(Avalanche.ALM_PROXY);
-        IRateLimits       rateLimits = IRateLimits(Avalanche.ALM_RATE_LIMITS);
-        ForeignController controller = ForeignController(Avalanche.ALM_CONTROLLER);
-
-        assertEq(almProxy.hasRole(0x0, Avalanche.GROVE_EXECUTOR),   true, "incorrect-admin-almProxy");
-        assertEq(rateLimits.hasRole(0x0, Avalanche.GROVE_EXECUTOR), true, "incorrect-admin-rateLimits");
-        assertEq(controller.hasRole(0x0, Avalanche.GROVE_EXECUTOR), true, "incorrect-admin-controller");
-
-        assertEq(almProxy.hasRole(0x0, DEPLOYER),   false, "incorrect-admin-almProxy");
-        assertEq(rateLimits.hasRole(0x0, DEPLOYER), false, "incorrect-admin-rateLimits");
-        assertEq(controller.hasRole(0x0, DEPLOYER), false, "incorrect-admin-controller");
-
-        assertEq(address(controller.proxy()),      Avalanche.ALM_PROXY,            "incorrect-almProxy");
-        assertEq(address(controller.rateLimits()), Avalanche.ALM_RATE_LIMITS,      "incorrect-rateLimits");
-        assertEq(address(controller.cctp()),       Avalanche.CCTP_TOKEN_MESSENGER, "incorrect-cctpMessenger");
-        assertEq(address(controller.usdc()),       Avalanche.USDC,                 "incorrect-usdc");
-        assertEq(address(controller.psm()),        FAKE_PSM3_PLACEHOLDER,          "incorrect-psm");
+        _verifyAlmSystemDeployment(
+            AlmSystemContracts({
+                executor   : Avalanche.GROVE_EXECUTOR,
+                proxy      : Avalanche.ALM_PROXY,
+                rateLimits : Avalanche.ALM_RATE_LIMITS,
+                controller : Avalanche.ALM_CONTROLLER
+            }),
+            AlmSystemActors({
+                deployer : DEPLOYER,
+                freezer  : Avalanche.ALM_FREEZER,
+                relayer  : Avalanche.ALM_RELAYER
+            }),
+            AlmSystemDependencies({
+                psm           : FAKE_PSM3_PLACEHOLDER,
+                usdc          : Avalanche.USDC,
+                cctpMessenger : Avalanche.CCTP_TOKEN_MESSENGER
+            })
+        );
     }
 
     function test_AVALANCHE_almSystemInitialization() public onChain(ChainIdUtils.Avalanche()) {
@@ -244,6 +270,8 @@ contract GroveEthereum_20250807Test is GroveTestBase {
         // --- Step 1: Mint and bridge 10m USDC to Avalanche ---
 
         uint256 usdcAmount = 50_000_000e6;
+
+        AutoLineLike(Ethereum.AUTO_LINE).exec(ALLOCATOR_ILK);
 
         vm.startPrank(Ethereum.ALM_RELAYER);
         mainnetController.mintUSDS(usdcAmount * 1e12);
