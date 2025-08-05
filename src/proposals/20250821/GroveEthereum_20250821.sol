@@ -45,6 +45,7 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
         // Forum : TODO Add forum link
         // Poll  : TODO Add poll link
         _upgradeController();
+
         // TODO Add spell item title
         // Forum : TODO Add forum link
         // Poll  : TODO Add poll link

@@ -35,6 +35,7 @@ contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
         // Forum : TODO Add forum link
         // Poll  : TODO Add poll link
         _upgradeController();
+
         // TODO Add spell item title
         // Forum : TODO Add forum link
         // Poll  : TODO Add poll link
