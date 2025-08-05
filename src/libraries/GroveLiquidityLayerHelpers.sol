@@ -13,12 +13,12 @@ library GroveLiquidityLayerHelpers {
     // This is the same on all chains
     address private constant MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
 
-    bytes32 private constant LIMIT_4626_DEPOSIT  = keccak256("LIMIT_4626_DEPOSIT");
-    bytes32 private constant LIMIT_4626_WITHDRAW = keccak256("LIMIT_4626_WITHDRAW");
-    bytes32 private constant LIMIT_7540_DEPOSIT  = keccak256("LIMIT_7540_DEPOSIT");
-    bytes32 private constant LIMIT_7540_REDEEM   = keccak256("LIMIT_7540_REDEEM");
-    bytes32 private constant LIMIT_USDS_MINT     = keccak256("LIMIT_USDS_MINT");
-    bytes32 private constant LIMIT_USDS_TO_USDC  = keccak256("LIMIT_USDS_TO_USDC");
+    bytes32 public constant LIMIT_4626_DEPOSIT  = keccak256("LIMIT_4626_DEPOSIT");
+    bytes32 public constant LIMIT_4626_WITHDRAW = keccak256("LIMIT_4626_WITHDRAW");
+    bytes32 public constant LIMIT_7540_DEPOSIT  = keccak256("LIMIT_7540_DEPOSIT");
+    bytes32 public constant LIMIT_7540_REDEEM   = keccak256("LIMIT_7540_REDEEM");
+    bytes32 public constant LIMIT_USDS_MINT     = keccak256("LIMIT_USDS_MINT");
+    bytes32 public constant LIMIT_USDS_TO_USDC  = keccak256("LIMIT_USDS_TO_USDC");
 
     /**
      * @notice Onboard an ERC4626 vault

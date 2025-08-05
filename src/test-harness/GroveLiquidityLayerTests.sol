@@ -14,6 +14,8 @@ import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimi
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
+import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHelpers.sol";
+
 import { ChainId, ChainIdUtils } from "../libraries/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
@@ -156,10 +158,16 @@ interface ISpokeLike {
 
 abstract contract GroveLiquidityLayerTests is SpellRunner {
 
-    function _getGroveLiquidityLayerContext(ChainId chain) internal pure returns(GroveLiquidityLayerContext memory ctx) {
+    function _getGroveLiquidityLayerContext(ChainId chain) internal view returns(GroveLiquidityLayerContext memory ctx) {
+        address controller;
+        if(chainData[chain].spellExecuted) {
+            controller = chainData[chain].newController;
+        } else {
+            controller = chainData[chain].prevController;
+        }
         if (chain == ChainIdUtils.Ethereum()) {
             ctx = GroveLiquidityLayerContext(
-                Ethereum.ALM_CONTROLLER,
+                controller,
                 IALMProxy(Ethereum.ALM_PROXY),
                 IRateLimits(Ethereum.ALM_RATE_LIMITS),
                 Ethereum.ALM_RELAYER,
@@ -167,7 +175,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         );
         } else if (chain == ChainIdUtils.Avalanche()) {
             ctx = GroveLiquidityLayerContext(
-                Avalanche.ALM_CONTROLLER,
+                controller,
                 IALMProxy(Avalanche.ALM_PROXY),
                 IRateLimits(Avalanche.ALM_RATE_LIMITS),
                 Avalanche.ALM_RELAYER,
@@ -226,11 +234,11 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         // Note: ERC4626 signature is the same for mainnet and foreign
         deal(IERC4626(vault).asset(), address(ctx.proxy), expectedDepositAmount);
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(ctx.controller).LIMIT_4626_DEPOSIT(),
+            GroveLiquidityLayerHelpers.LIMIT_4626_DEPOSIT,
             vault
         );
         bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(ctx.controller).LIMIT_4626_WITHDRAW(),
+            GroveLiquidityLayerHelpers.LIMIT_4626_WITHDRAW,
             vault
         );
 
@@ -243,6 +251,9 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         // MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
 
         executeAllPayloadsAndBridges();
+
+        // Reload the context after spell execution to get the new controller after potential controller upgrade
+        ctx = _getGroveLiquidityLayerContext();
 
         _assertRateLimit(depositKey, depositMax, depositSlope);
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
@@ -319,11 +330,11 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
 
 
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(ctx.controller).LIMIT_7540_DEPOSIT(),
+            GroveLiquidityLayerHelpers.LIMIT_7540_DEPOSIT,
             centrifugeVault
         );
         bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(ctx.controller).LIMIT_7540_REDEEM(),
+            GroveLiquidityLayerHelpers.LIMIT_7540_REDEEM,
             centrifugeVault
         );
 
@@ -331,6 +342,9 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         _assertRateLimit(redeemKey,  0, 0);
 
         executeAllPayloadsAndBridges();
+
+        // Reload the context after spell execution to get the new controller after potential controller upgrade
+        ctx = _getGroveLiquidityLayerContext();
 
         deal(ICentrifugeV3Vault(centrifugeVault).asset(), address(ctx.proxy), expectedDepositAmount);
 
@@ -478,8 +492,8 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
         assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false);
 
-        assertEq(controller.hasRole(RELAYER, ctx.relayer),        false);
-        assertEq(controller.hasRole(FREEZER, ctx.freezer),        false);
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), false);
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), false);
 
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(address(0)))));
@@ -495,8 +509,8 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), false);
         assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), true);
 
-        assertEq(controller.hasRole(RELAYER, ctx.relayer),        true);
-        assertEq(controller.hasRole(FREEZER, ctx.freezer),        true);
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), true);
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), true);
 
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));

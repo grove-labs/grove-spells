@@ -15,8 +15,15 @@ import "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20250821Test is GroveTestBase {
 
+    // TODO Set payload addresses after deployment
+    // address internal constant ETHEREUM_PAYLOAD  = 0x0000000000000000000000000000000000000000;
+    // address internal constant AVALANCHE_PAYLOAD = 0x0000000000000000000000000000000000000000;
+
     address internal constant PREVIOUS_ETHEREUM_PAYLOAD  = 0xa25127f759B6F07020bf2206D31bEb6Ed04D1550;
     address internal constant PREVIOUS_AVALANCHE_PAYLOAD = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
+
+    address internal constant NEW_MAINNET_CONTROLLER   = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C; // TODO Change to a proper address
+    address internal constant NEW_AVALANCHE_CONTROLLER = 0xbA41d5F95DF891862bf28bEA261AEc0efd6D0FAA; // TODO Change to a proper address
 
     address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
     address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
@@ -51,13 +58,31 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     function setUp() public {
         setupDomains("2025-07-31T16:50:00Z");
 
-        // Execute previous payloads to set up the state
         // TODO: Remove this once the Aug 7th spell is executed
+        _executePreviousPayloads();
+
+        // TODO Remove dynamic payload deployment and set addresses statically after payloads are deployed
+        deployPayloads();
+        // chainData[ChainIdUtils.Ethereum()].payload  = ETHEREUM_PAYLOAD;
+        // chainData[ChainIdUtils.Avalanche()].payload = AVALANCHE_PAYLOAD;
+
+        // Prepare testing setup for the controller upgrade
+        chainData[ChainIdUtils.Ethereum()].newController  = NEW_MAINNET_CONTROLLER;
+        chainData[ChainIdUtils.Avalanche()].newController = NEW_AVALANCHE_CONTROLLER;
+    }
+
+    function _executePreviousPayloads() internal {
+        // Execute previous payloads to set up the state
         chainData[ChainIdUtils.Ethereum()].payload  = PREVIOUS_ETHEREUM_PAYLOAD;
         chainData[ChainIdUtils.Avalanche()].payload = PREVIOUS_AVALANCHE_PAYLOAD;
         executeAllPayloadsAndBridges();
+    }
 
-        deployPayloads();
+    function test_ETHEREUM_upgradeController() public onChain(ChainIdUtils.Ethereum()) {
+        _testControllerUpgrade({
+            oldController : Ethereum.ALM_CONTROLLER,
+            newController : NEW_MAINNET_CONTROLLER
+        });
     }
 
     function test_ETHEREUM_offboardOldCentrifugeJaaa() public onChain(ChainIdUtils.Ethereum()) {
@@ -123,6 +148,13 @@ contract GroveEthereum_20250821Test is GroveTestBase {
             expectedDepositAmount : 50_000_000e6,
             depositMax            : NEW_MAINNET_JTRSY_RATE_LIMIT_MAX,
             depositSlope          : NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE
+        });
+    }
+
+    function test_AVALANCHE_upgradeController() public onChain(ChainIdUtils.Avalanche()) {
+        _testControllerUpgrade({
+            oldController : Avalanche.ALM_CONTROLLER,
+            newController : NEW_AVALANCHE_CONTROLLER
         });
     }
 

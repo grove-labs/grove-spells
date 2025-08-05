@@ -40,9 +40,9 @@ abstract contract SpellRunner is Test {
         /// bridges for a given chain, such as canonical OP bridge and CCTP
         /// USDC-specific bridge
         Bridge[]  bridges;
-        // These are set only if there is a controller upgrade on this chain in this spell
         address   prevController;
         address   newController;
+        bool      spellExecuted;
     }
 
     mapping(ChainId => DomainData) internal chainData;
@@ -147,10 +147,15 @@ abstract contract SpellRunner is Test {
         // We default to Ethereum domain
         chainData[ChainIdUtils.Ethereum()].domain.selectFork();
 
-        chainData[ChainIdUtils.Ethereum()].executor = IExecutor(Ethereum.GROVE_PROXY);
+        chainData[ChainIdUtils.Ethereum()].executor       = IExecutor(Ethereum.GROVE_PROXY);
+        chainData[ChainIdUtils.Ethereum()].prevController = Ethereum.ALM_CONTROLLER;
+        chainData[ChainIdUtils.Ethereum()].newController  = Ethereum.ALM_CONTROLLER;
 
         // DEFINE FOREIGN EXECUTORS HERE
-        chainData[ChainIdUtils.Avalanche()].executor = IExecutor(Avalanche.GROVE_EXECUTOR);
+        chainData[ChainIdUtils.Avalanche()].executor       = IExecutor(Avalanche.GROVE_EXECUTOR);
+        chainData[ChainIdUtils.Avalanche()].prevController = Avalanche.ALM_CONTROLLER;
+        chainData[ChainIdUtils.Avalanche()].newController  = Avalanche.ALM_CONTROLLER;
+
         // chainData[ChainIdUtils.Base()].executor        = IExecutor(Base.GROVE_EXECUTOR);
         // chainData[ChainIdUtils.Gnosis()].executor      = IExecutor(Gnosis.GROVE_EXECUTOR);
         // chainData[ChainIdUtils.ArbitrumOne()].executor = IExecutor(Arbitrum.GROVE_EXECUTOR);
@@ -257,6 +262,7 @@ abstract contract SpellRunner is Test {
             string memory identifier = spellIdentifier(chainId);
             try vm.getCode(identifier) {
                 chainData[chainId].payload = deployPayload(chainId);
+                chainData[chainId].spellExecuted = false;
                 console.log("deployed payload for network: ", chainId.toDomainString());
                 console.log("             payload address: ", chainData[chainId].payload);
             } catch {
@@ -314,6 +320,7 @@ abstract contract SpellRunner is Test {
                 uint256 prevTimestamp = block.timestamp;
                 vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
                 executor.execute(actionsSetId);
+                chainData[chainId].spellExecuted = true;
                 vm.warp(prevTimestamp);
             } else {
                 // We will simulate execution until the real spell is deployed in the mainnet spell
@@ -325,7 +332,7 @@ abstract contract SpellRunner is Test {
                         payload,
                         abi.encodeWithSignature('execute()')
                     );
-
+                    chainData[chainId].spellExecuted = true;
                     console.log("simulating execution payload for network: ", chainId.toDomainString());
                 }
             }
@@ -367,6 +374,7 @@ abstract contract SpellRunner is Test {
             abi.encodeWithSignature('execute()')
         ));
         require(success, "FAILED TO EXECUTE PAYLOAD");
+        chainData[ChainIdUtils.Ethereum()].spellExecuted = true;
     }
 
     function _clearLogs() internal {
