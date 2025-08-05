@@ -1,9 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
-import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
-
 import { RateLimitHelpers } from "grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
@@ -34,8 +31,6 @@ library GroveLiquidityLayerHelpers {
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
-        IERC20 asset = IERC20(IERC4626(vault).asset());
-
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             LIMIT_4626_DEPOSIT,
             vault
@@ -61,9 +56,6 @@ library GroveLiquidityLayerHelpers {
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
-        // ERC7540 vaults are obliged to implement ERC4626 as well
-        IERC20 asset = IERC20(IERC4626(vault).asset());
-
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             LIMIT_7540_DEPOSIT,
             vault
