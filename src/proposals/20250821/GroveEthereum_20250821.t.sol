@@ -15,6 +15,9 @@ import "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20250821Test is GroveTestBase {
 
+    address internal constant PREVIOUS_ETHEREUM_PAYLOAD  = 0xa25127f759B6F07020bf2206D31bEb6Ed04D1550;
+    address internal constant PREVIOUS_AVALANCHE_PAYLOAD = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
+
     address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
     address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
 
@@ -47,6 +50,13 @@ contract GroveEthereum_20250821Test is GroveTestBase {
 
     function setUp() public {
         setupDomains("2025-07-31T16:50:00Z");
+
+        // Execute previous payloads to set up the state
+        // TODO: Remove this once the Aug 7th spell is executed
+        chainData[ChainIdUtils.Ethereum()].payload  = PREVIOUS_ETHEREUM_PAYLOAD;
+        chainData[ChainIdUtils.Avalanche()].payload = PREVIOUS_AVALANCHE_PAYLOAD;
+        executeAllPayloadsAndBridges();
+
         deployPayloads();
     }
 
