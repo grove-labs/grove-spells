@@ -20,9 +20,9 @@ import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
  */
 contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
 
-    address internal constant NEW_AVALANCHE_CONTROLLER = 0xbA41d5F95DF891862bf28bEA261AEc0efd6D0FAA; // TODO Change to a proper address
-    address internal constant CENTRIFUGE_JAAA_VAULT    = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784; // TODO Confirm the address
-    address internal constant CENTRIFUGE_JTRSY_VAULT   = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
+    address internal constant NEW_AVALANCHE_CONTROLLER   = 0xbA41d5F95DF891862bf28bEA261AEc0efd6D0FAA; // TODO Change to a proper address
+    address internal constant NEW_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784; // TODO Confirm the address
+    address internal constant NEW_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
 
     uint256 internal constant JAAA_RATE_LIMIT_MAX    = 100_000_000e6;                  // TODO Set proper value
     uint256 internal constant JAAA_RATE_LIMIT_SLOPE  = 50_000_000e6 / uint256(1 days); // TODO Set proper value
@@ -84,7 +84,7 @@ contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
 
     function _onboardCentrifugeJaaa() internal {
         _onboardERC7540Vault(
-            CENTRIFUGE_JAAA_VAULT,
+            NEW_CENTRIFUGE_JAAA_VAULT,
             JAAA_RATE_LIMIT_MAX,
             JAAA_RATE_LIMIT_SLOPE
         );
@@ -92,7 +92,7 @@ contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
 
     function _onboardCentrifugeJtrsy() internal {
         _onboardERC7540Vault(
-            CENTRIFUGE_JTRSY_VAULT,
+            NEW_CENTRIFUGE_JTRSY_VAULT,
             JTRSY_RATE_LIMIT_MAX,
             JTRSY_RATE_LIMIT_SLOPE
         );

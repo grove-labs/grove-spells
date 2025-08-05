@@ -23,17 +23,17 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  */
 contract GroveEthereum_20250821 is GrovePayloadEthereum {
 
-    address internal constant NEW_MAINNET_CONTROLLER     = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C; // TODO Change to a proper address
-    address internal constant NEW_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
-    address internal constant NEW_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
+    address internal constant NEW_MAINNET_CONTROLLER         = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C; // TODO Change to a proper address
+    address internal constant MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
+    address internal constant MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
 
     uint256 internal constant ZERO = 0;
 
-    uint256 internal constant NEW_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
-    uint256 internal constant NEW_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
+    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
 
-    uint256 internal constant NEW_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant NEW_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant JAAA_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
 
     constructor() {
         // TODO: Set Avalanche payload after deployment
@@ -130,17 +130,17 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
 
     function _onboardNewCentrifugeJaaa() internal {
         _onboardERC7540Vault(
-            NEW_CENTRIFUGE_JAAA_VAULT,
-            NEW_JAAA_RATE_LIMIT_MAX,
-            NEW_JAAA_RATE_LIMIT_SLOPE
+            MAINNET_CENTRIFUGE_JAAA_VAULT,
+            JAAA_RATE_LIMIT_MAX,
+            JAAA_RATE_LIMIT_SLOPE
         );
     }
 
-    function _onboardNewCentrifugeJtrsy() internal {
+    function _onboardNewCentrifugeJtrsy        () internal {
         _onboardERC7540Vault(
-            NEW_CENTRIFUGE_JTRSY_VAULT,
-            NEW_JTRSY_RATE_LIMIT_MAX,
-            NEW_JTRSY_RATE_LIMIT_SLOPE
+            MAINNET_CENTRIFUGE_JTRSY_VAULT,
+            JTRSY_RATE_LIMIT_MAX,
+            JTRSY_RATE_LIMIT_SLOPE
         );
     }
 
