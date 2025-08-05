@@ -1,9 +1,45 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
+import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
+
+import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
+import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+
+import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers } from "grove-alm-controller/src/RateLimitHelpers.sol";
+
+import { GroveLiquidityLayerContext } from "src/test-harness/GroveLiquidityLayerTests.sol";
+
 import "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20250821Test is GroveTestBase {
+
+    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
+    address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
+
+    address internal constant NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784; // TODO Confirm the address
+    address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
+
+    uint256 internal constant ZERO = 0;
+
+    uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
+    uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
+    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX    = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE  = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
+    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
 
     constructor() {
         id = "20250821";
@@ -12,6 +48,92 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     function setUp() public {
         setupDomains("2025-07-31T16:50:00Z");
         deployPayloads();
+    }
+
+    function test_ETHEREUM_offboardOldCentrifugeJaaa() public onChain(ChainIdUtils.Ethereum()) {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        bytes32 oldJaaaDepositKey = RateLimitHelpers.makeAssetKey({
+            key   : MainnetController(ctx.controller).LIMIT_7540_DEPOSIT(),
+            asset : Ethereum.CENTRIFUGE_JAAA
+        });
+
+        _assertRateLimit({
+            key       : oldJaaaDepositKey,
+            maxAmount : OLD_MAINNET_JAAA_RATE_LIMIT_MAX,
+            slope     : OLD_MAINNET_JAAA_RATE_LIMIT_SLOPE
+        });
+
+        executeAllPayloadsAndBridges();
+
+        _assertRateLimit({
+            key       : oldJaaaDepositKey,
+            maxAmount : ZERO,
+            slope     : ZERO
+        });
+    }
+
+    function test_ETHEREUM_offboardOldCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        bytes32 oldJtrsyDepositKey = RateLimitHelpers.makeAssetKey({
+            key   : MainnetController(ctx.controller).LIMIT_7540_DEPOSIT(),
+            asset : Ethereum.CENTRIFUGE_JTRSY
+        });
+
+        _assertRateLimit({
+            key       : oldJtrsyDepositKey,
+            maxAmount : OLD_MAINNET_JTRSY_RATE_LIMIT_MAX,
+            slope     : OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE
+        });
+
+        executeAllPayloadsAndBridges();
+
+        _assertRateLimit({
+            key       : oldJtrsyDepositKey,
+            maxAmount : ZERO,
+            slope     : ZERO
+        });
+    }
+
+    function test_ETHEREUM_onboardNewCentrifugeJaaa() public onChain(ChainIdUtils.Ethereum()) {
+        _testCentrifugeV3Onboarding({
+            centrifugeVault       : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+            usdcAddress           : Ethereum.USDC,
+            expectedDepositAmount : 50_000_000e6,
+            depositMax            : NEW_MAINNET_JAAA_RATE_LIMIT_MAX,
+            depositSlope          : NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE
+        });
+    }
+
+    function test_ETHEREUM_onboardNewCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
+        _testCentrifugeV3Onboarding({
+            centrifugeVault       : NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
+            usdcAddress           : Ethereum.USDC,
+            expectedDepositAmount : 50_000_000e6,
+            depositMax            : NEW_MAINNET_JTRSY_RATE_LIMIT_MAX,
+            depositSlope          : NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE
+        });
+    }
+
+    function test_AVALANCHE_onboardCentrifugeJaaa() public onChain(ChainIdUtils.Avalanche()) {
+        _testCentrifugeV3Onboarding({
+            centrifugeVault       : NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT,
+            usdcAddress           : Avalanche.USDC,
+            expectedDepositAmount : 50_000_000e6,
+            depositMax            : NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX,
+            depositSlope          : NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE
+        });
+    }
+
+    function test_AVALANCHE_onboardCentrifugeJtrsy() public onChain(ChainIdUtils.Avalanche()) {
+        _testCentrifugeV3Onboarding({
+            centrifugeVault       : NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT,
+            usdcAddress           : Avalanche.USDC,
+            expectedDepositAmount : 50_000_000e6,
+            depositMax            : NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX,
+            depositSlope          : NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE
+        });
     }
 
 }
