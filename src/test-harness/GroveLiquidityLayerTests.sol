@@ -88,6 +88,8 @@ struct CentrifugeV3Config {
     address centrifugeVault;
     address centrifugeRoot;
     address centrifugeManager;
+    address centrifugeAsset;
+    address centrifugeSpoke;
     bytes16 centrifugeScId;
     uint64  centrifugePoolId;
     uint128 centrifugeAssetId;
@@ -154,6 +156,14 @@ interface IBalanceSheetLike {
 
 interface ISpokeLike {
     function assetToId(address asset, uint256 tokenId) external view returns (uint128);
+    event InitiateTransferShares(
+        uint16 centrifugeId,
+        uint64 indexed poolId,
+        bytes16 indexed scId,
+        address indexed sender,
+        bytes32 destinationAddress,
+        uint128 amount
+    );
 }
 
 abstract contract GroveLiquidityLayerTests is SpellRunner {
@@ -302,32 +312,11 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
     ) public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        IAsyncRedeemManagerLike centrifugeManager = IAsyncRedeemManagerLike(ICentrifugeV3Vault(centrifugeVault).manager());
-        ISpokeLike centrifugeSpoke = ISpokeLike(centrifugeManager.spoke());
-
-        CentrifugeV3Config memory centrifugeConfig = CentrifugeV3Config({
-            centrifugeVault:   centrifugeVault,
-            centrifugeRoot:    ICentrifugeV3Vault(centrifugeVault).root(),
-            centrifugeManager: address(centrifugeManager),
-            centrifugeScId:    ICentrifugeV3Vault(centrifugeVault).scId(),
-            centrifugePoolId:  ICentrifugeV3Vault(centrifugeVault).poolId(),
-            centrifugeAssetId: centrifugeSpoke.assetToId(ICentrifugeV3Vault(centrifugeVault).asset(), 0)
-        });
+        CentrifugeV3Config memory centrifugeConfig = _prepareCentrifugeConfig(centrifugeVault);
 
         ICentrifugeV3ShareLike vaultToken = ICentrifugeV3ShareLike(ICentrifugeV3Vault(centrifugeVault).share());
 
-        // TODO: Remove this once the Centrifuge fully migrates to V3, setting a new root address on Mainnet
-        if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
-            vm.startPrank(0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC);
-            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
-            vaultToken.file("hook", 0xa2C98F0F76Da0C97039688CA6280d082942d0b48);
-            vm.stopPrank();
-        } else {
-            vm.startPrank(centrifugeConfig.centrifugeRoot);
-            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
-            vm.stopPrank();
-        }
-
+        _prepareCentrifugeWhitelisting(vaultToken, centrifugeConfig.centrifugeRoot);
 
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             GroveLiquidityLayerHelpers.LIMIT_7540_DEPOSIT,
@@ -403,6 +392,107 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
     }
 
+
+    function _testCentrifugeCrosschainTransferOnboarding(
+        address centrifugeVault,
+        address destinationAddress,
+        uint16  destinationCentrifugeId,
+        uint128 expectedTransferAmount,
+        uint256 maxAmount,
+        uint256 slope
+    ) internal {
+        bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(GroveLiquidityLayerHelpers.LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
+        bytes32 castedDestinationAddress = bytes32(uint256(uint160(destinationAddress)));
+
+        _assertRateLimit(centrifugeCrosschainTransferKey, 0, 0);
+
+        executeAllPayloadsAndBridges();
+
+        _assertRateLimit(centrifugeCrosschainTransferKey, maxAmount, slope);
+
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        CentrifugeV3Config memory centrifugeConfig = _prepareCentrifugeConfig(centrifugeVault);
+
+        ICentrifugeV3ShareLike vaultToken = ICentrifugeV3ShareLike(ICentrifugeV3Vault(centrifugeConfig.centrifugeVault).share());
+
+        _prepareCentrifugeWhitelisting(vaultToken, centrifugeConfig.centrifugeRoot);
+
+        deal(centrifugeConfig.centrifugeAsset, address(ctx.proxy), expectedTransferAmount / 2);
+        deal(ctx.relayer, 1 ether);  // Gas cost for Centrifuge
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).requestDepositERC7540(centrifugeConfig.centrifugeVault, expectedTransferAmount / 2);
+
+        _centrifugeV3FulfillDepositRequest(
+            centrifugeConfig,
+            expectedTransferAmount / 2
+        );
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).claimDepositERC7540(centrifugeConfig.centrifugeVault);
+
+        uint256 proxyBalanceBefore     = IERC20(vaultToken).balanceOf(address(ctx.proxy));
+        uint256 shareTotalSupplyBefore = IERC20(vaultToken).totalSupply();
+
+        vm.expectEmit(centrifugeConfig.centrifugeSpoke);
+        emit ISpokeLike.InitiateTransferShares(
+            destinationCentrifugeId,
+            centrifugeConfig.centrifugePoolId,
+            centrifugeConfig.centrifugeScId,
+            address(ctx.proxy),
+            castedDestinationAddress,
+            expectedTransferAmount
+        );
+
+        vm.startPrank(ctx.relayer);
+        MainnetController(ctx.controller).transferSharesCentrifuge{value: 0.1 ether}(
+            centrifugeConfig.centrifugeVault,
+            expectedTransferAmount,
+            destinationCentrifugeId,
+            0
+        );
+
+        uint256 proxyBalanceAfter     = IERC20(vaultToken).balanceOf(address(ctx.proxy));
+        uint256 shareTotalSupplyAfter = IERC20(vaultToken).totalSupply();
+
+        assertEq(proxyBalanceAfter,     proxyBalanceBefore     - expectedTransferAmount);
+        assertEq(shareTotalSupplyAfter, shareTotalSupplyBefore - expectedTransferAmount);
+    }
+
+    function _prepareCentrifugeConfig(address centrifugeVault) internal view returns (CentrifugeV3Config memory) {
+        IAsyncRedeemManagerLike centrifugeManager = IAsyncRedeemManagerLike(ICentrifugeV3Vault(centrifugeVault).manager());
+        ISpokeLike centrifugeSpoke = ISpokeLike(centrifugeManager.spoke());
+        address centrifugeAsset = ICentrifugeV3Vault(centrifugeVault).asset();
+
+        return CentrifugeV3Config({
+            centrifugeVault:   centrifugeVault,
+            centrifugeRoot:    ICentrifugeV3Vault(centrifugeVault).root(),
+            centrifugeManager: address(centrifugeManager),
+            centrifugeAsset:   centrifugeAsset,
+            centrifugeSpoke:   address(centrifugeSpoke),
+            centrifugeScId:    ICentrifugeV3Vault(centrifugeVault).scId(),
+            centrifugePoolId:  ICentrifugeV3Vault(centrifugeVault).poolId(),
+            centrifugeAssetId: centrifugeSpoke.assetToId(centrifugeAsset, 0)
+        });
+    }
+
+    function _prepareCentrifugeWhitelisting(ICentrifugeV3ShareLike vaultToken, address centrifugeRoot) internal {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        // TODO: Revise this once the Centrifuge fully migrates to V3, setting a new root address on Mainnet
+        if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
+            vm.startPrank(0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC);
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
+            vaultToken.file("hook", 0xa2C98F0F76Da0C97039688CA6280d082942d0b48);
+            vm.stopPrank();
+        } else {
+            vm.startPrank(centrifugeRoot);
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
+            vm.stopPrank();
+        }
+    }
+
     function _centrifugeV3FulfillDepositRequest(
         CentrifugeV3Config memory config,
         uint256 assetAmount
@@ -472,21 +562,6 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
             _tokenAmount,
             0
         );
-    }
-
-    function _testCentrifugeCrosschainTransferOnboarding(
-        address centrifugeVault,
-        uint16 destinationCentrifugeId,
-        uint256 maxAmount,
-        uint256 slope
-    ) internal {
-        bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(GroveLiquidityLayerHelpers.LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
-
-        _assertRateLimit(centrifugeCrosschainTransferKey, 0, 0);
-
-        executeAllPayloadsAndBridges();
-
-        _assertRateLimit(centrifugeCrosschainTransferKey, maxAmount, slope);
     }
 
     function _testControllerUpgrade(address oldController, address newController) internal {

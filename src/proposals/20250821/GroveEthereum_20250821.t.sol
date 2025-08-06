@@ -182,7 +182,9 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     function test_ETHEREUM_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
        _testCentrifugeCrosschainTransferOnboarding({
         centrifugeVault         : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+        destinationAddress      : Avalanche.ALM_PROXY,
         destinationCentrifugeId : AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+        expectedTransferAmount  : 10_000_000e6,
         maxAmount               : MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
         slope                   : MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
        });
@@ -191,7 +193,9 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     function test_ETHEREUM_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
        _testCentrifugeCrosschainTransferOnboarding({
         centrifugeVault         : NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
+        destinationAddress      : Avalanche.ALM_PROXY,
         destinationCentrifugeId : AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+        expectedTransferAmount  : 10_000_000e6,
         maxAmount               : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
         slope                   : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
        });
@@ -239,7 +243,9 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     function test_AVALANCHE_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Avalanche()) {
        _testCentrifugeCrosschainTransferOnboarding({
         centrifugeVault         : NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT,
+        destinationAddress      : Ethereum.ALM_PROXY,
         destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
+        expectedTransferAmount  : 10_000_000e6,
         maxAmount               : AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
         slope                   : AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
        });
@@ -248,7 +254,9 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     function test_AVALANCHE_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Avalanche()) {
        _testCentrifugeCrosschainTransferOnboarding({
         centrifugeVault         : NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT,
+        destinationAddress      : Ethereum.ALM_PROXY,
         destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
+        expectedTransferAmount  : 10_000_000e6,
         maxAmount               : AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
         slope                   : AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
        });
