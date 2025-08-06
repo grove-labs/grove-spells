@@ -474,6 +474,21 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         );
     }
 
+    function _testCentrifugeCrosschainTransferOnboarding(
+        address centrifugeVault,
+        uint16 destinationCentrifugeId,
+        uint256 maxAmount,
+        uint256 slope
+    ) internal {
+        bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(GroveLiquidityLayerHelpers.LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
+
+        _assertRateLimit(centrifugeCrosschainTransferKey, 0, 0);
+
+        executeAllPayloadsAndBridges();
+
+        _assertRateLimit(centrifugeCrosschainTransferKey, maxAmount, slope);
+    }
+
     function _testControllerUpgrade(address oldController, address newController) internal {
         ChainId currentChain = ChainIdUtils.fromUint(block.chainid);
 

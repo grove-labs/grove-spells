@@ -51,6 +51,21 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
     uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
 
+    uint256 internal constant MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
+    uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
+
     constructor() {
         id = "20250821";
     }
@@ -152,13 +167,21 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Implement this test
-        vm.skip(true);
+       _testCentrifugeCrosschainTransferOnboarding({
+        centrifugeVault         : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+        destinationCentrifugeId : AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+        maxAmount               : MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+        slope                   : MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+       });
     }
 
     function test_ETHEREUM_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Implement this test
-        vm.skip(true);
+       _testCentrifugeCrosschainTransferOnboarding({
+        centrifugeVault         : NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
+        destinationCentrifugeId : AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+        maxAmount               : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+        slope                   : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+       });
     }
 
     function test_AVALANCHE_upgradeController() public onChain(ChainIdUtils.Avalanche()) {
@@ -189,13 +212,21 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     }
 
     function test_AVALANCHE_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Avalanche()) {
-        // TODO: Implement this test
-        vm.skip(true);
+       _testCentrifugeCrosschainTransferOnboarding({
+        centrifugeVault         : NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT,
+        destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
+        maxAmount               : AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+        slope                   : AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+       });
     }
 
     function test_AVALANCHE_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Avalanche()) {
-        // TODO: Implement this test
-        vm.skip(true);
+       _testCentrifugeCrosschainTransferOnboarding({
+        centrifugeVault         : NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT,
+        destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
+        maxAmount               : AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+        slope                   : AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+       });
     }
 
 }
