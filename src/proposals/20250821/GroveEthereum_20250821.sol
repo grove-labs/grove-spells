@@ -132,18 +132,32 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
             Ethereum.CENTRIFUGE_JAAA
         );
 
+        bytes32 oldJaaaRedeemKey = RateLimitHelpers.makeAssetKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
+            Ethereum.CENTRIFUGE_JAAA
+        );
+
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
             key       : oldJaaaDepositKey,
             maxAmount : ZERO,
             slope     : ZERO
         });
 
-        // The redeem rate limit remains unlimited in case further redemptions are needed
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
+            key       : oldJaaaRedeemKey,
+            maxAmount : ZERO,
+            slope     : ZERO
+        });
     }
 
     function _offboardOldCentrifugeJtrsy() internal {
         bytes32 oldJtrsyDepositKey = RateLimitHelpers.makeAssetKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_DEPOSIT(),
+            Ethereum.CENTRIFUGE_JTRSY
+        );
+
+        bytes32 oldJtrsyRedeemKey = RateLimitHelpers.makeAssetKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
             Ethereum.CENTRIFUGE_JTRSY
         );
 
@@ -153,7 +167,12 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
             slope     : ZERO
         });
 
-        // The redeem rate limit remains unlimited in case further redemptions are needed
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
+            key       : oldJtrsyRedeemKey,
+            maxAmount : ZERO,
+            slope     : ZERO
+        });
+
     }
 
     function _onboardNewCentrifugeJaaa() internal {

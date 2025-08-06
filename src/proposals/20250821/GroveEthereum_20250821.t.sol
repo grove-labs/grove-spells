@@ -109,16 +109,29 @@ contract GroveEthereum_20250821Test is GroveTestBase {
             asset : Ethereum.CENTRIFUGE_JAAA
         });
 
+        bytes32 oldJaaaRedeemKey = RateLimitHelpers.makeAssetKey({
+            key   : MainnetController(ctx.controller).LIMIT_7540_REDEEM(),
+            asset : Ethereum.CENTRIFUGE_JAAA
+        });
+
         _assertRateLimit({
             key       : oldJaaaDepositKey,
             maxAmount : OLD_MAINNET_JAAA_RATE_LIMIT_MAX,
             slope     : OLD_MAINNET_JAAA_RATE_LIMIT_SLOPE
         });
 
+        _assertUnlimitedRateLimit(oldJaaaRedeemKey);
+
         executeAllPayloadsAndBridges();
 
         _assertRateLimit({
             key       : oldJaaaDepositKey,
+            maxAmount : ZERO,
+            slope     : ZERO
+        });
+
+        _assertRateLimit({
+            key       : oldJaaaRedeemKey,
             maxAmount : ZERO,
             slope     : ZERO
         });
@@ -132,16 +145,29 @@ contract GroveEthereum_20250821Test is GroveTestBase {
             asset : Ethereum.CENTRIFUGE_JTRSY
         });
 
+        bytes32 oldJtrsyRedeemKey = RateLimitHelpers.makeAssetKey({
+            key   : MainnetController(ctx.controller).LIMIT_7540_REDEEM(),
+            asset : Ethereum.CENTRIFUGE_JTRSY
+        });
+
         _assertRateLimit({
             key       : oldJtrsyDepositKey,
             maxAmount : OLD_MAINNET_JTRSY_RATE_LIMIT_MAX,
             slope     : OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE
         });
 
+        _assertUnlimitedRateLimit(oldJtrsyRedeemKey);
+
         executeAllPayloadsAndBridges();
 
         _assertRateLimit({
             key       : oldJtrsyDepositKey,
+            maxAmount : ZERO,
+            slope     : ZERO
+        });
+
+        _assertRateLimit({
+            key       : oldJtrsyRedeemKey,
             maxAmount : ZERO,
             slope     : ZERO
         });
