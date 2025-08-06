@@ -7,7 +7,8 @@ import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
-import { RateLimitHelpers } from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
+import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { GroveLiquidityLayerContext } from "src/test-harness/GroveLiquidityLayerTests.sol";
 
@@ -166,6 +167,18 @@ contract GroveEthereum_20250821Test is GroveTestBase {
         });
     }
 
+    function test_ETHEREUM_setCentrifugeCrosschainTransferRecipient() public onChain(ChainIdUtils.Ethereum()) {
+        bytes32 centrifugeRecipientBefore = MainnetController(NEW_MAINNET_CONTROLLER).centrifugeRecipients(AVALANCHE_DESTINATION_CENTRIFUGE_ID);
+
+        assertEq(centrifugeRecipientBefore, bytes32(0));
+
+        executeAllPayloadsAndBridges();
+
+        bytes32 centrifugeRecipientAfter = MainnetController(NEW_MAINNET_CONTROLLER).centrifugeRecipients(AVALANCHE_DESTINATION_CENTRIFUGE_ID);
+
+        assertEq(centrifugeRecipientAfter, bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
+    }
+
     function test_ETHEREUM_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
        _testCentrifugeCrosschainTransferOnboarding({
         centrifugeVault         : NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
@@ -209,6 +222,18 @@ contract GroveEthereum_20250821Test is GroveTestBase {
             depositMax            : NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX,
             depositSlope          : NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE
         });
+    }
+
+    function test_AVALANCHE_setCentrifugeCrosschainTransferRecipient() public onChain(ChainIdUtils.Avalanche()) {
+        bytes32 centrifugeRecipientBefore = ForeignController(NEW_AVALANCHE_CONTROLLER).centrifugeRecipients(ETHEREUM_DESTINATION_CENTRIFUGE_ID);
+
+        assertEq(centrifugeRecipientBefore, bytes32(0));
+
+        executeAllPayloadsAndBridges();
+
+        bytes32 centrifugeRecipientAfter = ForeignController(NEW_AVALANCHE_CONTROLLER).centrifugeRecipients(ETHEREUM_DESTINATION_CENTRIFUGE_ID);
+
+        assertEq(centrifugeRecipientAfter, bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
     }
 
     function test_AVALANCHE_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Avalanche()) {

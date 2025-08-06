@@ -77,6 +77,11 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
         // TODO Add spell item title
         // Forum : TODO Add forum link
         // Poll  : TODO Add poll link
+        _setCentrifugeCrosschainTransferRecipient();
+
+        // TODO Add spell item title
+        // Forum : TODO Add forum link
+        // Poll  : TODO Add poll link
         _onboardCentrifugeJaaaCrosschainTransfer();
 
         // TODO Add spell item title
@@ -165,6 +170,10 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
             JTRSY_DEPOSIT_RATE_LIMIT_MAX,
             JTRSY_DEPOSIT_RATE_LIMIT_SLOPE
         );
+    }
+
+    function _setCentrifugeCrosschainTransferRecipient() internal {
+        MainnetController(NEW_MAINNET_CONTROLLER).setCentrifugeRecipient(AVALANCHE_DESTINATION_CENTRIFUGE_ID, bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
     }
 
     function _onboardCentrifugeJaaaCrosschainTransfer() internal {
