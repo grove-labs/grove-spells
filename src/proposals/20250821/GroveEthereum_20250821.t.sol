@@ -151,6 +151,16 @@ contract GroveEthereum_20250821Test is GroveTestBase {
         });
     }
 
+    function test_ETHEREUM_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Implement this test
+        vm.skip(true);
+    }
+
+    function test_ETHEREUM_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Implement this test
+        vm.skip(true);
+    }
+
     function test_AVALANCHE_upgradeController() public onChain(ChainIdUtils.Avalanche()) {
         _testControllerUpgrade({
             oldController : Avalanche.ALM_CONTROLLER,
@@ -176,6 +186,16 @@ contract GroveEthereum_20250821Test is GroveTestBase {
             depositMax            : NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX,
             depositSlope          : NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE
         });
+    }
+
+    function test_AVALANCHE_onboardCentrifugeJaaaCrosschainTransfer() public onChain(ChainIdUtils.Avalanche()) {
+        // TODO: Implement this test
+        vm.skip(true);
+    }
+
+    function test_AVALANCHE_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Avalanche()) {
+        // TODO: Implement this test
+        vm.skip(true);
     }
 
 }

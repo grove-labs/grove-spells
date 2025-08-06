@@ -20,4 +20,14 @@ abstract contract GrovePayloadAvalanche {
         );
     }
 
+    function _setCentrifugeCrosschainTransferRateLimit(address centrifugeVault, uint16 destinationCentrifugeId, uint256 maxAmount, uint256 slope) internal {
+        GroveLiquidityLayerHelpers.setCentrifugeCrosschainTransferRateLimit(
+            Avalanche.ALM_RATE_LIMITS,
+            centrifugeVault,
+            destinationCentrifugeId,
+            maxAmount,
+            slope
+        );
+    }
+
 }

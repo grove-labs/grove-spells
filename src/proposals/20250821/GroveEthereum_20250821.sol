@@ -23,17 +23,25 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  */
 contract GroveEthereum_20250821 is GrovePayloadEthereum {
 
-    address internal constant NEW_MAINNET_CONTROLLER         = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C; // TODO Change to a proper address
-    address internal constant MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
-    address internal constant MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
+    address internal constant NEW_MAINNET_CONTROLLER             = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C; // TODO Change to a proper address
+    address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
+    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
 
     uint256 internal constant ZERO = 0;
 
-    uint256 internal constant JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
-    uint256 internal constant JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
 
-    uint256 internal constant JAAA_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
+    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
+    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+
+    uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
 
     constructor() {
         // TODO: Set Avalanche payload after deployment
@@ -65,13 +73,23 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
         // Forum : TODO Add forum link
         // Poll  : TODO Add poll link
         _onboardNewCentrifugeJtrsy();
+
+        // TODO Add spell item title
+        // Forum : TODO Add forum link
+        // Poll  : TODO Add poll link
+        _onboardCentrifugeJaaaCrosschainTransfer();
+
+        // TODO Add spell item title
+        // Forum : TODO Add forum link
+        // Poll  : TODO Add poll link
+        _onboardCentrifugeJtrsyCrosschainTransfer();
     }
     function _upgradeController() internal {
-        // Define Mainnet relayers
+        // Define Mainnet relayer
         address[] memory relayers = new address[](1);
         relayers[0] = Ethereum.ALM_RELAYER;
 
-        // Define Avalanche CCTP mint recipients
+        // Define Avalanche CCTP mint recipient
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](1);
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
             domain: CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
@@ -114,6 +132,8 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
             maxAmount : ZERO,
             slope     : ZERO
         });
+
+        // The redeem rate limit remains unlimited in case further redemptions are needed
     }
 
     function _offboardOldCentrifugeJtrsy() internal {
@@ -127,21 +147,41 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
             maxAmount : ZERO,
             slope     : ZERO
         });
+
+        // The redeem rate limit remains unlimited in case further redemptions are needed
     }
 
     function _onboardNewCentrifugeJaaa() internal {
         _onboardERC7540Vault(
-            MAINNET_CENTRIFUGE_JAAA_VAULT,
-            JAAA_RATE_LIMIT_MAX,
-            JAAA_RATE_LIMIT_SLOPE
+            NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+            JAAA_DEPOSIT_RATE_LIMIT_MAX,
+            JAAA_DEPOSIT_RATE_LIMIT_SLOPE
         );
     }
 
-    function _onboardNewCentrifugeJtrsy        () internal {
+    function _onboardNewCentrifugeJtrsy() internal {
         _onboardERC7540Vault(
-            MAINNET_CENTRIFUGE_JTRSY_VAULT,
-            JTRSY_RATE_LIMIT_MAX,
-            JTRSY_RATE_LIMIT_SLOPE
+            NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
+            JTRSY_DEPOSIT_RATE_LIMIT_MAX,
+            JTRSY_DEPOSIT_RATE_LIMIT_SLOPE
+        );
+    }
+
+    function _onboardCentrifugeJaaaCrosschainTransfer() internal {
+        _setCentrifugeCrosschainTransferRateLimit(
+            NEW_MAINNET_CENTRIFUGE_JAAA_VAULT,
+            AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+            JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+            JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+        );
+    }
+
+    function _onboardCentrifugeJtrsyCrosschainTransfer() internal {
+        _setCentrifugeCrosschainTransferRateLimit(
+            NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT,
+            AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+            JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+            JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
         );
     }
 

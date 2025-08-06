@@ -92,4 +92,14 @@ abstract contract GrovePayloadEthereum {
         );
     }
 
+    function _setCentrifugeCrosschainTransferRateLimit(address centrifugeVault, uint16 destinationCentrifugeId, uint256 maxAmount, uint256 slope) internal {
+        GroveLiquidityLayerHelpers.setCentrifugeCrosschainTransferRateLimit(
+            Ethereum.ALM_RATE_LIMITS,
+            centrifugeVault,
+            destinationCentrifugeId,
+            maxAmount,
+            slope
+        );
+    }
+
 }

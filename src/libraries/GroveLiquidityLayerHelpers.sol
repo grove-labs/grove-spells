@@ -13,12 +13,16 @@ library GroveLiquidityLayerHelpers {
     // This is the same on all chains
     address private constant MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
 
-    bytes32 public constant LIMIT_4626_DEPOSIT  = keccak256("LIMIT_4626_DEPOSIT");
-    bytes32 public constant LIMIT_4626_WITHDRAW = keccak256("LIMIT_4626_WITHDRAW");
-    bytes32 public constant LIMIT_7540_DEPOSIT  = keccak256("LIMIT_7540_DEPOSIT");
-    bytes32 public constant LIMIT_7540_REDEEM   = keccak256("LIMIT_7540_REDEEM");
-    bytes32 public constant LIMIT_USDS_MINT     = keccak256("LIMIT_USDS_MINT");
-    bytes32 public constant LIMIT_USDS_TO_USDC  = keccak256("LIMIT_USDS_TO_USDC");
+    bytes32 public constant LIMIT_4626_DEPOSIT        = keccak256("LIMIT_4626_DEPOSIT");
+    bytes32 public constant LIMIT_4626_WITHDRAW       = keccak256("LIMIT_4626_WITHDRAW");
+    bytes32 public constant LIMIT_7540_DEPOSIT        = keccak256("LIMIT_7540_DEPOSIT");
+    bytes32 public constant LIMIT_7540_REDEEM         = keccak256("LIMIT_7540_REDEEM");
+    bytes32 public constant LIMIT_USDS_MINT           = keccak256("LIMIT_USDS_MINT");
+    bytes32 public constant LIMIT_USDS_TO_USDC        = keccak256("LIMIT_USDS_TO_USDC");
+    bytes32 public constant LIMIT_CENTRIFUGE_TRANSFER = keccak256("LIMIT_CENTRIFUGE_TRANSFER");
+
+    uint16 public constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
+    uint16 public constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
 
     /**
      * @notice Onboard an ERC4626 vault
@@ -93,5 +97,17 @@ library GroveLiquidityLayerHelpers {
         );
 
         IRateLimits(rateLimits).setRateLimitData(usdsToUsdcKey, maxUsdcAmount, slope);
+    }
+
+    function setCentrifugeCrosschainTransferRateLimit(
+        address rateLimits,
+        address centrifugeVault,
+        uint16  destinationCentrifugeId,
+        uint256 maxAmount,
+        uint256 slope
+    ) internal {
+        bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
+
+        IRateLimits(rateLimits).setRateLimitData(centrifugeCrosschainTransferKey, maxAmount, slope);
     }
 }
