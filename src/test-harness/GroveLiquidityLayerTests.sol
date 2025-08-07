@@ -237,10 +237,9 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         _assertRateLimit(depositKey, 0, 0);
         _assertRateLimit(withdrawKey, 0, 0);
 
-        // TODO: Uncomment this once the relayer going to be properly set before the payload execution
-        // vm.prank(ctx.relayer);
-        // vm.expectRevert("RateLimits/zero-maxAmount");
-        // MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
+        vm.prank(ctx.relayer);
+        vm.expectRevert("RateLimits/zero-maxAmount");
+        MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
 
         executeAllPayloadsAndBridges();
 
