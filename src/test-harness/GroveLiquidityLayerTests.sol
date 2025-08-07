@@ -418,15 +418,15 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
 
         _prepareCentrifugeWhitelisting(vaultToken, centrifugeConfig.centrifugeRoot);
 
-        deal(centrifugeConfig.centrifugeAsset, address(ctx.proxy), expectedTransferAmount / 2);
+        deal(centrifugeConfig.centrifugeAsset, address(ctx.proxy), expectedTransferAmount * 2);
         deal(ctx.relayer, 1 ether);  // Gas cost for Centrifuge
 
         vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).requestDepositERC7540(centrifugeConfig.centrifugeVault, expectedTransferAmount / 2);
+        MainnetController(ctx.controller).requestDepositERC7540(centrifugeConfig.centrifugeVault, expectedTransferAmount * 2);
 
         _centrifugeV3FulfillDepositRequest(
             centrifugeConfig,
-            expectedTransferAmount / 2
+            expectedTransferAmount * 2
         );
 
         vm.prank(ctx.relayer);
@@ -446,7 +446,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         );
 
         vm.startPrank(ctx.relayer);
-        MainnetController(ctx.controller).transferSharesCentrifuge{value: 0.1 ether}(
+        MainnetController(ctx.controller).transferSharesCentrifuge{value: 1 ether}(
             centrifugeConfig.centrifugeVault,
             expectedTransferAmount,
             destinationCentrifugeId,
@@ -484,11 +484,13 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
             vm.startPrank(0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC);
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
             vaultToken.file("hook", 0xa2C98F0F76Da0C97039688CA6280d082942d0b48);
             vm.stopPrank();
         } else {
             vm.startPrank(centrifugeRoot);
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
             vm.stopPrank();
         }
     }
