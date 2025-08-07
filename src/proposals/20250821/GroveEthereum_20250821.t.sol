@@ -23,14 +23,14 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     address internal constant PREVIOUS_ETHEREUM_PAYLOAD  = 0xa25127f759B6F07020bf2206D31bEb6Ed04D1550;
     address internal constant PREVIOUS_AVALANCHE_PAYLOAD = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
 
-    address internal constant NEW_MAINNET_CONTROLLER   = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C; // TODO Change to a proper address
-    address internal constant NEW_AVALANCHE_CONTROLLER = 0xbA41d5F95DF891862bf28bEA261AEc0efd6D0FAA; // TODO Change to a proper address
+    address internal constant NEW_MAINNET_CONTROLLER   = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C;
+    address internal constant NEW_AVALANCHE_CONTROLLER = 0xbA41d5F95DF891862bf28bEA261AEc0efd6D0FAA;
 
-    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
-    address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
+    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
+    address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
 
-    address internal constant NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784; // TODO Confirm the address
-    address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
+    address internal constant NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784;
+    address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
     uint256 internal constant ZERO = 0;
 
@@ -40,29 +40,29 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant OLD_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
-    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant NEW_MAINNET_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
+    uint256 internal constant NEW_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX    = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE  = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_MAX    = 50_000_000e6;
+    uint256 internal constant NEW_AVALANCHE_JAAA_RATE_LIMIT_SLOPE  = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
-    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant NEW_AVALANCHE_JTRSY_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant MAINNET_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant AVALANCHE_JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant AVALANCHE_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
     uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;

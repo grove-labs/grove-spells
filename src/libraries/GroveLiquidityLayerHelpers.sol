@@ -73,6 +73,23 @@ library GroveLiquidityLayerHelpers {
         IRateLimits(rateLimits).setUnlimitedRateLimitData(redeemKey);
     }
 
+    function offboardERC7540Vault(
+        address rateLimits,
+        address vault
+    ) internal {
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_7540_DEPOSIT,
+            vault
+        );
+        bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_7540_REDEEM,
+            vault
+        );
+
+        IRateLimits(rateLimits).setRateLimitData(depositKey, 0, 0);
+        IRateLimits(rateLimits).setRateLimitData(redeemKey,  0, 0);
+    }
+
     function setUSDSMintRateLimit(
         address rateLimits,
         uint256 maxAmount,

@@ -76,6 +76,13 @@ abstract contract GrovePayloadEthereum {
         );
     }
 
+    function _offboardERC7540Vault(address vault) internal {
+        GroveLiquidityLayerHelpers.offboardERC7540Vault(
+            Ethereum.ALM_RATE_LIMITS,
+            vault
+        );
+    }
+
     function _setUSDSMintRateLimit(uint256 maxAmount, uint256 slope) internal {
         GroveLiquidityLayerHelpers.setUSDSMintRateLimit(
             Ethereum.ALM_RATE_LIMITS,

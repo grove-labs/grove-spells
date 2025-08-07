@@ -24,22 +24,20 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
 contract GroveEthereum_20250821 is GrovePayloadEthereum {
 
     address internal constant NEW_MAINNET_CONTROLLER             = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C; // TODO Change to a proper address
-    address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B; // TODO Confirm the address
-    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A; // TODO Confirm the address
+    address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
+    address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
-    uint256 internal constant ZERO = 0;
+    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Confirm value
+    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
 
-    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Confirm value
+    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
 
-    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Set proper value
-    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Confirm value
+    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
 
-    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
-
-    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Set proper value
-    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Set proper value
+    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Confirm value
+    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
 
     uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
 
@@ -127,52 +125,11 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
     }
 
     function _offboardOldCentrifugeJaaa() internal {
-        bytes32 oldJaaaDepositKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_DEPOSIT(),
-            Ethereum.CENTRIFUGE_JAAA
-        );
-
-        bytes32 oldJaaaRedeemKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
-            Ethereum.CENTRIFUGE_JAAA
-        );
-
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
-            key       : oldJaaaDepositKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
-            key       : oldJaaaRedeemKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
+        _offboardERC7540Vault(Ethereum.CENTRIFUGE_JAAA);
     }
 
     function _offboardOldCentrifugeJtrsy() internal {
-        bytes32 oldJtrsyDepositKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_DEPOSIT(),
-            Ethereum.CENTRIFUGE_JTRSY
-        );
-
-        bytes32 oldJtrsyRedeemKey = RateLimitHelpers.makeAssetKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
-            Ethereum.CENTRIFUGE_JTRSY
-        );
-
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
-            key       : oldJtrsyDepositKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
-            key       : oldJtrsyRedeemKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-
+        _offboardERC7540Vault(Ethereum.CENTRIFUGE_JTRSY);
     }
 
     function _onboardNewCentrifugeJaaa() internal {
