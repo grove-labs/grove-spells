@@ -18,7 +18,7 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
 /**
  * @title  August 21, 2025 Grove Ethereum Proposal
  * @author Grove Labs
- * Forum : TODO
+ * Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
  * Vote  : TODO
  */
 contract GroveEthereum_20250821 is GrovePayloadEthereum {
@@ -27,17 +27,17 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
     address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
     address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
-    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_MAX   = 100_000_000e6;                  // TODO Confirm value
-    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
+    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_MAX   = 100_000_000e6;
+    uint256 internal constant JAAA_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Confirm value
-    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
+    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant JTRSY_DEPOSIT_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Confirm value
-    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
+    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant JAAA_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;                   // TODO Confirm value
-    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days); // TODO Confirm value
+    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
 
@@ -48,42 +48,37 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // TODO Add spell item title
-        // Forum : TODO Add forum link
+        // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
         // Poll  : TODO Add poll link
         _upgradeController();
 
         // TODO Add spell item title
-        // Forum : TODO Add forum link
+        // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
         // Poll  : TODO Add poll link
         _offboardOldCentrifugeJaaa();
 
         // TODO Add spell item title
-        // Forum : TODO Add forum link
+        // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
         // Poll  : TODO Add poll link
         _offboardOldCentrifugeJtrsy();
 
         // TODO Add spell item title
-        // Forum : TODO Add forum link
+        // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
         // Poll  : TODO Add poll link
         _onboardNewCentrifugeJaaa();
 
         // TODO Add spell item title
-        // Forum : TODO Add forum link
+        // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
         // Poll  : TODO Add poll link
         _onboardNewCentrifugeJtrsy();
 
         // TODO Add spell item title
-        // Forum : TODO Add forum link
-        // Poll  : TODO Add poll link
-        _setCentrifugeCrosschainTransferRecipient();
-
-        // TODO Add spell item title
-        // Forum : TODO Add forum link
+        // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
         // Poll  : TODO Add poll link
         _onboardCentrifugeJaaaCrosschainTransfer();
 
         // TODO Add spell item title
-        // Forum : TODO Add forum link
+        // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
         // Poll  : TODO Add poll link
         _onboardCentrifugeJtrsyCrosschainTransfer();
     }
@@ -97,6 +92,12 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
             domain: CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
             mintRecipient: bytes32(uint256(uint160(Avalanche.ALM_PROXY)))
+        });
+
+        MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](1);
+        centrifugeRecipients[0] = MainnetControllerInit.CentrifugeRecipient({
+            destinationCentrifugeId: AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+            recipient: bytes32(uint256(uint160(Avalanche.ALM_PROXY)))
         });
 
         MainnetControllerInit.upgradeController(
@@ -120,7 +121,8 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
                 cctp       : Ethereum.CCTP_TOKEN_MESSENGER
             }),
             mintRecipients,
-            new MainnetControllerInit.LayerZeroRecipient[](0)
+            new MainnetControllerInit.LayerZeroRecipient[](0),
+            centrifugeRecipients
         );
     }
 
@@ -146,10 +148,6 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
             JTRSY_DEPOSIT_RATE_LIMIT_MAX,
             JTRSY_DEPOSIT_RATE_LIMIT_SLOPE
         );
-    }
-
-    function _setCentrifugeCrosschainTransferRecipient() internal {
-        MainnetController(NEW_MAINNET_CONTROLLER).setCentrifugeRecipient(AVALANCHE_DESTINATION_CENTRIFUGE_ID, bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
     }
 
     function _onboardCentrifugeJaaaCrosschainTransfer() internal {
