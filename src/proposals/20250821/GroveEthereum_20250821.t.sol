@@ -20,11 +20,15 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     // address internal constant ETHEREUM_PAYLOAD  = 0x0000000000000000000000000000000000000000;
     // address internal constant AVALANCHE_PAYLOAD = 0x0000000000000000000000000000000000000000;
 
+    address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
+
+    address internal constant FAKE_PSM3_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
+
     address internal constant PREVIOUS_ETHEREUM_PAYLOAD  = 0xa25127f759B6F07020bf2206D31bEb6Ed04D1550;
     address internal constant PREVIOUS_AVALANCHE_PAYLOAD = 0x6AC0865E7fcAd8B89850b83A709eEC57569f919f;
 
-    address internal constant NEW_MAINNET_CONTROLLER   = 0x28170D5084cc3cEbFC5f21f30DB076342716f30C;
-    address internal constant NEW_AVALANCHE_CONTROLLER = 0xbA41d5F95DF891862bf28bEA261AEc0efd6D0FAA;
+    address internal constant NEW_MAINNET_CONTROLLER   = 0xB111E07c8B939b0Fe701710b365305F7F23B0edd;
+    address internal constant NEW_AVALANCHE_CONTROLLER = 0x734266cE1E49b148eF633f2E0358382488064999;
 
     address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
     address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
@@ -72,7 +76,7 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-07-31T16:50:00Z");
+        setupDomains("2025-08-10T18:30:00Z");
 
         // TODO: Remove this once the Aug 7th spell is executed
         _executePreviousPayloads();
@@ -95,6 +99,25 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     }
 
     function test_ETHEREUM_upgradeController() public onChain(ChainIdUtils.Ethereum()) {
+        _verifyMainnetControllerDeployment(
+            AlmSystemContracts({
+                admin      : Ethereum.GROVE_PROXY,
+                proxy      : Ethereum.ALM_PROXY,
+                rateLimits : Ethereum.ALM_RATE_LIMITS,
+                controller : NEW_MAINNET_CONTROLLER
+            }),
+            AlmSystemActors({
+                deployer : DEPLOYER,
+                freezer  : Ethereum.ALM_FREEZER,
+                relayer  : Ethereum.ALM_RELAYER
+            }),
+            MainnetAlmSystemDependencies({
+                vault   : Ethereum.ALLOCATOR_VAULT,
+                psm     : Ethereum.PSM,
+                daiUsds : Ethereum.DAI_USDS,
+                cctp    : Ethereum.CCTP_TOKEN_MESSENGER
+            })
+        );
         _testControllerUpgrade({
             oldController : Ethereum.ALM_CONTROLLER,
             newController : NEW_MAINNET_CONTROLLER
@@ -228,6 +251,24 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     }
 
     function test_AVALANCHE_upgradeController() public onChain(ChainIdUtils.Avalanche()) {
+        _verifyForeignControllerDeployment(
+            AlmSystemContracts({
+                admin      : Avalanche.GROVE_EXECUTOR,
+                proxy      : Avalanche.ALM_PROXY,
+                rateLimits : Avalanche.ALM_RATE_LIMITS,
+                controller : NEW_AVALANCHE_CONTROLLER
+            }),
+            AlmSystemActors({
+                deployer : DEPLOYER,
+                freezer  : Avalanche.ALM_FREEZER,
+                relayer  : Avalanche.ALM_RELAYER
+            }),
+            ForeignAlmSystemDependencies({
+                psm  : FAKE_PSM3_PLACEHOLDER,
+                usdc : Avalanche.USDC,
+                cctp : Avalanche.CCTP_TOKEN_MESSENGER
+            })
+        );
         _testControllerUpgrade({
             oldController : Avalanche.ALM_CONTROLLER,
             newController : NEW_AVALANCHE_CONTROLLER

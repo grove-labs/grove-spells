@@ -11,6 +11,7 @@ import { IALMProxy }   from "grove-alm-controller/src/interfaces/IALMProxy.sol";
 import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
+import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 
 import { CCTPReceiver } from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
 
@@ -92,7 +93,7 @@ abstract contract CommonSpellAssertions is SpellRunner {
     }
 
     struct AlmSystemContracts {
-        address executor;
+        address admin;
         address proxy;
         address rateLimits;
         address controller;
@@ -104,33 +105,30 @@ abstract contract CommonSpellAssertions is SpellRunner {
         address relayer;
     }
 
-    struct AlmSystemDependencies {
+    struct ForeignAlmSystemDependencies {
         address psm;
         address usdc;
-        address cctpMessenger;
+        address cctp;
     }
 
-    function _verifyAlmSystemDeployment(AlmSystemContracts memory contracts, AlmSystemActors memory actors, AlmSystemDependencies memory dependencies) internal view {
-        IALMProxy         almProxy   = IALMProxy(contracts.proxy);
-        IRateLimits       rateLimits = IRateLimits(contracts.rateLimits);
-        ForeignController controller = ForeignController(contracts.controller);
+    struct MainnetAlmSystemDependencies {
+        address vault;
+        address psm;
+        address daiUsds;
+        address cctp;
+    }
 
-        // All contracts have executor as admin set in constructor
-        assertEq(almProxy.hasRole(0x0,   contracts.executor), true, "incorrect-admin-almProxy");
-        assertEq(rateLimits.hasRole(0x0, contracts.executor), true, "incorrect-admin-rateLimits");
-        assertEq(controller.hasRole(0x0, contracts.executor), true, "incorrect-admin-controller");
+    function _verifyMainnetControllerDeployment(
+        AlmSystemContracts memory contracts,
+        AlmSystemActors memory actors,
+        MainnetAlmSystemDependencies memory dependencies
+    ) internal view {
+        MainnetController controller = MainnetController(contracts.controller);
 
-        // No roles other than executor as admin are set before the initialization in the proxy
-        assertEq(almProxy.hasRole(0x0,                   actors.deployer),      false, "incorrect-admin-almProxy");
-        assertEq(almProxy.hasRole(almProxy.CONTROLLER(), actors.deployer),      false, "incorrect-controller-almProxy");
-        assertEq(almProxy.hasRole(almProxy.CONTROLLER(), contracts.controller), false, "incorrect-controller-almProxy");
+        // All contracts have admin as admin set in constructor
+        assertEq(controller.hasRole(0x0, contracts.admin), true, "incorrect-admin-controller");
 
-        // No roles other than executor as admin are set before the initialization in the rate limits
-        assertEq(rateLimits.hasRole(0x0,                     actors.deployer),      false, "incorrect-admin-rateLimits");
-        assertEq(rateLimits.hasRole(rateLimits.CONTROLLER(), actors.deployer),      false, "incorrect-controller-rateLimits");
-        assertEq(rateLimits.hasRole(rateLimits.CONTROLLER(), contracts.controller), false, "incorrect-controller-rateLimits");
-
-        // No roles other than executor as admin are set before the initialization (checking for EOA and multisig wallets)
+        // No roles other than admin as admin are set before the initialization (checking for EOA and multisig wallets)
         assertEq(controller.hasRole(0x0,                  actors.deployer), false, "incorrect-admin-controller");
         assertEq(controller.hasRole(0x0,                  actors.relayer),  false, "incorrect-admin-controller");
         assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
@@ -142,11 +140,66 @@ abstract contract CommonSpellAssertions is SpellRunner {
         assertEq(controller.hasRole(controller.RELAYER(), actors.relayer),  false, "incorrect-relayer-controller");
 
         // Controller has correct proxy, rate limits, psm, usdc, and cctp messenger
-        assertEq(address(controller.proxy()),      contracts.proxy,            "incorrect-almProxy");
-        assertEq(address(controller.rateLimits()), contracts.rateLimits,       "incorrect-rateLimits");
-        assertEq(address(controller.psm()),        dependencies.psm,           "incorrect-psm");
-        assertEq(address(controller.usdc()),       dependencies.usdc,          "incorrect-usdc");
-        assertEq(address(controller.cctp()),       dependencies.cctpMessenger, "incorrect-cctpMessenger");
+        assertEq(address(controller.proxy()),      contracts.proxy,      "incorrect-almProxy");
+        assertEq(address(controller.rateLimits()), contracts.rateLimits, "incorrect-rateLimits");
+        assertEq(address(controller.vault()),      dependencies.vault,   "incorrect-vault");
+        assertEq(address(controller.psm()),        dependencies.psm,     "incorrect-psm");
+        assertEq(address(controller.daiUsds()),    dependencies.daiUsds, "incorrect-daiUsds");
+        assertEq(address(controller.cctp()),       dependencies.cctp,    "incorrect-cctp");
+    }
+
+    function _verifyForeignControllerDeployment(
+        AlmSystemContracts           memory contracts,
+        AlmSystemActors              memory actors,
+        ForeignAlmSystemDependencies memory dependencies
+    ) internal view {
+        ForeignController controller = ForeignController(contracts.controller);
+
+        // All contracts have admin as admin set in constructor
+        assertEq(controller.hasRole(0x0, contracts.admin), true, "incorrect-admin-controller");
+
+        // No roles other than admin as admin are set before the initialization (checking for EOA and multisig wallets)
+        assertEq(controller.hasRole(0x0,                  actors.deployer), false, "incorrect-admin-controller");
+        assertEq(controller.hasRole(0x0,                  actors.relayer),  false, "incorrect-admin-controller");
+        assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
+        assertEq(controller.hasRole(controller.FREEZER(), actors.deployer), false, "incorrect-freezer-controller");
+        assertEq(controller.hasRole(controller.FREEZER(), actors.freezer),  false, "incorrect-freezer-controller");
+        assertEq(controller.hasRole(controller.FREEZER(), actors.relayer),  false, "incorrect-freezer-controller");
+        assertEq(controller.hasRole(controller.RELAYER(), actors.deployer), false, "incorrect-relayer-controller");
+        assertEq(controller.hasRole(controller.RELAYER(), actors.freezer),  false, "incorrect-relayer-controller");
+        assertEq(controller.hasRole(controller.RELAYER(), actors.relayer),  false, "incorrect-relayer-controller");
+
+        // Controller has correct proxy, rate limits, psm, usdc, and cctp messenger
+        assertEq(address(controller.proxy()),      contracts.proxy,      "incorrect-almProxy");
+        assertEq(address(controller.rateLimits()), contracts.rateLimits, "incorrect-rateLimits");
+        assertEq(address(controller.psm()),        dependencies.psm,     "incorrect-psm");
+        assertEq(address(controller.usdc()),       dependencies.usdc,    "incorrect-usdc");
+        assertEq(address(controller.cctp()),       dependencies.cctp,    "incorrect-cctp");
+    }
+
+    function _verifyForeignAlmSystemDeployment(
+        AlmSystemContracts           memory contracts,
+        AlmSystemActors              memory actors,
+        ForeignAlmSystemDependencies memory dependencies
+    ) internal view {
+        IALMProxy   almProxy   = IALMProxy(contracts.proxy);
+        IRateLimits rateLimits = IRateLimits(contracts.rateLimits);
+
+        // All contracts have admin as admin set in constructor
+        assertEq(almProxy.hasRole(0x0,   contracts.admin), true, "incorrect-admin-almProxy");
+        assertEq(rateLimits.hasRole(0x0, contracts.admin), true, "incorrect-admin-rateLimits");
+
+        // No roles other than admin as admin are set before the initialization in the proxy
+        assertEq(almProxy.hasRole(0x0,                   actors.deployer),      false, "incorrect-admin-almProxy");
+        assertEq(almProxy.hasRole(almProxy.CONTROLLER(), actors.deployer),      false, "incorrect-controller-almProxy");
+        assertEq(almProxy.hasRole(almProxy.CONTROLLER(), contracts.controller), false, "incorrect-controller-almProxy");
+
+        // No roles other than admin as admin are set before the initialization in the rate limits
+        assertEq(rateLimits.hasRole(0x0,                     actors.deployer),      false, "incorrect-admin-rateLimits");
+        assertEq(rateLimits.hasRole(rateLimits.CONTROLLER(), actors.deployer),      false, "incorrect-controller-rateLimits");
+        assertEq(rateLimits.hasRole(rateLimits.CONTROLLER(), contracts.controller), false, "incorrect-controller-rateLimits");
+
+        _verifyForeignControllerDeployment(contracts, actors, dependencies);
     }
 
     function _verifyForeignDomainExecutorDeployment(
