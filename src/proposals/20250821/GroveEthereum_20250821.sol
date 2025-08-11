@@ -90,14 +90,14 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
         // Define Avalanche CCTP mint recipient
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](1);
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
-            domain: CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
-            mintRecipient: bytes32(uint256(uint160(Avalanche.ALM_PROXY)))
+            domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
+            mintRecipient : bytes32(uint256(uint160(Avalanche.ALM_PROXY)))
         });
 
         MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](1);
         centrifugeRecipients[0] = MainnetControllerInit.CentrifugeRecipient({
-            destinationCentrifugeId: AVALANCHE_DESTINATION_CENTRIFUGE_ID,
-            recipient: bytes32(uint256(uint160(Avalanche.ALM_PROXY)))
+            destinationCentrifugeId : AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+            recipient               : bytes32(uint256(uint160(Avalanche.ALM_PROXY)))
         });
 
         MainnetControllerInit.upgradeController(

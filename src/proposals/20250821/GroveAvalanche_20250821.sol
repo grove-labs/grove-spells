@@ -73,14 +73,14 @@ contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
         // Define Mainnet CCTP mint recipients
         ForeignControllerInit.MintRecipient[] memory mintRecipients = new ForeignControllerInit.MintRecipient[](1);
         mintRecipients[0] = ForeignControllerInit.MintRecipient({
-            domain: CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
-            mintRecipient: bytes32(uint256(uint160(Ethereum.ALM_PROXY)))
+            domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
+            mintRecipient : bytes32(uint256(uint160(Ethereum.ALM_PROXY)))
         });
 
         ForeignControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new ForeignControllerInit.CentrifugeRecipient[](1);
         centrifugeRecipients[0] = ForeignControllerInit.CentrifugeRecipient({
-            destinationCentrifugeId: ETHEREUM_DESTINATION_CENTRIFUGE_ID,
-            recipient: bytes32(uint256(uint160(Ethereum.ALM_PROXY)))
+            destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
+            recipient               : bytes32(uint256(uint160(Ethereum.ALM_PROXY)))
         });
 
         address avalanchePlaceholderPsmAddress = address(ForeignController(Avalanche.ALM_CONTROLLER).psm());
