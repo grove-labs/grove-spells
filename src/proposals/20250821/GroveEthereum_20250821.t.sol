@@ -36,8 +36,6 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     address internal constant NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784;
     address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
-    uint256 internal constant ZERO = 0;
-
     uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_MAX   = 100_000_000e6;
     uint256 internal constant OLD_MAINNET_JAAA_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
@@ -76,7 +74,7 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-08-10T18:30:00Z");
+        setupDomains("2025-08-11T09:30:00Z");
 
         // TODO: Remove this once the Aug 7th spell is executed
         _executePreviousPayloads();
@@ -147,17 +145,8 @@ contract GroveEthereum_20250821Test is GroveTestBase {
 
         executeAllPayloadsAndBridges();
 
-        _assertRateLimit({
-            key       : oldJaaaDepositKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-
-        _assertRateLimit({
-            key       : oldJaaaRedeemKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
+        _assertZeroRateLimit(oldJaaaDepositKey);
+        _assertZeroRateLimit(oldJaaaRedeemKey);
     }
 
     function test_ETHEREUM_offboardOldCentrifugeJtrsy() public onChain(ChainIdUtils.Ethereum()) {
@@ -183,17 +172,8 @@ contract GroveEthereum_20250821Test is GroveTestBase {
 
         executeAllPayloadsAndBridges();
 
-        _assertRateLimit({
-            key       : oldJtrsyDepositKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
-
-        _assertRateLimit({
-            key       : oldJtrsyRedeemKey,
-            maxAmount : ZERO,
-            slope     : ZERO
-        });
+        _assertZeroRateLimit(oldJtrsyDepositKey);
+        _assertZeroRateLimit(oldJtrsyRedeemKey);
     }
 
     function test_ETHEREUM_onboardNewCentrifugeJaaa() public onChain(ChainIdUtils.Ethereum()) {

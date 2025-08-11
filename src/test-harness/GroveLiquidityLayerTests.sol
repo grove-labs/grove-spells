@@ -218,6 +218,14 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(rateLimit.slope,     0);
     }
 
+    function _assertZeroRateLimit(
+        bytes32 key
+    ) internal view {
+        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        assertEq(rateLimit.maxAmount, 0);
+        assertEq(rateLimit.slope,     0);
+    }
+
    function _assertRateLimit(
        bytes32 key,
        uint256 maxAmount,
@@ -252,8 +260,8 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
             vault
         );
 
-        _assertRateLimit(depositKey, 0, 0);
-        _assertRateLimit(withdrawKey, 0, 0);
+        _assertZeroRateLimit(depositKey);
+        _assertZeroRateLimit(withdrawKey);
 
         vm.prank(ctx.relayer);
         vm.expectRevert("RateLimits/zero-maxAmount");
@@ -326,8 +334,8 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
             centrifugeVault
         );
 
-        _assertRateLimit(depositKey, 0, 0);
-        _assertRateLimit(redeemKey,  0, 0);
+        _assertZeroRateLimit(depositKey);
+        _assertZeroRateLimit(redeemKey);
 
         executeAllPayloadsAndBridges();
 
@@ -403,7 +411,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(GroveLiquidityLayerHelpers.LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
         bytes32 castedDestinationAddress = bytes32(uint256(uint160(destinationAddress)));
 
-        _assertRateLimit(centrifugeCrosschainTransferKey, 0, 0);
+        _assertZeroRateLimit(centrifugeCrosschainTransferKey);
 
         executeAllPayloadsAndBridges();
 
