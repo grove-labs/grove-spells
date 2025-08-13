@@ -16,7 +16,7 @@ import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
  * @title  August 21, 2025 Grove Avalanche Proposal
  * @author Grove Labs
  * Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
- * Vote  : TODO
+ * Vote  : https://vote.sky.money/polling/QmSZh55g
  */
 contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
 
@@ -39,29 +39,29 @@ contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
 
     function execute() external {
-        // TODO Add spell item title
+        // [Avalanche] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Functionality
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmSZh55g
         _upgradeController();
 
-        // TODO Add spell item title
+        // [Avalanche] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Functionality
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmSZh55g
         _onboardCentrifugeJaaa();
 
-        // TODO Add spell item title
+        // [Avalanche] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Functionality
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmSZh55g
         _onboardCentrifugeJtrsy();
 
-        // TODO Add spell item title
+        // [Avalanche] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Functionality
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmSZh55g
         _onboardCentrifugeJaaaCrosschainTransfer();
 
-        // TODO Add spell item title
+        // [Avalanche] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Functionality
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmSZh55g
         _onboardCentrifugeJtrsyCrosschainTransfer();
     }
 

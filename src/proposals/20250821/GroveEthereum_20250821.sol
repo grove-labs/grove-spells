@@ -13,8 +13,9 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
 /**
  * @title  August 21, 2025 Grove Ethereum Proposal
  * @author Grove Labs
- * Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
- * Vote  : TODO
+ * Forum                      : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
+ * Vote (Controller Upgrade)  : https://vote.sky.money/polling/QmYdzySk
+ * Vote (Centrifuge V2 to V3) : https://vote.sky.money/polling/QmdxYtui
  */
 contract GroveEthereum_20250821 is GrovePayloadEthereum {
 
@@ -42,39 +43,39 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
     }
 
     function _execute() internal override {
-        // TODO Add spell item title
+        // [Mainnet] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Crosschain Transfers
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmYdzySk
         _upgradeController();
 
-        // TODO Add spell item title
+        // [Mainnet] Grove Liquidity Layer - Onboard Centrifuge V3 and Offboard Centrifuge V2
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmdxYtui
         _offboardOldCentrifugeJaaa();
 
-        // TODO Add spell item title
+        // [Mainnet] Grove Liquidity Layer - Onboard Centrifuge V3 and Offboard Centrifuge V2
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmdxYtui
         _offboardOldCentrifugeJtrsy();
 
-        // TODO Add spell item title
+        // [Mainnet] Grove Liquidity Layer - Onboard Centrifuge V3 and Offboard Centrifuge V2
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmdxYtui
         _onboardNewCentrifugeJaaa();
 
-        // TODO Add spell item title
+        // [Mainnet] Grove Liquidity Layer - Onboard Centrifuge V3 and Offboard Centrifuge V2
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmdxYtui
         _onboardNewCentrifugeJtrsy();
 
-        // TODO Add spell item title
+        // [Mainnet] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Crosschain Transfers
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmYdzySk
         _onboardCentrifugeJaaaCrosschainTransfer();
 
-        // TODO Add spell item title
+        // [Mainnet] Grove Liquidity Layer - Upgrade Controller - Add Centrifuge Crosschain Transfers
         // Forum : https://forum.sky.money/t/august-21-2025-proposed-changes-to-grove-for-upcoming-spell/26993
-        // Poll  : TODO Add poll link
+        // Poll  : https://vote.sky.money/polling/QmYdzySk
         _onboardCentrifugeJtrsyCrosschainTransfer();
     }
     function _upgradeController() internal {
