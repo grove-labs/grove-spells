@@ -38,8 +38,7 @@ contract GroveEthereum_20250821 is GrovePayloadEthereum {
     uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
 
     constructor() {
-        // TODO: Set Avalanche payload after deployment
-        // PAYLOAD_AVALANCHE = 0x0000000000000000000000000000000000000000;
+        PAYLOAD_AVALANCHE = 0xde73D4AB2b728b3826AA18aC7ACDE71677A3Ae4a;
     }
 
     function _execute() internal override {

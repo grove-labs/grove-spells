@@ -16,9 +16,8 @@ import "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20250821Test is GroveTestBase {
 
-    // TODO Set payload addresses after deployment
-    // address internal constant ETHEREUM_PAYLOAD  = 0x0000000000000000000000000000000000000000;
-    // address internal constant AVALANCHE_PAYLOAD = 0x0000000000000000000000000000000000000000;
+    address internal constant ETHEREUM_PAYLOAD  = 0xFa533FEd0F065dEf8dcFA6699Aa3d73337302BED;
+    address internal constant AVALANCHE_PAYLOAD = 0xde73D4AB2b728b3826AA18aC7ACDE71677A3Ae4a;
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
@@ -71,12 +70,10 @@ contract GroveEthereum_20250821Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-08-11T15:00:00Z");
+        setupDomains("2025-08-15T17:50:00Z");
 
-        // TODO Remove dynamic payload deployment and set addresses statically after payloads are deployed
-        deployPayloads();
-        // chainData[ChainIdUtils.Ethereum()].payload  = ETHEREUM_PAYLOAD;
-        // chainData[ChainIdUtils.Avalanche()].payload = AVALANCHE_PAYLOAD;
+        chainData[ChainIdUtils.Ethereum()].payload  = ETHEREUM_PAYLOAD;
+        chainData[ChainIdUtils.Avalanche()].payload = AVALANCHE_PAYLOAD;
 
         // Prepare testing setup for the controller upgrade
         chainData[ChainIdUtils.Ethereum()].newController  = NEW_MAINNET_CONTROLLER;
