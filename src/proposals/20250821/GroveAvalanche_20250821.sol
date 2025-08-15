@@ -20,7 +20,7 @@ import { GrovePayloadAvalanche } from "src/libraries/GrovePayloadAvalanche.sol";
  */
 contract GroveAvalanche_20250821 is GrovePayloadAvalanche {
 
-    address internal constant NEW_AVALANCHE_CONTROLLER             = 0x734266cE1E49b148eF633f2E0358382488064999; // TODO Confirm address
+    address internal constant NEW_AVALANCHE_CONTROLLER             = 0x734266cE1E49b148eF633f2E0358382488064999;
     address internal constant NEW_AVALANCHE_CENTRIFUGE_JAAA_VAULT  = 0x1121F4e21eD8B9BC1BB9A2952cDD8639aC897784;
     address internal constant NEW_AVALANCHE_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
