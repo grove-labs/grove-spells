@@ -19,7 +19,7 @@ import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
  */
 contract GroveEthereum_20250821 is GrovePayloadEthereum {
 
-    address internal constant NEW_MAINNET_CONTROLLER             = 0xB111E07c8B939b0Fe701710b365305F7F23B0edd; // TODO Confirm address
+    address internal constant NEW_MAINNET_CONTROLLER             = 0xB111E07c8B939b0Fe701710b365305F7F23B0edd;
     address internal constant NEW_MAINNET_CENTRIFUGE_JAAA_VAULT  = 0x4880799eE5200fC58DA299e965df644fBf46780B;
     address internal constant NEW_MAINNET_CENTRIFUGE_JTRSY_VAULT = 0xFE6920eB6C421f1179cA8c8d4170530CDBdfd77A;
 
