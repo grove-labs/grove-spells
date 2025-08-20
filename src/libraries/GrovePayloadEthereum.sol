@@ -3,10 +3,12 @@ pragma solidity ^0.8.0;
 
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
+// import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
-import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
+import { CCTPForwarder }          from "xchain-helpers/forwarders/CCTPForwarder.sol";
+import { ArbitrumERC20Forwarder } from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
 
 import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
 
@@ -20,6 +22,7 @@ abstract contract GrovePayloadEthereum {
 
     // These need to be immutable (delegatecall) and can only be set in constructor
     address public immutable PAYLOAD_AVALANCHE;
+    address public immutable PAYLOAD_PLUME;
 
     function execute() external {
         _execute();
@@ -30,6 +33,18 @@ abstract contract GrovePayloadEthereum {
                 destinationDomainId: CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
                 recipient:           Avalanche.GROVE_RECEIVER,
                 messageBody:         _encodePayloadQueue(PAYLOAD_AVALANCHE)
+            });
+        }
+
+        if (PAYLOAD_PLUME != address(0)) {
+            ArbitrumERC20Forwarder.sendMessageL1toL2({
+                l1CrossDomain: ArbitrumERC20Forwarder.L1_CROSS_DOMAIN_PLUME,
+                target:        0x7cEa53dCf28b603c0E3b6d05C0aD517d79a90dD1,
+                // target:        Plume.GROVE_RECEIVER,
+                message:       _encodePayloadQueue(PAYLOAD_PLUME),
+                gasLimit:      100_0000,
+                maxFeePerGas:  10_000 gwei,
+                baseFee:       10_000 gwei
             });
         }
     }

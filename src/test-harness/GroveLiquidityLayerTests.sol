@@ -8,6 +8,7 @@ import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.s
 
 import { Avalanche } from "grove-address-registry/Avalanche.sol";
 import { Ethereum }  from "grove-address-registry/Ethereum.sol";
+// import { Plume }     from "grove-address-registry/Plume.sol";
 
 import { IALMProxy }         from "grove-alm-controller/src/interfaces/IALMProxy.sol";
 import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
@@ -191,6 +192,14 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
                 Avalanche.ALM_RELAYER,
                 Avalanche.ALM_FREEZER
             );
+        // } else if (chain == ChainIdUtils.Plume()) {
+        //     ctx = GroveLiquidityLayerContext(
+        //         controller,
+        //         IALMProxy(Plume.ALM_PROXY),
+        //         IRateLimits(Plume.ALM_RATE_LIMITS),
+        //         Plume.ALM_RELAYER,
+        //         Plume.ALM_FREEZER
+        //     );
         } else {
             revert("Chain not supported by GroveLiquidityLayerTests context");
         }
@@ -618,12 +627,14 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
 
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
+            // assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_PLUME),     bytes32(uint256(uint160(Plume.ALM_PROXY))));
         } else {
             assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
         }
 
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
+            // assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),     bytes32(uint256(uint160(Plume.ALM_PROXY))));
         } else {
             assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
         }

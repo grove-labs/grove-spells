@@ -7,6 +7,7 @@ import { console }   from "forge-std/console.sol";
 
 import { Ethereum }  from 'grove-address-registry/Ethereum.sol';
 import { Avalanche } from 'grove-address-registry/Avalanche.sol';
+// import { Plume }     from 'grove-address-registry/Plume.sol';
 // import { Arbitrum } from 'grove-address-registry/Arbitrum.sol';
 // import { Base }     from 'grove-address-registry/Base.sol';
 // import { Gnosis }   from 'grove-address-registry/Gnosis.sol';
@@ -122,6 +123,11 @@ abstract contract SpellRunner is Test {
         console.log(" Avalanche block:", blocks[4]);
 
         // DEFINE CUSTOM CHAINS HERE
+        setChain("plume", ChainData({
+            name: "Plume",
+            rpcUrl: vm.envString("PLUME_RPC_URL"),
+            chainId: 98866
+        }));
         // setChain("unichain", ChainData({
         //     name: "Unichain",
         //     rpcUrl: vm.envString("UNICHAIN_RPC_URL"),
@@ -136,8 +142,11 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Avalanche()].domain   = getChain("avalanche").createFork(blocks[4]);
 
         // CREATE FORKS WITH STATICALLY CHOSEN BLOCKS HERE
+        chainData[ChainIdUtils.Plume()].domain = getChain("plume").createFork(22562263);
+        console.log("     Plume block:", uint256(22562263));
         // chainData[ChainIdUtils.Gnosis()].domain      = getChain("gnosis_chain").createFork(39404891);  // Gnosis block lookup is not supported by Alchemy
         // chainData[ChainIdUtils.Unichain()].domain    = getChain("unichain").createFork(17517398);
+
     }
 
     /// @dev to be called in setUp
@@ -155,6 +164,10 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Avalanche()].executor       = IExecutor(Avalanche.GROVE_EXECUTOR);
         chainData[ChainIdUtils.Avalanche()].prevController = Avalanche.ALM_CONTROLLER;
         chainData[ChainIdUtils.Avalanche()].newController  = Avalanche.ALM_CONTROLLER;
+
+        // chainData[ChainIdUtils.Plume()].executor       = IExecutor(Plume.GROVE_EXECUTOR);
+        // chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
+        // chainData[ChainIdUtils.Plume()].newController  = Plume.ALM_CONTROLLER;
 
         // chainData[ChainIdUtils.Base()].executor        = IExecutor(Base.GROVE_EXECUTOR);
         // chainData[ChainIdUtils.Gnosis()].executor      = IExecutor(Gnosis.GROVE_EXECUTOR);
@@ -236,9 +249,24 @@ abstract contract SpellRunner is Test {
             )
         );
 
+        // Plume
+        chainData[ChainIdUtils.Plume()].bridges.push(
+            ArbitrumBridgeTesting.createNativeBridge(
+                chainData[ChainIdUtils.Ethereum()].domain,
+                chainData[ChainIdUtils.Plume()].domain
+            )
+        );
+        // chainData[ChainIdUtils.Plume()].bridges.push(
+        //     CCTPBridgeTesting.createCircleBridge(
+        //         chainData[ChainIdUtils.Ethereum()].domain,
+        //         chainData[ChainIdUtils.Plume()].domain
+        //     )
+        // );
+
         // REGISTER CHAINS HERE
         allChains.push(ChainIdUtils.Ethereum());
         allChains.push(ChainIdUtils.Avalanche());
+        allChains.push(ChainIdUtils.Plume());
         // allChains.push(ChainIdUtils.Base());
         // allChains.push(ChainIdUtils.Gnosis());
         // allChains.push(ChainIdUtils.ArbitrumOne());

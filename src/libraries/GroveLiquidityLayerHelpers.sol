@@ -23,6 +23,7 @@ library GroveLiquidityLayerHelpers {
 
     uint16 public constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
     uint16 public constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
+    // uint16 public constant PLUME_DESTINATION_CENTRIFUGE_ID     = ;
 
     /**
      * @notice Onboard an ERC4626 vault
