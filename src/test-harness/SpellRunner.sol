@@ -7,7 +7,7 @@ import { console }   from "forge-std/console.sol";
 
 import { Ethereum }  from 'grove-address-registry/Ethereum.sol';
 import { Avalanche } from 'grove-address-registry/Avalanche.sol';
-// import { Plume }     from 'grove-address-registry/Plume.sol';
+import { Plume }     from 'grove-address-registry/Plume.sol';
 // import { Arbitrum } from 'grove-address-registry/Arbitrum.sol';
 // import { Base }     from 'grove-address-registry/Base.sol';
 // import { Gnosis }   from 'grove-address-registry/Gnosis.sol';
@@ -165,9 +165,9 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Avalanche()].prevController = Avalanche.ALM_CONTROLLER;
         chainData[ChainIdUtils.Avalanche()].newController  = Avalanche.ALM_CONTROLLER;
 
-        // chainData[ChainIdUtils.Plume()].executor       = IExecutor(Plume.GROVE_EXECUTOR);
-        // chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
-        // chainData[ChainIdUtils.Plume()].newController  = Plume.ALM_CONTROLLER;
+        chainData[ChainIdUtils.Plume()].executor       = IExecutor(Plume.GROVE_EXECUTOR);
+        chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
+        chainData[ChainIdUtils.Plume()].newController  = Plume.ALM_CONTROLLER;
 
         // chainData[ChainIdUtils.Base()].executor        = IExecutor(Base.GROVE_EXECUTOR);
         // chainData[ChainIdUtils.Gnosis()].executor      = IExecutor(Gnosis.GROVE_EXECUTOR);

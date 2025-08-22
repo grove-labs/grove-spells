@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
-// import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
+import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
@@ -39,8 +39,7 @@ abstract contract GrovePayloadEthereum {
         if (PAYLOAD_PLUME != address(0)) {
             ArbitrumERC20Forwarder.sendMessageL1toL2({
                 l1CrossDomain: ArbitrumERC20Forwarder.L1_CROSS_DOMAIN_PLUME,
-                target:        0x7cEa53dCf28b603c0E3b6d05C0aD517d79a90dD1,
-                // target:        Plume.GROVE_RECEIVER,
+                target:        Plume.GROVE_RECEIVER,
                 message:       _encodePayloadQueue(PAYLOAD_PLUME),
                 gasLimit:      100_0000,
                 maxFeePerGas:  10_000 gwei,
