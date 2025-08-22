@@ -13,7 +13,8 @@ import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 
-import { CCTPReceiver } from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
+import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
+import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
 
 import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
 
@@ -247,6 +248,19 @@ abstract contract CommonSpellAssertions is SpellRunner {
 
         // Source authority has to be the Ethereum Mainnet Grove Proxy
         assertEq(receiver.sourceAuthority(), bytes32(uint256(uint160(Ethereum.GROVE_PROXY))), "incorrect-source-authority");
+
+        // Target has to be the executor
+        assertEq(receiver.target(), _executor, "incorrect-target");
+    }
+
+    function _verifyArbitrumReceiverDeployment(
+        address _executor,
+        address _receiver
+    ) internal view {
+        ArbitrumReceiver receiver = ArbitrumReceiver(_receiver);
+
+        // L1 authority has to be the Ethereum Mainnet Grove Proxy
+        assertEq(receiver.l1Authority(), Ethereum.GROVE_PROXY, "incorrect-l1-authority");
 
         // Target has to be the executor
         assertEq(receiver.target(), _executor, "incorrect-target");
