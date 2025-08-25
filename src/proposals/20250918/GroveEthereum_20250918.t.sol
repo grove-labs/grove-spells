@@ -3,7 +3,8 @@ pragma solidity ^0.8.0;
 
 import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
 
-import { Plume } from "grove-address-registry/Plume.sol";
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
 
 import "src/test-harness/GroveTestBase.sol";
 
@@ -13,12 +14,38 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
 
     address internal constant FAKE_ADDRESS_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
 
+    address internal constant MAINNET_CENTRIFUGE_ACRED_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
+    address internal constant PLUME_CENTRIFUGE_ACRED_VAULT   = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
+
+    uint256 internal constant PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+
+    uint256 internal constant MAINNET_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant MAINNET_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+
+    uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
+    uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 9999; // TODO: Add actual value
+
     constructor() {
         id = "20250918";
     }
 
     function setUp() public {
-        setupDomains("2025-08-22T16:00:00Z");
+        setupDomains("2025-08-25T15:30:00Z");
+    }
+
+    function test_ETHEREUM_onboardCentrifugeAcredCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Unskip after the Centrifuge Acred vault is deployed
+        vm.skip(true);
+
+        _testCentrifugeCrosschainTransferOnboarding({
+            centrifugeVault         : MAINNET_CENTRIFUGE_ACRED_VAULT,
+            destinationAddress      : Plume.ALM_PROXY,
+            destinationCentrifugeId : PLUME_DESTINATION_CENTRIFUGE_ID,
+            expectedTransferAmount  : 10_000_000e6,
+            maxAmount               : MAINNET_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+            slope                   : MAINNET_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+        });
     }
 
     function test_PLUME_governanceDeployment() public onChain(ChainIdUtils.Plume()) {
@@ -53,4 +80,19 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
             })
         );
     }
+
+    function test_PLUME_onboardCentrifugeAcredCrosschainTransfer() public onChain(ChainIdUtils.Plume()) {
+        // TODO: Unskip after the Centrifuge Acred vault is deployed
+        vm.skip(true);
+
+        _testCentrifugeCrosschainTransferOnboarding({
+            centrifugeVault         : PLUME_CENTRIFUGE_ACRED_VAULT,
+            destinationAddress      : Ethereum.ALM_PROXY,
+            destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
+            expectedTransferAmount  : 10_000_000e6,
+            maxAmount               : PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+            slope                   : PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+        });
+    }
+
 }
