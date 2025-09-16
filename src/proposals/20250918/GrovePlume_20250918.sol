@@ -1,6 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
+
+import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
+import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
+import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
 
@@ -15,6 +21,10 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
 
     uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
     uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant CCTP_RATE_LIMIT_MAX                              = 100_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant CCTP_RATE_LIMIT_SLOPE                            = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 100_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
 
@@ -27,6 +37,16 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         // TODO: Add item title
         //   Forum : TODO: Add link
         //   Poll  : TODO: Add link
+        _onboardCctpTransfersToEthereum();
+
+        // TODO: Add item title
+        //   Forum : TODO: Add link
+        //   Poll  : TODO: Add link
+        _onboardCentrifugeAcrdx();
+
+        // TODO: Add item title
+        //   Forum : TODO: Add link
+        //   Poll  : TODO: Add link
         _onboardCentrifugeAcrdxCrosschainTransfer();
     }
 
@@ -35,10 +55,18 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         address[] memory relayers = new address[](1);
         relayers[0] = Plume.ALM_RELAYER;
 
+        // Define Mainnet CCTP mint recipients
+        ForeignControllerInit.MintRecipient[] memory cctpRecipients = new ForeignControllerInit.MintRecipient[](1);
+        cctpRecipients[0] = ForeignControllerInit.MintRecipient({
+            domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
+            mintRecipient : bytes32(uint256(uint160(Ethereum.ALM_PROXY))) // TODO: Use casting helper
+        });
+
+        // Define Mainnet Centrifuge recipients
         ForeignControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new ForeignControllerInit.CentrifugeRecipient[](1);
         centrifugeRecipients[0] = ForeignControllerInit.CentrifugeRecipient({
             destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
-            recipient               : bytes32(uint256(uint160(Ethereum.ALM_PROXY)))
+            recipient               : bytes32(bytes20(Ethereum.ALM_PROXY)) // TODO: Use casting helper
         });
 
         ForeignControllerInit.initAlmSystem(
@@ -55,12 +83,38 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
             ForeignControllerInit.CheckAddressParams({
                 admin      : Plume.GROVE_EXECUTOR,
                 psm        : FAKE_ADDRESS_PLACEHOLDER,
-                cctp       : FAKE_ADDRESS_PLACEHOLDER,
-                usdc       : FAKE_ADDRESS_PLACEHOLDER
+                cctp       : Plume.CCTP_TOKEN_MESSENGER,
+                usdc       : Plume.USDC
             }),
-            new ForeignControllerInit.MintRecipient[](0),
+            cctpRecipients,
             new ForeignControllerInit.LayerZeroRecipient[](0),
             centrifugeRecipients
+        );
+    }
+
+    function _onboardCctpTransfersToEthereum() internal {
+        bytes32 generalCctpKey = ForeignController(Plume.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
+        bytes32 ethereumCctpKey = RateLimitHelpers.makeDomainKey(
+            ForeignController(Plume.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
+        );
+
+        IRateLimits(Plume.ALM_RATE_LIMITS).setUnlimitedRateLimitData(generalCctpKey);
+
+        IRateLimits(Plume.ALM_RATE_LIMITS).setRateLimitData({
+            key       : ethereumCctpKey,
+            maxAmount : CCTP_RATE_LIMIT_MAX,
+            slope     : CCTP_RATE_LIMIT_SLOPE
+        });
+
+        // Mint recipients are set during the ForeignController initialization
+    }
+
+    function _onboardCentrifugeAcrdx() internal {
+        _onboardERC7540Vault(
+            PLUME_CENTRIFUGE_ACRDX_VAULT,
+            PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX,
+            PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE
         );
     }
 

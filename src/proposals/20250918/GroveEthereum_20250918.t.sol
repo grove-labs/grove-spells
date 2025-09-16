@@ -19,9 +19,13 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
 
     uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
     uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days); // TODO: Add actual value
 
     uint256 internal constant MAINNET_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
     uint256 internal constant MAINNET_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant MAINNET_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant MAINNET_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days); // TODO: Add actual value
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
     uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 9999; // TODO: Add actual value
@@ -34,18 +38,19 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
         setupDomains("2025-08-25T15:30:00Z");
     }
 
-    function test_ETHEREUM_onboardCentrifugeAcrdxCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip after the Centrifuge Acrdx vault is deployed
+    function test_ETHEREUM_onboardCctpTransfersToPlume() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Unskip and implement after the CCTP transfers to Plume are onboarded
         vm.skip(true);
+    }
 
-        _testCentrifugeCrosschainTransferOnboarding({
-            centrifugeVault         : MAINNET_CENTRIFUGE_ACRDX_VAULT,
-            destinationAddress      : Plume.ALM_PROXY,
-            destinationCentrifugeId : PLUME_DESTINATION_CENTRIFUGE_ID,
-            expectedTransferAmount  : 10_000_000e6,
-            maxAmount               : MAINNET_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
-            slope                   : MAINNET_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
-        });
+    function test_ETHEREUM_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Unskip and implement after the Centrifuge Acrdx vault is deployed
+        vm.skip(true);
+    }
+
+    function test_ETHEREUM_onboardCentrifugeAcrdxCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Unskip and implement after the Centrifuge Acrdx vault is deployed
+        vm.skip(true);
     }
 
     function test_PLUME_governanceDeployment() public onChain(ChainIdUtils.Plume()) {
@@ -79,6 +84,16 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
                 cctp : FAKE_ADDRESS_PLACEHOLDER
             })
         );
+    }
+
+    function test_PLUME_onboardCctpTransfersToEthereum() public onChain(ChainIdUtils.Plume()) {
+        // TODO: Unskip and implement after the CCTP transfers to Ethereum are onboarded
+        vm.skip(true);
+    }
+
+    function test_PLUME_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Plume()) {
+        // TODO: Unskip  and implement after the Centrifuge Acrdx vault is deployed
+        vm.skip(true);
     }
 
     function test_PLUME_onboardCentrifugeAcrdxCrosschainTransfer() public onChain(ChainIdUtils.Plume()) {
