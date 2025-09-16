@@ -11,10 +11,10 @@ import { GrovePayloadPlume } from "src/libraries/GrovePayloadPlume.sol";
 contract GrovePlume_20250918 is GrovePayloadPlume {
 
     address internal constant FAKE_ADDRESS_PLACEHOLDER    = 0x00000000000000000000000000000000DeaDBeef;
-    address internal constant PLUME_CENTRIFUGE_ACRED_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
+    address internal constant PLUME_CENTRIFUGE_ACRDX_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
 
-    uint256 internal constant PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
 
@@ -27,7 +27,7 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         // TODO: Add item title
         //   Forum : TODO: Add link
         //   Poll  : TODO: Add link
-        _onboardCentrifugeAcredCrosschainTransfer();
+        _onboardCentrifugeAcrdxCrosschainTransfer();
     }
 
     function _initializeLiquidityLayer() internal {
@@ -64,12 +64,12 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         );
     }
 
-    function _onboardCentrifugeAcredCrosschainTransfer() internal {
+    function _onboardCentrifugeAcrdxCrosschainTransfer() internal {
         _setCentrifugeCrosschainTransferRateLimit(
-            PLUME_CENTRIFUGE_ACRED_VAULT,
+            PLUME_CENTRIFUGE_ACRDX_VAULT,
             ETHEREUM_DESTINATION_CENTRIFUGE_ID,
-            PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
-            PLUME_ACRED_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+            PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+            PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
         );
     }
 }
