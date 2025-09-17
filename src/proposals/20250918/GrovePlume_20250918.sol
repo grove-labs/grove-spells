@@ -21,10 +21,10 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
 
     uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
     uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
-    uint256 internal constant CCTP_RATE_LIMIT_MAX                              = 100_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant CCTP_RATE_LIMIT_SLOPE                            = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 100_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant CCTP_RATE_LIMIT_MAX                              = 50_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant CCTP_RATE_LIMIT_SLOPE                            = 50_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;                   // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days); // TODO: Add actual value
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
 
