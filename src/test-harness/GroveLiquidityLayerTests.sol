@@ -15,9 +15,9 @@ import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimi
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
+import { CastingHelpers }             from "src/libraries/CastingHelpers.sol";
+import { ChainId, ChainIdUtils }      from "src/libraries/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHelpers.sol";
-
-import { ChainId, ChainIdUtils } from "../libraries/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
@@ -418,7 +418,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         uint256 slope
     ) internal {
         bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(GroveLiquidityLayerHelpers.LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
-        bytes32 castedDestinationAddress = bytes32(uint256(uint160(destinationAddress)));
+        bytes32 castedDestinationAddress = CastingHelpers.addressToCentrifugeRecipient(destinationAddress);
 
         _assertZeroRateLimit(centrifugeCrosschainTransferKey);
 
@@ -603,15 +603,27 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(controller.hasRole(FREEZER, ctx.freezer), false);
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(address(0)))));
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+                CastingHelpers.addressToCctpRecipient(address(0))
+            );
         } else {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(address(0)))));
+            assertEq(controller.mintRecipients(
+                CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+                CastingHelpers.addressToCctpRecipient(address(0))
+            );
         }
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(address(0)))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
         } else {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(address(0)))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
         }
 
         executeAllPayloadsAndBridges();
@@ -626,17 +638,35 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(controller.hasRole(FREEZER, ctx.freezer), true);
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
-            // assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_PLUME),     bytes32(uint256(uint160(Plume.ALM_PROXY))));
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+                CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
+            );
+            // assertEq(controller.mintRecipients(
+            //     CCTPForwarder.DOMAIN_ID_CIRCLE_PLUME),
+            //     CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
+            // );
         } else {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+                CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
+            );
         }
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),     bytes32(uint256(uint160(Plume.ALM_PROXY))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
+            );
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
+            );
         } else {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
+            );
         }
     }
 

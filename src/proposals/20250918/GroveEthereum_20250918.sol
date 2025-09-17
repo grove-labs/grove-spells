@@ -9,6 +9,8 @@ import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
 
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 
+import { CastingHelpers } from "src/libraries/CastingHelpers.sol";
+
 import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
 
 contract GroveEthereum_20250918 is GrovePayloadEthereum {
@@ -57,7 +59,7 @@ contract GroveEthereum_20250918 is GrovePayloadEthereum {
 
         MainnetController(Ethereum.ALM_CONTROLLER).setMintRecipient(
             PLUME_DESTINATION_CCTP_ID,
-            bytes32(uint256(uint160(Plume.ALM_PROXY))) // TODO: Use casting helper
+            CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
         );
     }
 
@@ -72,7 +74,7 @@ contract GroveEthereum_20250918 is GrovePayloadEthereum {
     function _onboardCentrifugeAcrdxCrosschainTransfer() internal {
         MainnetController(Ethereum.ALM_CONTROLLER).setCentrifugeRecipient(
             PLUME_DESTINATION_CENTRIFUGE_ID,
-            bytes32(bytes20(Plume.ALM_PROXY)) // TODO: Use casting helper
+            CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
         );
 
         _setCentrifugeCrosschainTransferRateLimit(

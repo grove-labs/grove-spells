@@ -12,6 +12,8 @@ import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
 
 import { ForeignControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/ForeignControllerInit.sol";
 
+import { CastingHelpers } from "src/libraries/CastingHelpers.sol";
+
 import { GrovePayloadPlume } from "src/libraries/GrovePayloadPlume.sol";
 
 contract GrovePlume_20250918 is GrovePayloadPlume {
@@ -59,14 +61,14 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         ForeignControllerInit.MintRecipient[] memory cctpRecipients = new ForeignControllerInit.MintRecipient[](1);
         cctpRecipients[0] = ForeignControllerInit.MintRecipient({
             domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
-            mintRecipient : bytes32(uint256(uint160(Ethereum.ALM_PROXY))) // TODO: Use casting helper
+            mintRecipient : CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
         });
 
         // Define Mainnet Centrifuge recipients
         ForeignControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new ForeignControllerInit.CentrifugeRecipient[](1);
         centrifugeRecipients[0] = ForeignControllerInit.CentrifugeRecipient({
             destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
-            recipient               : bytes32(bytes20(Ethereum.ALM_PROXY)) // TODO: Use casting helper
+            recipient               : CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
         });
 
         ForeignControllerInit.initAlmSystem(

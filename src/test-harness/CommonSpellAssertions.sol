@@ -16,7 +16,8 @@ import { MainnetController } from "grove-alm-controller/src/MainnetController.so
 import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
 import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
 
-import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
+import { CastingHelpers }        from "src/libraries/CastingHelpers.sol";
+import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
@@ -247,7 +248,7 @@ abstract contract CommonSpellAssertions is SpellRunner {
         assertEq(receiver.sourceDomainId(), 0, "incorrect-source-domain-id");
 
         // Source authority has to be the Ethereum Mainnet Grove Proxy
-        assertEq(receiver.sourceAuthority(), bytes32(uint256(uint160(Ethereum.GROVE_PROXY))), "incorrect-source-authority");
+        assertEq(receiver.sourceAuthority(), CastingHelpers.addressToLeftPaddedBytes32(Ethereum.GROVE_PROXY), "incorrect-source-authority");
 
         // Target has to be the executor
         assertEq(receiver.target(), _executor, "incorrect-target");
