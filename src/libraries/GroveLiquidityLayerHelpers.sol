@@ -22,8 +22,8 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CENTRIFUGE_TRANSFER = keccak256("LIMIT_CENTRIFUGE_TRANSFER");
 
     uint16 public constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
+    uint16 public constant PLUME_DESTINATION_CENTRIFUGE_ID     = 4;
     uint16 public constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
-    uint16 public constant PLUME_DESTINATION_CENTRIFUGE_ID     = 7; // TODO: Set to actual value
 
     /**
      * @notice Onboard an ERC4626 vault

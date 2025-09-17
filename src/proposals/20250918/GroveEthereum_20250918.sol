@@ -24,7 +24,7 @@ contract GroveEthereum_20250918 is GrovePayloadEthereum {
     uint256 internal constant CCTP_RATE_LIMIT_MAX                        = 50_000_000e6;                    // TODO: Add actual value
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE                      = 50_000_000e6 / uint256(1 days);  // TODO: Add actual value
 
-    uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID = 9999; // TODO: Add actual id
+    uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID = 4;
     uint16 internal constant PLUME_DESTINATION_CCTP_ID       = 9999; // TODO: Add actual id
 
     function _execute() internal override {

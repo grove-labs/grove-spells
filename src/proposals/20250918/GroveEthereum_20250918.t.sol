@@ -28,7 +28,7 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     uint256 internal constant MAINNET_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days); // TODO: Add actual value
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
-    uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 9999; // TODO: Add actual value
+    uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 4;
 
     constructor() {
         id = "20250918";
@@ -41,6 +41,9 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     function test_ETHEREUM_onboardCctpTransfersToPlume() public onChain(ChainIdUtils.Ethereum()) {
         // TODO: Unskip and implement after the CCTP transfers to Plume are onboarded
         vm.skip(true);
+
+        // TODO: Test rate limits
+        // TODO: Test mint recipients
     }
 
     function test_ETHEREUM_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Ethereum()) {
@@ -80,8 +83,8 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
             }),
             ForeignAlmSystemDependencies({
                 psm  : FAKE_ADDRESS_PLACEHOLDER,
-                usdc : FAKE_ADDRESS_PLACEHOLDER,
-                cctp : FAKE_ADDRESS_PLACEHOLDER
+                usdc : Plume.USDC,
+                cctp : Plume.CCTP_TOKEN_MESSENGER
             })
         );
     }

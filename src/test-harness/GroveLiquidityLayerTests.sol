@@ -495,19 +495,14 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
     function _prepareCentrifugeWhitelisting(ICentrifugeV3ShareLike vaultToken, address centrifugeRoot) internal {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        // TODO: Revise this once the Centrifuge fully migrates to V3, setting a new root address on Mainnet
+        vm.startPrank(centrifugeRoot);
+        IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
         if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
-            vm.startPrank(0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC);
-            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
-            vaultToken.file("hook", 0xa2C98F0F76Da0C97039688CA6280d082942d0b48);
-            vm.stopPrank();
         } else {
-            vm.startPrank(centrifugeRoot);
-            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
-            vm.stopPrank();
         }
+        vm.stopPrank();
     }
 
     function _centrifugeV3FulfillDepositRequest(
