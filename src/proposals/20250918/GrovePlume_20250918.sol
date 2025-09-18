@@ -18,15 +18,16 @@ import { GrovePayloadPlume } from "src/libraries/GrovePayloadPlume.sol";
 
 contract GrovePlume_20250918 is GrovePayloadPlume {
 
-    address internal constant FAKE_ADDRESS_PLACEHOLDER    = 0x00000000000000000000000000000000DeaDBeef;
+    address internal constant FAKE_ADDRESS_PLACEHOLDER     = 0x00000000000000000000000000000000DeaDBeef;
     address internal constant PLUME_CENTRIFUGE_ACRDX_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
+    address internal constant PLUME_CENTRIFUGE_JTRSY_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
 
-    uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
-    uint256 internal constant CCTP_RATE_LIMIT_MAX                              = 50_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant CCTP_RATE_LIMIT_SLOPE                            = 50_000_000e6 / uint256(1 days); // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant JTRSY_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
+    uint256 internal constant JTRSY_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant JTRSY_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
+    uint256 internal constant JTRSY_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
 
@@ -39,17 +40,12 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         // TODO: Add item title
         //   Forum : TODO: Add link
         //   Poll  : TODO: Add link
-        _onboardCctpTransfersToEthereum();
-
-        // TODO: Add item title
-        //   Forum : TODO: Add link
-        //   Poll  : TODO: Add link
         _onboardCentrifugeAcrdx();
 
         // TODO: Add item title
         //   Forum : TODO: Add link
         //   Poll  : TODO: Add link
-        _onboardCentrifugeAcrdxCrosschainTransfer();
+        _onboardCentrifugeJtrsyRedemption();
     }
 
     function _initializeLiquidityLayer() internal {
@@ -94,24 +90,6 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         );
     }
 
-    function _onboardCctpTransfersToEthereum() internal {
-        bytes32 generalCctpKey = ForeignController(Plume.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
-        bytes32 ethereumCctpKey = RateLimitHelpers.makeDomainKey(
-            ForeignController(Plume.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
-        );
-
-        IRateLimits(Plume.ALM_RATE_LIMITS).setUnlimitedRateLimitData(generalCctpKey);
-
-        IRateLimits(Plume.ALM_RATE_LIMITS).setRateLimitData({
-            key       : ethereumCctpKey,
-            maxAmount : CCTP_RATE_LIMIT_MAX,
-            slope     : CCTP_RATE_LIMIT_SLOPE
-        });
-
-        // Mint recipients are set during the ForeignController initialization
-    }
-
     function _onboardCentrifugeAcrdx() internal {
         _onboardERC7540Vault(
             PLUME_CENTRIFUGE_ACRDX_VAULT,
@@ -120,12 +98,10 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         );
     }
 
-    function _onboardCentrifugeAcrdxCrosschainTransfer() internal {
-        _setCentrifugeCrosschainTransferRateLimit(
-            PLUME_CENTRIFUGE_ACRDX_VAULT,
-            ETHEREUM_DESTINATION_CENTRIFUGE_ID,
-            PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
-            PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
-        );
+    function _onboardCentrifugeJtrsyRedemption() internal {
+        IRateLimits(Plume.ALM_RATE_LIMITS).setUnlimitedRateLimitData(RateLimitHelpers.makeAssetKey(
+            ForeignController(Plume.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
+            PLUME_CENTRIFUGE_JTRSY_VAULT
+        ));
     }
 }

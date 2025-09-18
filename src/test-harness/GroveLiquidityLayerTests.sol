@@ -499,6 +499,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
         if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID)),     type(uint64).max);
         } else {
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
         }

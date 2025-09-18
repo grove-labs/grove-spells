@@ -14,18 +14,18 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
 
     address internal constant FAKE_ADDRESS_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
 
-    address internal constant MAINNET_CENTRIFUGE_ACRDX_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
     address internal constant PLUME_CENTRIFUGE_ACRDX_VAULT   = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
+    address internal constant PLUME_CENTRIFUGE_JTRSY_VAULT   = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
 
-    uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant PLUME_JTRSY_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
+    uint256 internal constant PLUME_JTRSY_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
+    uint256 internal constant PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
-    uint256 internal constant MAINNET_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 100_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant MAINNET_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 100_000_000e6 / uint256(1 days); // TODO: Add actual value
-    uint256 internal constant MAINNET_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;                   // TODO: Add actual value
-    uint256 internal constant MAINNET_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days); // TODO: Add actual value
+    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
+    uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
     uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 4;
@@ -35,25 +35,19 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-08-25T15:30:00Z");
+        setupDomains("2025-09-18T15:30:00Z");
+
+        deployPayloads();
     }
-
-    function test_ETHEREUM_onboardCctpTransfersToPlume() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip and implement after the CCTP transfers to Plume are onboarded
-        vm.skip(true);
-
-        // TODO: Test rate limits
-        // TODO: Test mint recipients
-    }
-
-    function test_ETHEREUM_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip and implement after the Centrifuge Acrdx vault is deployed
-        vm.skip(true);
-    }
-
-    function test_ETHEREUM_onboardCentrifugeAcrdxCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Unskip and implement after the Centrifuge Acrdx vault is deployed
-        vm.skip(true);
+    function test_ETHEREUM_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
+        _testCentrifugeCrosschainTransferOnboarding({
+            centrifugeVault         : Ethereum.CENTRIFUGE_JTRSY,
+            destinationAddress      : Plume.ALM_PROXY,
+            destinationCentrifugeId : PLUME_DESTINATION_CENTRIFUGE_ID,
+            expectedTransferAmount  : 10_000_000e6,
+            maxAmount               : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+            slope                   : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+        });
     }
 
     function test_PLUME_governanceDeployment() public onChain(ChainIdUtils.Plume()) {
@@ -89,27 +83,35 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
         );
     }
 
-    function test_PLUME_onboardCctpTransfersToEthereum() public onChain(ChainIdUtils.Plume()) {
-        // TODO: Unskip and implement after the CCTP transfers to Ethereum are onboarded
-        vm.skip(true);
-    }
-
     function test_PLUME_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Plume()) {
         // TODO: Unskip  and implement after the Centrifuge Acrdx vault is deployed
         vm.skip(true);
+
+        _testCentrifugeV3Onboarding({
+            centrifugeVault       : PLUME_CENTRIFUGE_ACRDX_VAULT,
+            usdcAddress           : Plume.USDC,
+            expectedDepositAmount : 20_000_000e6,
+            depositMax            : PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX,
+            depositSlope          : PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE
+        });
     }
 
-    function test_PLUME_onboardCentrifugeAcrdxCrosschainTransfer() public onChain(ChainIdUtils.Plume()) {
-        // TODO: Unskip after the Centrifuge Acrdx vault is deployed
+    function test_PLUME_onboardCentrifugeJtrsyRedemption() public onChain(ChainIdUtils.Plume()) {
+        // TODO: Unskip and implement after the Centrifuge Jtrsy vault is deployed
+        vm.skip(true);
+    }
+
+    function test_PLUME_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Plume()) {
+        // TODO: Unskip and implement after the Centrifuge Jtrsy vault is deployed
         vm.skip(true);
 
         _testCentrifugeCrosschainTransferOnboarding({
-            centrifugeVault         : PLUME_CENTRIFUGE_ACRDX_VAULT,
+            centrifugeVault         : PLUME_CENTRIFUGE_JTRSY_VAULT,
             destinationAddress      : Ethereum.ALM_PROXY,
             destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
             expectedTransferAmount  : 10_000_000e6,
-            maxAmount               : PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
-            slope                   : PLUME_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
+            maxAmount               : PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
+            slope                   : PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
         });
     }
 

@@ -375,6 +375,8 @@ abstract contract SpellRunner is Test {
         GrovePayloadEthereum spell = GrovePayloadEthereum(chainData[ChainIdUtils.Ethereum()].payload);
         if (chainId == ChainIdUtils.Avalanche()) {
             return spell.PAYLOAD_AVALANCHE();
+        } else if (chainId == ChainIdUtils.Plume()) {
+            return spell.PAYLOAD_PLUME();
         // } else if (chainId == ChainIdUtils.Base()) {
         //     return spell.PAYLOAD_BASE();
         // } else if (chainId == ChainIdUtils.Gnosis()) {
