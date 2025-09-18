@@ -6,6 +6,10 @@ import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
 
+import { RateLimitHelpers } from "grove-alm-controller/src/RateLimitHelpers.sol";
+
+import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHelpers.sol";
+
 import "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20250918_Test is GroveTestBase {
@@ -97,22 +101,16 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     }
 
     function test_PLUME_onboardCentrifugeJtrsyRedemption() public onChain(ChainIdUtils.Plume()) {
-        // TODO: Unskip and implement after the Centrifuge Jtrsy vault is deployed
-        vm.skip(true);
-    }
+        bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
+            GroveLiquidityLayerHelpers.LIMIT_7540_REDEEM,
+            PLUME_CENTRIFUGE_JTRSY_VAULT
+        );
 
-    function test_PLUME_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Plume()) {
-        // TODO: Unskip and implement after the Centrifuge Jtrsy vault is deployed
-        vm.skip(true);
+        _assertZeroRateLimit(redeemKey);
 
-        _testCentrifugeCrosschainTransferOnboarding({
-            centrifugeVault         : PLUME_CENTRIFUGE_JTRSY_VAULT,
-            destinationAddress      : Ethereum.ALM_PROXY,
-            destinationCentrifugeId : ETHEREUM_DESTINATION_CENTRIFUGE_ID,
-            expectedTransferAmount  : 10_000_000e6,
-            maxAmount               : PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
-            slope                   : PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
-        });
+        executeAllPayloadsAndBridges();
+
+        _assertUnlimitedRateLimit(redeemKey);
     }
 
 }
