@@ -12,15 +12,12 @@ import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
 
 import { ForeignControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/ForeignControllerInit.sol";
 
-import { CastingHelpers } from "src/libraries/CastingHelpers.sol";
+import { CastingHelpers }             from "src/libraries/CastingHelpers.sol";
+import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHelpers.sol";
 
 import { GrovePayloadPlume } from "src/libraries/GrovePayloadPlume.sol";
 
 contract GrovePlume_20250918 is GrovePayloadPlume {
-
-    address internal constant FAKE_ADDRESS_PLACEHOLDER     = 0x00000000000000000000000000000000DeaDBeef;
-    address internal constant PLUME_CENTRIFUGE_ACRDX_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
-    address internal constant PLUME_CENTRIFUGE_JTRSY_VAULT = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
 
     uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
     uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
@@ -33,17 +30,17 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
 
     function execute() external {
         // TODO: Add item title
-        //   Forum : TODO: Add link
+        //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
         //   Poll  : TODO: Add link
         _initializeLiquidityLayer();
 
         // TODO: Add item title
-        //   Forum : TODO: Add link
+        //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
         //   Poll  : TODO: Add link
         _onboardCentrifugeAcrdx();
 
         // TODO: Add item title
-        //   Forum : TODO: Add link
+        //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
         //   Poll  : TODO: Add link
         _onboardCentrifugeJtrsyRedemption();
     }
@@ -80,9 +77,9 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
             }),
             ForeignControllerInit.CheckAddressParams({
                 admin      : Plume.GROVE_EXECUTOR,
-                psm        : FAKE_ADDRESS_PLACEHOLDER,
-                cctp       : Plume.CCTP_TOKEN_MESSENGER,
-                usdc       : Plume.USDC
+                psm        : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
+                cctp       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
+                usdc       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER
             }),
             cctpRecipients,
             new ForeignControllerInit.LayerZeroRecipient[](0),
@@ -92,7 +89,7 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
 
     function _onboardCentrifugeAcrdx() internal {
         _onboardERC7540Vault(
-            PLUME_CENTRIFUGE_ACRDX_VAULT,
+            Plume.CENTRIFUGE_ACRDX,
             PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX,
             PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE
         );
@@ -101,7 +98,7 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
     function _onboardCentrifugeJtrsyRedemption() internal {
         IRateLimits(Plume.ALM_RATE_LIMITS).setUnlimitedRateLimitData(RateLimitHelpers.makeAssetKey(
             ForeignController(Plume.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
-            PLUME_CENTRIFUGE_JTRSY_VAULT
+            Plume.CENTRIFUGE_JTRSY
         ));
     }
 }

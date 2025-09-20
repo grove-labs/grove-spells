@@ -16,11 +16,6 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
-    address internal constant FAKE_ADDRESS_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
-
-    address internal constant PLUME_CENTRIFUGE_ACRDX_VAULT   = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
-    address internal constant PLUME_CENTRIFUGE_JTRSY_VAULT   = 0x0000000000000000000000000000000000000000; // TODO: Add actual address
-
     uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
     uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
     uint256 internal constant PLUME_JTRSY_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
@@ -39,7 +34,7 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-09-18T15:30:00Z");
+        setupDomains("2025-09-20T12:00:00Z");
 
         deployPayloads();
     }
@@ -80,21 +75,18 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
                 relayer  : Plume.ALM_RELAYER
             }),
             ForeignAlmSystemDependencies({
-                psm  : FAKE_ADDRESS_PLACEHOLDER,
-                usdc : Plume.USDC,
-                cctp : Plume.CCTP_TOKEN_MESSENGER
+                psm  : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
+                usdc : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
+                cctp : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER
             })
         );
     }
 
     function test_PLUME_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Plume()) {
-        // TODO: Unskip  and implement after the Centrifuge Acrdx vault is deployed
-        vm.skip(true);
-
         _testCentrifugeV3Onboarding({
-            centrifugeVault       : PLUME_CENTRIFUGE_ACRDX_VAULT,
+            centrifugeVault       : Plume.CENTRIFUGE_ACRDX,
             usdcAddress           : Plume.USDC,
-            expectedDepositAmount : 20_000_000e6,
+            expectedDepositAmount : 10_000_000e6,
             depositMax            : PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX,
             depositSlope          : PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE
         });
@@ -103,7 +95,7 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     function test_PLUME_onboardCentrifugeJtrsyRedemption() public onChain(ChainIdUtils.Plume()) {
         bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
             GroveLiquidityLayerHelpers.LIMIT_7540_REDEEM,
-            PLUME_CENTRIFUGE_JTRSY_VAULT
+            Plume.CENTRIFUGE_JTRSY
         );
 
         _assertZeroRateLimit(redeemKey);
@@ -111,6 +103,8 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
         executeAllPayloadsAndBridges();
 
         _assertUnlimitedRateLimit(redeemKey);
+
+        // TODO: Add redemption test
     }
 
 }

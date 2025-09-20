@@ -22,7 +22,7 @@ contract GroveEthereum_20250918 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // TODO: Add item title
-        //   Forum : TODO: Add link
+        //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
         //   Poll  : TODO: Add link
         _onboardCentrifugeJtrsyCrosschainTransfer();
     }

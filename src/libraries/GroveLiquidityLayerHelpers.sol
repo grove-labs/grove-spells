@@ -13,6 +13,8 @@ library GroveLiquidityLayerHelpers {
     // This is the same on all chains
     address private constant MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
 
+    address public constant BLANK_ADDRESS_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
+
     bytes32 public constant LIMIT_4626_DEPOSIT        = keccak256("LIMIT_4626_DEPOSIT");
     bytes32 public constant LIMIT_4626_WITHDRAW       = keccak256("LIMIT_4626_WITHDRAW");
     bytes32 public constant LIMIT_7540_DEPOSIT        = keccak256("LIMIT_7540_DEPOSIT");
