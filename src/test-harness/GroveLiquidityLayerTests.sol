@@ -401,7 +401,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
-        // TODO: balanceSheet.deposit to make it work
+        // TODO: fix balanceSheet.deposit(...) to make it work
 
         // vm.prank(ctx.relayer);
         // MainnetController(ctx.controller).claimRedeemERC7540(centrifugeVault);
