@@ -157,6 +157,7 @@ interface IBalanceSheetLike {
 
 interface ISpokeLike {
     function assetToId(address asset, uint256 tokenId) external view returns (uint128);
+    function updatePricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId, uint128 price, uint64 computedAt) external;
     event InitiateTransferShares(
         uint16 centrifugeId,
         uint64 indexed poolId,
@@ -401,13 +402,11 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
-        // TODO: fix balanceSheet.deposit(...) to make it work
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).claimRedeemERC7540(centrifugeVault);
 
-        // vm.prank(ctx.relayer);
-        // MainnetController(ctx.controller).claimRedeemERC7540(centrifugeVault);
-
-        // assertEq(usdc.balanceOf(address(ctx.proxy)),  expectedDepositAmount);
-        // assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
+        assertEq(usdc.balanceOf(address(ctx.proxy)),  expectedDepositAmount);
+        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
     }
 
 
@@ -544,22 +543,25 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         uint128 _tokenAmount = uint128(tokenAmount);
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        address poolEscrow = IAsyncRedeemManagerLike(config.centrifugeManager).poolEscrow(config.centrifugePoolId);
+        IAsyncRedeemManagerLike manager = IAsyncRedeemManagerLike(config.centrifugeManager);
+        address poolEscrow = manager.poolEscrow(config.centrifugePoolId);
         deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), poolEscrow, 5_000_000_000e6);
 
        // Deposit assets into balanceSheet
         deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), config.centrifugeRoot, tokenAmount * 2);
-        IBalanceSheetLike balanceSheet = IBalanceSheetLike(IAsyncRedeemManagerLike(config.centrifugeManager).balanceSheet());
+        IBalanceSheetLike balanceSheet = IBalanceSheetLike(manager.balanceSheet());
 
         vm.startPrank(config.centrifugeRoot);
+        ISpokeLike centrifugeSpoke = ISpokeLike(manager.spoke());
+        centrifugeSpoke.updatePricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId, 1e18, uint64(block.timestamp));
+
         IERC20(ICentrifugeV3Vault(config.centrifugeVault).asset()).approve(address(balanceSheet), tokenAmount * 2);
-        // TODO: Why does it fail?
-        // balanceSheet.deposit(config.centrifugePoolId, config.centrifugeScId, ICentrifugeV3Vault(config.centrifugeVault).asset(), 0, uint128(tokenAmount * 2));
+        balanceSheet.deposit(config.centrifugePoolId, config.centrifugeScId, ICentrifugeV3Vault(config.centrifugeVault).asset(), 0, uint128(tokenAmount * 2));
         vm.stopPrank();
 
         // Revoke shares
         vm.prank(config.centrifugeRoot);
-        IAsyncRedeemManagerLike(config.centrifugeManager).revokedShares(
+        manager.revokedShares(
             config.centrifugePoolId,
             config.centrifugeScId,
             config.centrifugeAssetId,
@@ -570,7 +572,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
 
         // Fulfill request at price 2.0
         vm.prank(config.centrifugeRoot);
-        IAsyncRedeemManagerLike(config.centrifugeManager).fulfillRedeemRequest(
+        manager.fulfillRedeemRequest(
             config.centrifugePoolId,
             config.centrifugeScId,
             address(ctx.proxy),
