@@ -158,6 +158,10 @@ interface IBalanceSheetLike {
 interface ISpokeLike {
     function assetToId(address asset, uint256 tokenId) external view returns (uint128);
     function updatePricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId, uint128 price, uint64 computedAt) external;
+    function markersPricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId)
+        external
+        view
+        returns (uint64 computedAt, uint64 maxAge, uint64 validUntil);
     event InitiateTransferShares(
         uint16 centrifugeId,
         uint64 indexed poolId,
@@ -547,13 +551,18 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         address poolEscrow = manager.poolEscrow(config.centrifugePoolId);
         deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), poolEscrow, 5_000_000_000e6);
 
-       // Deposit assets into balanceSheet
+        // Deposit assets into balanceSheet
         deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), config.centrifugeRoot, tokenAmount * 2);
         IBalanceSheetLike balanceSheet = IBalanceSheetLike(manager.balanceSheet());
 
         vm.startPrank(config.centrifugeRoot);
+
         ISpokeLike centrifugeSpoke = ISpokeLike(manager.spoke());
-        centrifugeSpoke.updatePricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId, 1e18, uint64(block.timestamp));
+        (uint64 computedAt,,)= centrifugeSpoke.markersPricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId);
+        if (computedAt == 0) {
+            // Sets initial asset price to 1.00
+            centrifugeSpoke.updatePricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId, 1e18, uint64(block.timestamp));
+        }
 
         IERC20(ICentrifugeV3Vault(config.centrifugeVault).asset()).approve(address(balanceSheet), tokenAmount * 2);
         balanceSheet.deposit(config.centrifugePoolId, config.centrifugeScId, ICentrifugeV3Vault(config.centrifugeVault).asset(), 0, uint128(tokenAmount * 2));
