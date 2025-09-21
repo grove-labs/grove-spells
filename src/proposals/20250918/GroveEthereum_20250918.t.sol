@@ -16,15 +16,13 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
-    uint256 internal constant PLUME_JTRSY_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
-    uint256 internal constant PLUME_JTRSY_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
-    uint256 internal constant PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
-    uint256 internal constant PLUME_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
-
     uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
     uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
+
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX   = 20_000_000e6;
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant PLUME_JTRSY_REDEEM_RATE_LIMIT_MAX    = 20_000_000e6;
+    uint256 internal constant PLUME_JTRSY_REDEEM_RATE_LIMIT_SLOPE  = 20_000_000e6 / uint256(1 days);
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
     uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 4;
@@ -38,12 +36,12 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
 
         deployPayloads();
     }
+
     function test_ETHEREUM_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
         _testCentrifugeCrosschainTransferOnboarding({
             centrifugeVault         : Ethereum.CENTRIFUGE_JTRSY,
             destinationAddress      : Plume.ALM_PROXY,
             destinationCentrifugeId : PLUME_DESTINATION_CENTRIFUGE_ID,
-            expectedTransferAmount  : 10_000_000e6,
             maxAmount               : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX,
             slope                   : MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE
         });
@@ -85,26 +83,17 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     function test_PLUME_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Plume()) {
         _testCentrifugeV3Onboarding({
             centrifugeVault       : Plume.CENTRIFUGE_ACRDX,
-            usdcAddress           : Plume.USDC,
-            expectedDepositAmount : 10_000_000e6,
             depositMax            : PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX,
             depositSlope          : PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE
         });
     }
 
     function test_PLUME_onboardCentrifugeJtrsyRedemption() public onChain(ChainIdUtils.Plume()) {
-        bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
-            GroveLiquidityLayerHelpers.LIMIT_7540_REDEEM,
-            Plume.CENTRIFUGE_JTRSY
-        );
-
-        _assertZeroRateLimit(redeemKey);
-
-        executeAllPayloadsAndBridges();
-
-        _assertUnlimitedRateLimit(redeemKey);
-
-        // TODO: Add redemption test
+        _testCentrifugeV3RedemptionsOnlyOnboarding({
+            centrifugeVault  : Plume.CENTRIFUGE_JTRSY,
+            redeemMax        : PLUME_JTRSY_REDEEM_RATE_LIMIT_MAX,
+            redeemSlope      : PLUME_JTRSY_REDEEM_RATE_LIMIT_SLOPE
+        });
     }
 
 }

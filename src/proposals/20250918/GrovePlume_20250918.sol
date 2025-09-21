@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
-
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
@@ -19,12 +17,10 @@ import { GrovePayloadPlume } from "src/libraries/GrovePayloadPlume.sol";
 
 contract GrovePlume_20250918 is GrovePayloadPlume {
 
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
-    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
-    uint256 internal constant JTRSY_ACRDX_DEPOSIT_RATE_LIMIT_MAX               = 20_000_000e6;
-    uint256 internal constant JTRSY_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE             = 20_000_000e6 / uint256(1 days);
-    uint256 internal constant JTRSY_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
-    uint256 internal constant JTRSY_ACRDX_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX   = 20_000_000e6;
+    uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant PLUME_JTRSY_REDEEM_RATE_LIMIT_MAX    = 20_000_000e6;
+    uint256 internal constant PLUME_JTRSY_REDEEM_RATE_LIMIT_SLOPE  = 20_000_000e6 / uint256(1 days);
 
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
 
@@ -50,13 +46,6 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
         address[] memory relayers = new address[](1);
         relayers[0] = Plume.ALM_RELAYER;
 
-        // Define Mainnet CCTP mint recipients
-        ForeignControllerInit.MintRecipient[] memory cctpRecipients = new ForeignControllerInit.MintRecipient[](1);
-        cctpRecipients[0] = ForeignControllerInit.MintRecipient({
-            domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
-            mintRecipient : CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
-        });
-
         // Define Mainnet Centrifuge recipients
         ForeignControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new ForeignControllerInit.CentrifugeRecipient[](1);
         centrifugeRecipients[0] = ForeignControllerInit.CentrifugeRecipient({
@@ -81,7 +70,7 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
                 cctp       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
                 usdc       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER
             }),
-            cctpRecipients,
+            new ForeignControllerInit.MintRecipient[](0),
             new ForeignControllerInit.LayerZeroRecipient[](0),
             centrifugeRecipients
         );
@@ -96,9 +85,16 @@ contract GrovePlume_20250918 is GrovePayloadPlume {
     }
 
     function _onboardCentrifugeJtrsyRedemption() internal {
-        IRateLimits(Plume.ALM_RATE_LIMITS).setUnlimitedRateLimitData(RateLimitHelpers.makeAssetKey(
+        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
             ForeignController(Plume.ALM_CONTROLLER).LIMIT_7540_REDEEM(),
             Plume.CENTRIFUGE_JTRSY
-        ));
+        );
+
+        IRateLimits(Plume.ALM_RATE_LIMITS).setRateLimitData(
+            withdrawKey,
+            PLUME_JTRSY_REDEEM_RATE_LIMIT_MAX,
+            PLUME_JTRSY_REDEEM_RATE_LIMIT_SLOPE
+        );
     }
+
 }
