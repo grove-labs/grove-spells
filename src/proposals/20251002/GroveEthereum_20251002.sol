@@ -9,7 +9,7 @@ import { MainnetController } from "grove-alm-controller/src/MainnetController.so
 import { CastingHelpers }       from "src/libraries/CastingHelpers.sol";
 import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
 
-contract GroveEthereum_20250918 is GrovePayloadEthereum {
+contract GroveEthereum_20251002 is GrovePayloadEthereum {
 
     uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
     uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);

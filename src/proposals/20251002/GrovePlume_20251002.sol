@@ -15,7 +15,7 @@ import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHel
 
 import { GrovePayloadPlume } from "src/libraries/GrovePayloadPlume.sol";
 
-contract GrovePlume_20250918 is GrovePayloadPlume {
+contract GrovePlume_20251002 is GrovePayloadPlume {
 
     uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX   = 20_000_000e6;
     uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);

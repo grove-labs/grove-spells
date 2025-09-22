@@ -12,7 +12,7 @@ import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHel
 
 import "src/test-harness/GroveTestBase.sol";
 
-contract GroveEthereum_20250918_Test is GroveTestBase {
+contract GroveEthereum_20251002_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
@@ -28,7 +28,7 @@ contract GroveEthereum_20250918_Test is GroveTestBase {
     uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 4;
 
     constructor() {
-        id = "20250918";
+        id = "20251002";
     }
 
     function setUp() public {
