@@ -41,9 +41,9 @@ abstract contract GrovePayloadEthereum {
                 l1CrossDomain: ArbitrumERC20Forwarder.L1_CROSS_DOMAIN_PLUME,
                 target:        Plume.GROVE_RECEIVER,
                 message:       _encodePayloadQueue(PAYLOAD_PLUME),
-                gasLimit:      100_0000,
-                maxFeePerGas:  10_000 gwei,
-                baseFee:       10_000 gwei
+                gasLimit:      500_0000,
+                maxFeePerGas:  5e9,
+                baseFee:       block.basefee
             });
         }
     }
