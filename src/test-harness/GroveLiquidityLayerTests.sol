@@ -30,62 +30,6 @@ struct GroveLiquidityLayerContext {
     address     freezer;
 }
 
-struct CentrifugeConfig {
-    address centrifugeRoot;
-    address centrifugeInvestmentManager;
-    bytes16 centrifugeTrancheId;
-    uint64  centrifugePoolId;
-    uint128 centrifugeAssetId;
-}
-
-interface IInvestmentManager {
-    function fulfillCancelDepositRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 fulfillment
-    ) external;
-    function fulfillCancelRedeemRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 shares
-    ) external;
-    function fulfillDepositRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 shares
-    ) external;
-    function fulfillRedeemRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 shares
-    ) external;
-    function poolManager() external view returns (address);
-}
-
-interface IPoolManager {
-    function assetToId(address asset) external view returns (uint128);
-}
-
-interface ICentrifugeVault {
-    function asset()     external view returns (address);
-    function manager()   external view returns (address);
-    function root()      external view returns (address);
-    function share()     external view returns (address);
-    function trancheId() external view returns (bytes16);
-    function poolId()    external view returns (uint64);
-}
-
 struct CentrifugeV3Config {
     address centrifugeVault;
     address centrifugeRoot;
@@ -733,10 +677,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
                 controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
                 CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
             );
-            // assertEq(controller.mintRecipients(
-            //     CCTPForwarder.DOMAIN_ID_CIRCLE_PLUME),
-            //     CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
-            // );
+            // Plume intentionally skipped - CCTPv1 is not deployed on Plume
         } else {
             assertEq(
                 controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),

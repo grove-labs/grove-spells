@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.0;
+pragma solidity 0.8.25;
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
@@ -9,6 +9,10 @@ import { MainnetController } from "grove-alm-controller/src/MainnetController.so
 import { CastingHelpers }       from "src/libraries/CastingHelpers.sol";
 import { GrovePayloadEthereum } from "src/libraries/GrovePayloadEthereum.sol";
 
+/**
+ * @title  October 2, 2025 Grove Ethereum Proposal
+ * @author Grove Labs
+ */
 contract GroveEthereum_20251002 is GrovePayloadEthereum {
 
     uint256 internal constant JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;

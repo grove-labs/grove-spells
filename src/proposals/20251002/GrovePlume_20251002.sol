@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.0;
+pragma solidity 0.8.25;
 
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
@@ -15,6 +15,10 @@ import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHel
 
 import { GrovePayloadPlume } from "src/libraries/GrovePayloadPlume.sol";
 
+/**
+ * @title  October 2, 2025 Grove Plume Proposal
+ * @author Grove Labs
+ */
 contract GrovePlume_20251002 is GrovePayloadPlume {
 
     uint256 internal constant PLUME_ACRDX_DEPOSIT_RATE_LIMIT_MAX   = 20_000_000e6;

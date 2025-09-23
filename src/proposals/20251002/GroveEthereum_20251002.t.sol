@@ -1,12 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0
-pragma solidity ^0.8.0;
+pragma solidity 0.8.25;
 
-import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
+import { ChainIdUtils } from "src/libraries/ChainId.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Plume }    from "lib/grove-address-registry/src/Plume.sol";
-
-import { RateLimitHelpers } from "grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHelpers.sol";
 
@@ -24,7 +22,6 @@ contract GroveEthereum_20251002_Test is GroveTestBase {
     uint256 internal constant PLUME_JTRSY_REDEEM_RATE_LIMIT_MAX    = 20_000_000e6;
     uint256 internal constant PLUME_JTRSY_REDEEM_RATE_LIMIT_SLOPE  = 20_000_000e6 / uint256(1 days);
 
-    uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
     uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID    = 4;
 
     constructor() {
