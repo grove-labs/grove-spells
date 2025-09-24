@@ -29,19 +29,19 @@ contract GrovePlume_20251002 is GrovePayloadPlume {
     uint16 internal constant ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
 
     function execute() external {
-        // TODO: Add item title
+        // [Mainnet + Plume] Grove Liquidity Layer - Plume Deployment
         //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
-        //   Poll  : TODO: Add link
+        //   Poll  : https://vote.sky.money/polling/QmPsHirj
         _initializeLiquidityLayer();
 
-        // TODO: Add item title
+        // [Mainnet + Plume] Grove Liquidity Layer - Onboard Apollo ACRDX
         //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
-        //   Poll  : TODO: Add link
+        //   Poll  : https://vote.sky.money/polling/QmTE1YTn
         _onboardCentrifugeAcrdx();
 
-        // TODO: Add item title
+        // [Mainnet + Plume] Grove Liquidity Layer - Plume Deployment
         //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
-        //   Poll  : TODO: Add link
+        //   Poll  : https://vote.sky.money/polling/QmPsHirj
         _onboardCentrifugeJtrsyRedemption();
     }
 

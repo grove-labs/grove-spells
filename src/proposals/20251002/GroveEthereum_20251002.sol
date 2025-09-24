@@ -21,9 +21,9 @@ contract GroveEthereum_20251002 is GrovePayloadEthereum {
     uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID = 4;
 
     function _execute() internal override {
-        // TODO: Add item title
+        // [Mainnet + Plume] Grove Liquidity Layer - Plume Deployment
         //   Forum : https://forum.sky.money/t/october-2-2025-proposed-changes-to-grove-for-upcoming-spell/27190
-        //   Poll  : TODO: Add link
+        //   Poll  : https://vote.sky.money/polling/QmPsHirj
         _onboardCentrifugeJtrsyCrosschainTransfer();
     }
 
