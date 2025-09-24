@@ -248,7 +248,7 @@ abstract contract CommonSpellAssertions is SpellRunner {
         assertEq(receiver.sourceDomainId(), 0, "incorrect-source-domain-id");
 
         // Source authority has to be the Ethereum Mainnet Grove Proxy
-        assertEq(receiver.sourceAuthority(), CastingHelpers.addressToLeftPaddedBytes32(Ethereum.GROVE_PROXY), "incorrect-source-authority");
+        assertEq(receiver.sourceAuthority(), CastingHelpers.addressToCctpRecipient(Ethereum.GROVE_PROXY), "incorrect-source-authority");
 
         // Target has to be the executor
         assertEq(receiver.target(), _executor, "incorrect-target");

@@ -256,12 +256,6 @@ abstract contract SpellRunner is Test {
                 chainData[ChainIdUtils.Plume()].domain
             )
         );
-        // chainData[ChainIdUtils.Plume()].bridges.push(
-        //     CCTPBridgeTesting.createCircleBridge(
-        //         chainData[ChainIdUtils.Ethereum()].domain,
-        //         chainData[ChainIdUtils.Plume()].domain
-        //     )
-        // );
 
         // REGISTER CHAINS HERE
         allChains.push(ChainIdUtils.Ethereum());

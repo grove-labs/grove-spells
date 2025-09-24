@@ -102,7 +102,7 @@ interface IBalanceSheetLike {
 
 interface ISpokeLike {
     function assetToId(address asset, uint256 tokenId) external view returns (uint128);
-    function updatePricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId, uint128 price, uint64 computedAt) external;
+    function updatePricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId, uint128 poolPerAsset_, uint64 computedAt) external;
     function markersPricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId)
         external
         view
@@ -397,7 +397,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         vm.prank(ctx.relayer);
         MainnetController(ctx.controller).requestDepositERC7540(centrifugeVault, depositMax);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax - depositMax);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 0);
 
         assertEq(asset.balanceOf(address(ctx.proxy)),      0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
