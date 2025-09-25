@@ -35,7 +35,7 @@ contract GroveEthereum_20251002_Test is GroveTestBase {
         setupDomains("2025-09-25T13:00:00Z");
 
         chainData[ChainIdUtils.Ethereum()].payload  = ETHEREUM_PAYLOAD;
-        chainData[ChainIdUtils.Plume()].payload = PLUME_PAYLOAD;
+        chainData[ChainIdUtils.Plume()].payload     = PLUME_PAYLOAD;
     }
 
     function test_ETHEREUM_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
