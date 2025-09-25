@@ -24,6 +24,10 @@ abstract contract GrovePayloadEthereum {
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_PLUME;
 
+    constructor() {
+        PAYLOAD_PLUME = 0x85b0E7F3A7C1aB0E1aDea7dfAaD416D8A6e00f0e;
+    }
+
     function execute() external {
         _execute();
 
@@ -41,8 +45,8 @@ abstract contract GrovePayloadEthereum {
                 l1CrossDomain: ArbitrumERC20Forwarder.L1_CROSS_DOMAIN_PLUME,
                 target:        Plume.GROVE_RECEIVER,
                 message:       _encodePayloadQueue(PAYLOAD_PLUME),
-                gasLimit:      500_0000,
-                maxFeePerGas:  5e9,
+                gasLimit:      1_000_0000,
+                maxFeePerGas:  5_000e9,
                 baseFee:       block.basefee
             });
         }

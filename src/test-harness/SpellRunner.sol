@@ -142,8 +142,8 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Avalanche()].domain   = getChain("avalanche").createFork(blocks[4]);
 
         // CREATE FORKS WITH STATICALLY CHOSEN BLOCKS HERE
-        chainData[ChainIdUtils.Plume()].domain = getChain("plume").createFork(29303780);
-        console.log("     Plume block:", uint256(29303780));
+        chainData[ChainIdUtils.Plume()].domain = getChain("plume").createFork(30242550);
+        console.log("     Plume block:", uint256(30242550));
         // chainData[ChainIdUtils.Gnosis()].domain      = getChain("gnosis_chain").createFork(39404891);  // Gnosis block lookup is not supported by Alchemy
         // chainData[ChainIdUtils.Unichain()].domain    = getChain("unichain").createFork(17517398);
 

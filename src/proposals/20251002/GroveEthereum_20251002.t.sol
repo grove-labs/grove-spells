@@ -14,6 +14,9 @@ contract GroveEthereum_20251002_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
+    address internal constant ETHEREUM_PAYLOAD = 0x67e7b3bFAb1Fb6267baECEc034Bbf7592F6B4E9b;
+    address internal constant PLUME_PAYLOAD    = 0x85b0E7F3A7C1aB0E1aDea7dfAaD416D8A6e00f0e;
+
     uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_MAX   = 20_000_000e6;
     uint256 internal constant MAINNET_JTRSY_CROSSCHAIN_TRANSFER_RATE_LIMIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
@@ -29,9 +32,10 @@ contract GroveEthereum_20251002_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-09-20T12:00:00Z");
+        setupDomains("2025-09-25T13:00:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload  = ETHEREUM_PAYLOAD;
+        chainData[ChainIdUtils.Plume()].payload = PLUME_PAYLOAD;
     }
 
     function test_ETHEREUM_onboardCentrifugeJtrsyCrosschainTransfer() public onChain(ChainIdUtils.Ethereum()) {
