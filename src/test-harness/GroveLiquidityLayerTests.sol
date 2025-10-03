@@ -8,80 +8,26 @@ import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.s
 
 import { Avalanche } from "grove-address-registry/Avalanche.sol";
 import { Ethereum }  from "grove-address-registry/Ethereum.sol";
+import { Plume }     from "grove-address-registry/Plume.sol";
 
 import { IALMProxy }         from "grove-alm-controller/src/interfaces/IALMProxy.sol";
 import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
+import { CastingHelpers }             from "src/libraries/CastingHelpers.sol";
+import { ChainId, ChainIdUtils }      from "src/libraries/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHelpers.sol";
-
-import { ChainId, ChainIdUtils } from "../libraries/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
 struct GroveLiquidityLayerContext {
+    address     admin;
     address     controller;
     IALMProxy   proxy;
     IRateLimits rateLimits;
     address     relayer;
     address     freezer;
-}
-
-struct CentrifugeConfig {
-    address centrifugeRoot;
-    address centrifugeInvestmentManager;
-    bytes16 centrifugeTrancheId;
-    uint64  centrifugePoolId;
-    uint128 centrifugeAssetId;
-}
-
-interface IInvestmentManager {
-    function fulfillCancelDepositRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 fulfillment
-    ) external;
-    function fulfillCancelRedeemRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 shares
-    ) external;
-    function fulfillDepositRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 shares
-    ) external;
-    function fulfillRedeemRequest(
-        uint64 poolId,
-        bytes16 trancheId,
-        address user,
-        uint128 assetId,
-        uint128 assets,
-        uint128 shares
-    ) external;
-    function poolManager() external view returns (address);
-}
-
-interface IPoolManager {
-    function assetToId(address asset) external view returns (uint128);
-}
-
-interface ICentrifugeVault {
-    function asset()     external view returns (address);
-    function manager()   external view returns (address);
-    function root()      external view returns (address);
-    function share()     external view returns (address);
-    function trancheId() external view returns (bytes16);
-    function poolId()    external view returns (uint64);
 }
 
 struct CentrifugeV3Config {
@@ -156,6 +102,11 @@ interface IBalanceSheetLike {
 
 interface ISpokeLike {
     function assetToId(address asset, uint256 tokenId) external view returns (uint128);
+    function updatePricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId, uint128 poolPerAsset_, uint64 computedAt) external;
+    function markersPricePoolPerAsset(uint64 poolId, bytes16 scId, uint128 assetId)
+        external
+        view
+        returns (uint64 computedAt, uint64 maxAge, uint64 validUntil);
     event InitiateTransferShares(
         uint16 centrifugeId,
         uint64 indexed poolId,
@@ -177,6 +128,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         }
         if (chain == ChainIdUtils.Ethereum()) {
             ctx = GroveLiquidityLayerContext(
+                Ethereum.GROVE_PROXY,
                 controller,
                 IALMProxy(Ethereum.ALM_PROXY),
                 IRateLimits(Ethereum.ALM_RATE_LIMITS),
@@ -185,11 +137,21 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         );
         } else if (chain == ChainIdUtils.Avalanche()) {
             ctx = GroveLiquidityLayerContext(
+                Avalanche.GROVE_EXECUTOR,
                 controller,
                 IALMProxy(Avalanche.ALM_PROXY),
                 IRateLimits(Avalanche.ALM_RATE_LIMITS),
                 Avalanche.ALM_RELAYER,
                 Avalanche.ALM_FREEZER
+            );
+        } else if (chain == ChainIdUtils.Plume()) {
+            ctx = GroveLiquidityLayerContext(
+                Plume.GROVE_EXECUTOR,
+                controller,
+                IALMProxy(Plume.ALM_PROXY),
+                IRateLimits(Plume.ALM_RATE_LIMITS),
+                Plume.ALM_RELAYER,
+                Plume.ALM_FREEZER
             );
         } else {
             revert("Chain not supported by GroveLiquidityLayerTests context");
@@ -310,10 +272,86 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         }
     }
 
+    function _testCentrifugeV3RedemptionsOnlyOnboarding(
+        address centrifugeVault,
+        uint256 redeemMax,
+        uint256 redeemSlope
+    ) public {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        CentrifugeV3Config memory centrifugeConfig = _prepareCentrifugeConfig(centrifugeVault);
+
+        ICentrifugeV3ShareLike vaultToken = ICentrifugeV3ShareLike(ICentrifugeV3Vault(centrifugeVault).share());
+
+        _prepareCentrifugeWhitelisting(vaultToken, centrifugeConfig.centrifugeRoot);
+
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            GroveLiquidityLayerHelpers.LIMIT_7540_DEPOSIT,
+            centrifugeVault
+        );
+        bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
+            GroveLiquidityLayerHelpers.LIMIT_7540_REDEEM,
+            centrifugeVault
+        );
+
+        _assertZeroRateLimit(depositKey);
+        _assertZeroRateLimit(redeemKey);
+
+        executeAllPayloadsAndBridges();
+
+        // Reload the context after spell execution to get the new controller after potential controller upgrade
+        ctx = _getGroveLiquidityLayerContext();
+
+        _assertZeroRateLimit(depositKey);
+        _assertRateLimit(redeemKey, redeemMax, redeemSlope);
+
+        IERC20 asset = IERC20(ICentrifugeV3Vault(centrifugeVault).asset());
+
+        uint256 startShareBalance = vaultToken.balanceOf(address(ctx.proxy));
+
+        vm.prank(ctx.admin);
+        IRateLimits(ctx.rateLimits).setRateLimitData(depositKey, redeemMax * 2, 0);
+        deal(address(asset), address(ctx.proxy), redeemMax * 2);
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).requestDepositERC7540(centrifugeVault, redeemMax * 2);
+        _centrifugeV3FulfillDepositRequest(
+            centrifugeConfig,
+            redeemMax * 2
+        );
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).claimDepositERC7540(centrifugeVault);
+        vm.prank(ctx.admin);
+        IRateLimits(ctx.rateLimits).setRateLimitData(depositKey, 0, 0);
+
+        _assertZeroRateLimit(depositKey);
+        _assertRateLimit(redeemKey, redeemMax, redeemSlope);
+
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
+        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance + redeemMax);
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).requestRedeemERC7540(centrifugeVault, redeemMax);
+
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
+        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
+
+        _centrifugeV3FulfillRedeemRequest(
+            centrifugeConfig,
+            redeemMax
+        );
+
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
+        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).claimRedeemERC7540(centrifugeVault);
+
+        assertEq(asset.balanceOf(address(ctx.proxy)),      redeemMax * 2);
+        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
+    }
+
     function _testCentrifugeV3Onboarding(
         address centrifugeVault,
-        address usdcAddress,
-        uint256 expectedDepositAmount,
         uint256 depositMax,
         uint256 depositSlope
     ) public {
@@ -342,60 +380,60 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         // Reload the context after spell execution to get the new controller after potential controller upgrade
         ctx = _getGroveLiquidityLayerContext();
 
-        deal(ICentrifugeV3Vault(centrifugeVault).asset(), address(ctx.proxy), expectedDepositAmount);
+        IERC20 asset = IERC20(ICentrifugeV3Vault(centrifugeVault).asset());
+
+        deal(address(asset), address(ctx.proxy), depositMax);
 
         _assertRateLimit(depositKey, depositMax,        depositSlope);
         _assertRateLimit(redeemKey,  type(uint256).max, 0);
 
-        IERC20 usdc = IERC20(usdcAddress);
-
         uint256 startShareBalance = vaultToken.balanceOf(address(ctx.proxy));
 
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       expectedDepositAmount);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      depositMax);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
         assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax);
 
         vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).requestDepositERC7540(centrifugeVault, expectedDepositAmount);
+        MainnetController(ctx.controller).requestDepositERC7540(centrifugeVault, depositMax);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax - expectedDepositAmount);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 0);
 
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
         _centrifugeV3FulfillDepositRequest(
             centrifugeConfig,
-            expectedDepositAmount
+            depositMax
         );
 
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
         vm.prank(ctx.relayer);
         MainnetController(ctx.controller).claimDepositERC7540(centrifugeVault);
 
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance + expectedDepositAmount / 2);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
+        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance + depositMax / 2);
 
         vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).requestRedeemERC7540(centrifugeVault, expectedDepositAmount / 2);
+        MainnetController(ctx.controller).requestRedeemERC7540(centrifugeVault, depositMax / 2);
 
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
         _centrifugeV3FulfillRedeemRequest(
             centrifugeConfig,
-            expectedDepositAmount / 2
+            depositMax / 2
         );
 
-        assertEq(usdc.balanceOf(address(ctx.proxy)),       0);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
         vm.prank(ctx.relayer);
         MainnetController(ctx.controller).claimRedeemERC7540(centrifugeVault);
 
-        assertEq(usdc.balanceOf(address(ctx.proxy)),  expectedDepositAmount);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      depositMax);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
     }
 
@@ -404,12 +442,12 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         address centrifugeVault,
         address destinationAddress,
         uint16  destinationCentrifugeId,
-        uint128 expectedTransferAmount,
         uint256 maxAmount,
         uint256 slope
     ) internal {
         bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(GroveLiquidityLayerHelpers.LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
-        bytes32 castedDestinationAddress = bytes32(uint256(uint160(destinationAddress)));
+        bytes32 castedDestinationAddress = CastingHelpers.addressToCentrifugeRecipient(destinationAddress);
+        uint128 expectedTransferAmount = uint128(maxAmount);
 
         _assertZeroRateLimit(centrifugeCrosschainTransferKey);
 
@@ -486,19 +524,15 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
     function _prepareCentrifugeWhitelisting(ICentrifugeV3ShareLike vaultToken, address centrifugeRoot) internal {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        // TODO: Revise this once the Centrifuge fully migrates to V3, setting a new root address on Mainnet
+        vm.startPrank(centrifugeRoot);
+        IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
         if (ChainIdUtils.fromUint(block.chainid) == ChainIdUtils.Ethereum()) {
-            vm.startPrank(0x0C1fDfd6a1331a875EA013F3897fc8a76ada5DfC);
-            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
-            vaultToken.file("hook", 0xa2C98F0F76Da0C97039688CA6280d082942d0b48);
-            vm.stopPrank();
+            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID)),     type(uint64).max);
         } else {
-            vm.startPrank(centrifugeRoot);
-            IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(ctx.proxy), type(uint64).max);
             IFreelyTransferableHookLike(vaultToken.hook()).updateMember(address(vaultToken), address(uint160(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID)), type(uint64).max);
-            vm.stopPrank();
         }
+        vm.stopPrank();
     }
 
     function _centrifugeV3FulfillDepositRequest(
@@ -537,20 +571,30 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         uint128 _tokenAmount = uint128(tokenAmount);
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        address poolEscrow = IAsyncRedeemManagerLike(config.centrifugeManager).poolEscrow(config.centrifugePoolId);
+        IAsyncRedeemManagerLike manager = IAsyncRedeemManagerLike(config.centrifugeManager);
+        address poolEscrow = manager.poolEscrow(config.centrifugePoolId);
         deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), poolEscrow, 5_000_000_000e6);
 
-       // Deposit assets into balanceSheet
+        // Deposit assets into balanceSheet
         deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), config.centrifugeRoot, tokenAmount * 2);
-        IBalanceSheetLike balanceSheet = IBalanceSheetLike(IAsyncRedeemManagerLike(config.centrifugeManager).balanceSheet());
+        IBalanceSheetLike balanceSheet = IBalanceSheetLike(manager.balanceSheet());
+
         vm.startPrank(config.centrifugeRoot);
+
+        ISpokeLike centrifugeSpoke = ISpokeLike(manager.spoke());
+        (uint64 computedAt,,)= centrifugeSpoke.markersPricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId);
+        if (computedAt == 0) {
+            // Sets initial asset price to 1.00
+            centrifugeSpoke.updatePricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId, 1e18, uint64(block.timestamp));
+        }
+
         IERC20(ICentrifugeV3Vault(config.centrifugeVault).asset()).approve(address(balanceSheet), tokenAmount * 2);
         balanceSheet.deposit(config.centrifugePoolId, config.centrifugeScId, ICentrifugeV3Vault(config.centrifugeVault).asset(), 0, uint128(tokenAmount * 2));
         vm.stopPrank();
 
         // Revoke shares
         vm.prank(config.centrifugeRoot);
-        IAsyncRedeemManagerLike(config.centrifugeManager).revokedShares(
+        manager.revokedShares(
             config.centrifugePoolId,
             config.centrifugeScId,
             config.centrifugeAssetId,
@@ -561,7 +605,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
 
         // Fulfill request at price 2.0
         vm.prank(config.centrifugeRoot);
-        IAsyncRedeemManagerLike(config.centrifugeManager).fulfillRedeemRequest(
+        manager.fulfillRedeemRequest(
             config.centrifugePoolId,
             config.centrifugeScId,
             address(ctx.proxy),
@@ -594,15 +638,27 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(controller.hasRole(FREEZER, ctx.freezer), false);
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(address(0)))));
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+                CastingHelpers.addressToCctpRecipient(address(0))
+            );
         } else {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(address(0)))));
+            assertEq(controller.mintRecipients(
+                CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+                CastingHelpers.addressToCctpRecipient(address(0))
+            );
         }
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(address(0)))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
         } else {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(address(0)))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
         }
 
         executeAllPayloadsAndBridges();
@@ -617,15 +673,32 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         assertEq(controller.hasRole(FREEZER, ctx.freezer), true);
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+                CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
+            );
+            // Plume intentionally skipped - CCTPv1 is not deployed on Plume
         } else {
-            assertEq(controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),  bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+                CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
+            );
         }
 
         if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(Avalanche.ALM_PROXY))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
+            );
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
+            );
         } else {
-            assertEq(controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID), bytes32(uint256(uint160(Ethereum.ALM_PROXY))));
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
+            );
         }
     }
 

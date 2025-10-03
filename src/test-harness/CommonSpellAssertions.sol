@@ -13,9 +13,11 @@ import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 
-import { CCTPReceiver } from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
+import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
+import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
 
-import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
+import { CastingHelpers }        from "src/libraries/CastingHelpers.sol";
+import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
@@ -26,6 +28,10 @@ abstract contract CommonSpellAssertions is SpellRunner {
 
     function test_AVALANCHE_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Avalanche());
+    }
+
+    function test_PLUME_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
     }
 
     function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
@@ -242,7 +248,20 @@ abstract contract CommonSpellAssertions is SpellRunner {
         assertEq(receiver.sourceDomainId(), 0, "incorrect-source-domain-id");
 
         // Source authority has to be the Ethereum Mainnet Grove Proxy
-        assertEq(receiver.sourceAuthority(), bytes32(uint256(uint160(Ethereum.GROVE_PROXY))), "incorrect-source-authority");
+        assertEq(receiver.sourceAuthority(), CastingHelpers.addressToCctpRecipient(Ethereum.GROVE_PROXY), "incorrect-source-authority");
+
+        // Target has to be the executor
+        assertEq(receiver.target(), _executor, "incorrect-target");
+    }
+
+    function _verifyArbitrumReceiverDeployment(
+        address _executor,
+        address _receiver
+    ) internal view {
+        ArbitrumReceiver receiver = ArbitrumReceiver(_receiver);
+
+        // L1 authority has to be the Ethereum Mainnet Grove Proxy
+        assertEq(receiver.l1Authority(), Ethereum.GROVE_PROXY, "incorrect-l1-authority");
 
         // Target has to be the executor
         assertEq(receiver.target(), _executor, "incorrect-target");

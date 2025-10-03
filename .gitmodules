@@ -12,7 +12,7 @@
 	url = https://github.com/sparkdotfi/spark-address-registry
 [submodule "lib/xchain-helpers"]
 	path = lib/xchain-helpers
-	url = https://github.com/sparkdotfi/xchain-helpers
+	url = https://github.com/grove-labs/xchain-helpers
 [submodule "lib/dss-allocator"]
 	path = lib/dss-allocator
 	url = https://github.com/makerdao/dss-allocator
