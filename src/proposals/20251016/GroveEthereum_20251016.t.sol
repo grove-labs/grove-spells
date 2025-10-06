@@ -12,7 +12,7 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { GroveLiquidityLayerContext } from "src/test-harness/GroveLiquidityLayerTests.sol";
 
-import "src/test-harness/GroveTestBase.sol";
+import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 interface AutoLineLike {
     function exec(bytes32) external;
@@ -56,9 +56,9 @@ contract GroveEthereum_20251016_Test is GroveTestBase {
             FALCON_X_USDC_TRANSFER_RATE_LIMIT_SLOPE
         );
 
-        IERC20 usdc  = IERC20(Ethereum.USDC);
+        IERC20 usdc = IERC20(Ethereum.USDC);
 
-        uint256 depositAmount = 50_000_000e6;
+        uint256 depositAmount = FALCON_X_USDC_TRANSFER_RATE_LIMIT_MAX;
 
         AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
 
@@ -80,7 +80,11 @@ contract GroveEthereum_20251016_Test is GroveTestBase {
         assertEq(usdc.balanceOf(address(ctx.proxy)), 0);
         assertEq(usdc.balanceOf(FALCON_X_DEPOSIT),   initialFalconXDepositBalance + depositAmount);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), FALCON_X_USDC_TRANSFER_RATE_LIMIT_MAX - depositAmount);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 0);
+
+        vm.warp(block.timestamp + 1 days + 1 seconds);
+
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), FALCON_X_USDC_TRANSFER_RATE_LIMIT_MAX);
     }
 
 }
