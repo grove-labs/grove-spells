@@ -22,8 +22,8 @@ contract GroveEthereum_20251016 is GrovePayloadEthereum {
     uint256 internal constant FALCON_X_USDC_TRANSFER_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function _execute() internal override {
-        // TODO Item title
-        //   Forum : TODO Forum link
+        // [Mainnet] FalconX USDC Deposit Onboarding
+        //   Forum : https://forum.sky.money/t/october-16-2025-proposed-changes-to-grove-for-upcoming-spell/27266
         //   Poll  : TODO Poll link
         _onboardFalconXDeposits();
     }
