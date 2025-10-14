@@ -119,6 +119,8 @@ interface ISpokeLike {
 
 abstract contract GroveLiquidityLayerTests is SpellRunner {
 
+    bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
+
     function _getGroveLiquidityLayerContext(ChainId chain) internal view returns(GroveLiquidityLayerContext memory ctx) {
         address controller;
         if(chainData[chain].spellExecuted) {

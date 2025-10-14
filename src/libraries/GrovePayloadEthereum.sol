@@ -24,10 +24,6 @@ abstract contract GrovePayloadEthereum {
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_PLUME;
 
-    constructor() {
-        PAYLOAD_PLUME = 0x85b0E7F3A7C1aB0E1aDea7dfAaD416D8A6e00f0e;
-    }
-
     function execute() external {
         _execute();
 
