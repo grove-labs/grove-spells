@@ -20,8 +20,6 @@ interface AutoLineLike {
 
 contract GroveEthereum_20251016_Test is GroveTestBase {
 
-    address internal constant ETHEREUM_PAYLOAD = 0xF2A28fb43D5d3093904B889538277fB175B42Ece;
-
     address internal constant FALCON_X_DEPOSIT = 0xD94F9ef3395BBE41C1f05ced3C9a7dc520D08036;
 
     uint256 internal constant FALCON_X_USDC_TRANSFER_RATE_LIMIT_MAX   = 50_000_000e6;
@@ -32,9 +30,9 @@ contract GroveEthereum_20251016_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-10-13T17:43:00Z");
+        setupDomains("2025-10-02T13:00:00Z");
 
-        chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
+        deployPayloads();
     }
 
     function test_ETHEREUM_onboardFalconXDeposits() public onChain(ChainIdUtils.Ethereum()) {

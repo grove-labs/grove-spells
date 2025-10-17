@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { RateLimitHelpers } from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 
@@ -22,6 +23,11 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_USDS_MINT           = keccak256("LIMIT_USDS_MINT");
     bytes32 public constant LIMIT_USDS_TO_USDC        = keccak256("LIMIT_USDS_TO_USDC");
     bytes32 public constant LIMIT_CENTRIFUGE_TRANSFER = keccak256("LIMIT_CENTRIFUGE_TRANSFER");
+    bytes32 public constant LIMIT_AAVE_DEPOSIT        = keccak256("LIMIT_AAVE_DEPOSIT");
+    bytes32 public constant LIMIT_AAVE_WITHDRAW       = keccak256("LIMIT_AAVE_WITHDRAW");
+    bytes32 public constant LIMIT_CURVE_DEPOSIT       = keccak256("LIMIT_CURVE_DEPOSIT");
+    bytes32 public constant LIMIT_CURVE_SWAP          = keccak256("LIMIT_CURVE_SWAP");
+    bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
 
     uint16 public constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
     uint16 public constant PLUME_DESTINATION_CENTRIFUGE_ID     = 4;
@@ -91,6 +97,72 @@ library GroveLiquidityLayerHelpers {
 
         IRateLimits(rateLimits).setRateLimitData(depositKey, 0, 0);
         IRateLimits(rateLimits).setRateLimitData(redeemKey,  0, 0);
+    }
+
+    /**
+     * @notice Onboard an Aave token
+     * @dev This will set the deposit to the given numbers with
+     *      the withdraw limit set to unlimited.
+     */
+    function onboardAaveToken(
+        address rateLimits,
+        address token,
+        uint256 depositMax,
+        uint256 depositSlope
+    ) internal {
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_AAVE_DEPOSIT,
+            token
+        );
+        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_AAVE_WITHDRAW,
+            token
+        );
+
+        IRateLimits(rateLimits).setRateLimitData(depositKey, depositMax, depositSlope);
+        IRateLimits(rateLimits).setUnlimitedRateLimitData(withdrawKey);
+    }
+
+    /**
+     * @notice Onboard a Curve pool
+     */
+    function onboardCurvePool(
+        address controller,
+        address rateLimits,
+        address pool,
+        uint256 maxSlippage,
+        uint256 swapMax,
+        uint256 swapSlope,
+        uint256 depositMax,
+        uint256 depositSlope,
+        uint256 withdrawMax,
+        uint256 withdrawSlope
+    ) internal {
+        MainnetController(controller).setMaxSlippage(pool, maxSlippage);
+
+        if (swapMax != 0) {
+            bytes32 swapKey = RateLimitHelpers.makeAssetKey(
+                LIMIT_CURVE_SWAP,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(swapKey, swapMax, swapSlope);
+        }
+
+        if (depositMax != 0) {
+            bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+                LIMIT_CURVE_DEPOSIT,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(depositKey, depositMax, depositSlope);
+        }
+
+        if (withdrawMax != 0) {
+            bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
+                LIMIT_CURVE_WITHDRAW,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(withdrawKey, withdrawMax, withdrawSlope);
+        }
     }
 
     function setUSDSMintRateLimit(

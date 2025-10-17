@@ -24,7 +24,7 @@ contract GroveEthereum_20251016 is GrovePayloadEthereum {
     function _execute() internal override {
         // [Mainnet] FalconX USDC Deposit Onboarding
         //   Forum : https://forum.sky.money/t/october-16-2025-proposed-changes-to-grove-for-upcoming-spell/27266
-        //   Poll  : https://vote.sky.money/polling/QmWyJQpE
+        //   Poll  : TODO Poll link
         _onboardFalconXDeposits();
     }
 
