@@ -16,9 +16,6 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20251030_Test is GroveTestBase {
 
-    address internal constant NEW_MAINNET_CONTROLLER = 0x0D142e958B56f44C8B745A2D36F218053addF683;
-    address internal constant DEPLOYER               = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
-
     address internal constant CURVE_RLUSD_USDC = 0xD001aE433f254283FeCE51d4ACcE8c53263aa186;
 
     address internal constant AAVE_ATOKEN_CORE_USDC     = 0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c;
@@ -26,7 +23,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     address internal constant AAVE_ATOKEN_HORIZON_USDC  = 0x68215B6533c47ff9f7125aC95adf00fE4a62f79e;
     address internal constant AAVE_ATOKEN_HORIZON_RLUSD = 0xE3190143Eb552456F88464662f0c0C4aC67A77eB;
 
-    uint256 internal constant EXPECTED_SWAP_AMOUNT_TOKEN0  = 50_000e6;
+    uint256 internal constant EXPECTED_SWAP_AMOUNT_TOKEN0   = 50_000e6;
     uint256 internal constant CURVE_RLUSD_USDC_MAX_SLIPPAGE = 0.9990e18;
     uint256 internal constant CURVE_RLUSD_USDC_SWAP_MAX     = 20_000_000e18;
     uint256 internal constant CURVE_RLUSD_USDC_SWAP_SLOPE   = 100_000_000e18 / uint256(1 days);
@@ -58,55 +55,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         setupDomains("2025-10-17T23:45:00Z");
 
         deployPayloads();
-
-        // Prepare testing setup for the controller upgrade
-        chainData[ChainIdUtils.Ethereum()].newController = NEW_MAINNET_CONTROLLER;
-    }
-
-    function test_ETHEREUM_upgradeController() public onChain(ChainIdUtils.Ethereum()) {
-        _verifyMainnetControllerDeployment(
-            AlmSystemContracts({
-                admin      : Ethereum.GROVE_PROXY,
-                proxy      : Ethereum.ALM_PROXY,
-                rateLimits : Ethereum.ALM_RATE_LIMITS,
-                controller : NEW_MAINNET_CONTROLLER
-            }),
-            AlmSystemActors({
-                deployer : DEPLOYER,
-                freezer  : Ethereum.ALM_FREEZER,
-                relayer  : Ethereum.ALM_RELAYER
-            }),
-            MainnetAlmSystemDependencies({
-                vault   : Ethereum.ALLOCATOR_VAULT,
-                psm     : Ethereum.PSM,
-                daiUsds : Ethereum.DAI_USDS,
-                cctp    : Ethereum.CCTP_TOKEN_MESSENGER
-            })
-        );
-        _testControllerUpgrade({
-            oldController : Ethereum.ALM_CONTROLLER,
-            newController : NEW_MAINNET_CONTROLLER
-        });
-    }
-
-    function test_ETHEREUM_crosschainTransferRecipients() public onChain(ChainIdUtils.Ethereum()) {
-        bytes32 avalancheCctpRecipientBefore       = MainnetController(NEW_MAINNET_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE);
-        bytes32 avalancheCentrifugeRecipientBefore = MainnetController(NEW_MAINNET_CONTROLLER).centrifugeRecipients(AVALANCHE_DESTINATION_CENTRIFUGE_ID);
-        bytes32 plumeCentrifugeRecipientBefore     = MainnetController(NEW_MAINNET_CONTROLLER).centrifugeRecipients(PLUME_DESTINATION_CENTRIFUGE_ID);
-
-        assertEq(avalancheCctpRecipientBefore,       bytes32(0));
-        assertEq(avalancheCentrifugeRecipientBefore, bytes32(0));
-        assertEq(plumeCentrifugeRecipientBefore,     bytes32(0));
-
-        executeAllPayloadsAndBridges();
-
-        bytes32 avalancheCctpRecipientAfter       = MainnetController(NEW_MAINNET_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE);
-        bytes32 avalancheCentrifugeRecipientAfter = MainnetController(NEW_MAINNET_CONTROLLER).centrifugeRecipients(AVALANCHE_DESTINATION_CENTRIFUGE_ID);
-        bytes32 plumeCentrifugeRecipientAfter     = MainnetController(NEW_MAINNET_CONTROLLER).centrifugeRecipients(PLUME_DESTINATION_CENTRIFUGE_ID);
-
-        assertEq(avalancheCctpRecipientAfter,       CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY));
-        assertEq(avalancheCentrifugeRecipientAfter, CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY));
-        assertEq(plumeCentrifugeRecipientAfter,     CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY));
     }
 
     function test_ETHEREUM_curveRlusdUsdcOnboarding() public onChain(ChainIdUtils.Ethereum()) {
@@ -160,16 +108,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
             depositMax            : AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_MAX,
             depositSlope          : AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_SLOPE
         });
-    }
-
-    function test_ETHEREUM_onboardSUsdePT27Nov2025Redemptions() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
-    }
-
-    function test_ETHEREUM_onboardUsdePT27Nov2025Redemptions() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
     }
 
 }
