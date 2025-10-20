@@ -44,9 +44,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_MAX   = 50_000_000e18;
     uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
-    uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
-    uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID     = 4;
-
     constructor() {
         id = "20251030";
     }
