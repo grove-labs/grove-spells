@@ -28,7 +28,6 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CURVE_DEPOSIT       = keccak256("LIMIT_CURVE_DEPOSIT");
     bytes32 public constant LIMIT_CURVE_SWAP          = keccak256("LIMIT_CURVE_SWAP");
     bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
-    bytes32 public constant LIMIT_PENDLE_PT_REDEEM    = keccak256("LIMIT_PENDLE_PT_REDEEM");
 
     uint16 public constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
     uint16 public constant PLUME_DESTINATION_CENTRIFUGE_ID     = 4;
@@ -202,15 +201,6 @@ library GroveLiquidityLayerHelpers {
         bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
 
         IRateLimits(rateLimits).setRateLimitData(centrifugeCrosschainTransferKey, maxAmount, slope);
-    }
-
-    function onboardPendlePtRedemptions(address rateLimits, address pendleMarket) internal {
-        bytes32 redeemKey = RateLimitHelpers.makeAssetKey(
-            LIMIT_PENDLE_PT_REDEEM,
-            pendleMarket
-        );
-
-        IRateLimits(rateLimits).setUnlimitedRateLimitData(redeemKey);
     }
 
 }

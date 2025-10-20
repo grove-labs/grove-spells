@@ -157,11 +157,4 @@ abstract contract GrovePayloadEthereum {
         );
     }
 
-    function _onboardPendlePtRedemptions(address pendleMarket) internal {
-        GroveLiquidityLayerHelpers.onboardPendlePtRedemptions(
-            Ethereum.ALM_RATE_LIMITS,
-            pendleMarket
-        );
-    }
-
 }
