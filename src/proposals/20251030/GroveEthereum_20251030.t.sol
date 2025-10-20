@@ -1,16 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
-import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
-import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
-
-import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
-
-import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
-
-import { ChainIdUtils }   from "src/libraries/ChainId.sol";
-import { CastingHelpers } from "src/libraries/CastingHelpers.sol";
+import { ChainIdUtils } from "src/libraries/ChainId.sol";
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
