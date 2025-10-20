@@ -40,7 +40,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     uint256 internal constant AAVE_ATOKEN_HORIZON_USDC_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant AAVE_ATOKEN_HORIZON_USDC_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
 
-    uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_TEST_DEPOSIT  = 1_000_000e6;
+    uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_TEST_DEPOSIT  = 0; // No supply cap currently available for this pool
     uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
 
@@ -52,7 +52,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-10-17T23:45:00Z");
+        setupDomains("2025-10-19T16:00:00Z");
 
         deployPayloads();
     }
@@ -100,8 +100,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardAaveHorizonRlusd() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: At the current block Aave supply cap is reached for this pool. Roll block or make tests account for this.
-        vm.skip(true);
         _testAaveOnboarding({
             aToken                : AAVE_ATOKEN_HORIZON_RLUSD,
             expectedDepositAmount : AAVE_ATOKEN_HORIZON_RLUSD_TEST_DEPOSIT,

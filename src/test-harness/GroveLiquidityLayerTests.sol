@@ -337,6 +337,8 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         _assertRateLimit(depositKey, depositMax, depositSlope);
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
 
+        if (expectedDepositAmount == 0) return; // Skip the rest of the test if no deposit is expected
+
         if (!unlimitedDeposit) {
             vm.prank(ctx.relayer);
             vm.expectRevert("RateLimits/rate-limit-exceeded");
