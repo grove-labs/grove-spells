@@ -32,17 +32,17 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     uint256 internal constant AAVE_ATOKEN_CORE_USDC_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant AAVE_ATOKEN_CORE_USDC_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
 
-    uint256 internal constant AAVE_ATOKEN_CORE_RLUSD_TEST_DEPOSIT  = 1_000_000e6;
-    uint256 internal constant AAVE_ATOKEN_CORE_RLUSD_DEPOSIT_MAX   = 50_000_000e6;
-    uint256 internal constant AAVE_ATOKEN_CORE_RLUSD_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
+    uint256 internal constant AAVE_ATOKEN_CORE_RLUSD_TEST_DEPOSIT  = 1_000_000e18;
+    uint256 internal constant AAVE_ATOKEN_CORE_RLUSD_DEPOSIT_MAX   = 50_000_000e18;
+    uint256 internal constant AAVE_ATOKEN_CORE_RLUSD_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
     uint256 internal constant AAVE_ATOKEN_HORIZON_USDC_TEST_DEPOSIT  = 1_000_000e6;
     uint256 internal constant AAVE_ATOKEN_HORIZON_USDC_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant AAVE_ATOKEN_HORIZON_USDC_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
 
     uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_TEST_DEPOSIT  = 0; // No supply cap currently available for this pool
-    uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_MAX   = 50_000_000e6;
-    uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
+    uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_MAX   = 50_000_000e18;
+    uint256 internal constant AAVE_ATOKEN_HORIZON_RLUSD_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
     uint16 internal constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
     uint16 internal constant PLUME_DESTINATION_CENTRIFUGE_ID     = 4;
