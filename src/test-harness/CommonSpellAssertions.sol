@@ -22,8 +22,29 @@ import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
 import { SpellRunner } from "./SpellRunner.sol";
 
 abstract contract CommonSpellAssertions is SpellRunner {
+
+    uint256 public constant AVERAGE_EXECUTION_COST_TARGET = 15_000_000;
+    uint256 public constant MAX_EXECUTION_COST            = 30_000_000;
+
     function test_ETHEREUM_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Ethereum());
+    }
+
+    function test_ETHEREUM_ExecutionCost() public {
+        uint256 startGas = gasleft();
+        executeAllPayloadsAndBridges();
+        uint256 endGas = gasleft();
+        uint256 totalGas = startGas - endGas;
+
+        // Warn if deploy exceeds block target size
+        if (totalGas > AVERAGE_EXECUTION_COST_TARGET) {
+            emit log("Warn: deploy gas exceeds average block target");
+            emit log_named_uint("    deploy gas", totalGas);
+            emit log_named_uint("  block target", AVERAGE_EXECUTION_COST_TARGET);
+        }
+
+        // Fail if deploy is too expensive
+        assertLe(totalGas, MAX_EXECUTION_COST, "TestError/spell-deploy-cost-too-high");
     }
 
     function test_AVALANCHE_PayloadBytecodeMatches() public {
