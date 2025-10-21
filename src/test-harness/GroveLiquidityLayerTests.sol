@@ -52,7 +52,9 @@ interface ICentrifugeV3Vault {
     function root()    external view returns (address);
 }
 
-interface ICentrifugeV3ShareLike is IERC20 {
+interface ICentrifugeV3ShareLike {
+    function balanceOf(address account) external view returns (uint256);
+    function totalSupply() external view returns (uint256);
     function hook() external view returns (address);
     function file(bytes32 what, address data) external;
 }
@@ -119,7 +121,9 @@ interface ISpokeLike {
     );
 }
 
-interface ICurvePoolLike is IERC20 {
+interface ICurvePoolLike {
+    function balanceOf(address account) external view returns (uint256);
+    function totalSupply() external view returns (uint256);
     function add_liquidity(
         uint256[] memory amounts,
         uint256 minMintAmount,
@@ -368,7 +372,7 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
             uint256 dailySlope = depositSlope * 1 days;
             assertLe(dailySlope, depositMax);
 
-            // It shouldn"t take more than 30 days to recharge to max
+            // It shouldn't take more than 30 days to recharge to max
             uint256 monthlySlope = depositSlope * 30 days;
             assertGe(monthlySlope, depositMax);
         }
@@ -749,8 +753,8 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
         vm.prank(ctx.relayer);
         MainnetController(ctx.controller).claimDepositERC7540(centrifugeConfig.centrifugeVault);
 
-        uint256 proxyBalanceBefore     = IERC20(vaultToken).balanceOf(address(ctx.proxy));
-        uint256 shareTotalSupplyBefore = IERC20(vaultToken).totalSupply();
+        uint256 proxyBalanceBefore     = vaultToken.balanceOf(address(ctx.proxy));
+        uint256 shareTotalSupplyBefore = vaultToken.totalSupply();
 
         vm.expectEmit(centrifugeConfig.centrifugeSpoke);
         emit ISpokeLike.InitiateTransferShares(
@@ -769,8 +773,8 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
             destinationCentrifugeId
         );
 
-        uint256 proxyBalanceAfter     = IERC20(vaultToken).balanceOf(address(ctx.proxy));
-        uint256 shareTotalSupplyAfter = IERC20(vaultToken).totalSupply();
+        uint256 proxyBalanceAfter     = vaultToken.balanceOf(address(ctx.proxy));
+        uint256 shareTotalSupplyAfter = vaultToken.totalSupply();
 
         assertEq(proxyBalanceAfter,     proxyBalanceBefore     - expectedTransferAmount);
         assertEq(shareTotalSupplyAfter, shareTotalSupplyBefore - expectedTransferAmount);
