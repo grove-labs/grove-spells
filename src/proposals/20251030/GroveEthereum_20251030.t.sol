@@ -7,6 +7,8 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20251030_Test is GroveTestBase {
 
+    address internal constant ETHEREUM_PAYLOAD = 0x8b4A92f8375ef89165AeF4639E640e077d7C656b;
+
     address internal constant CURVE_RLUSD_USDC = 0xD001aE433f254283FeCE51d4ACcE8c53263aa186;
 
     address internal constant AAVE_ATOKEN_CORE_USDC     = 0x98C23E9d8f34FEFb1B7BD6a91B7FF122F4e16F5c;
@@ -40,9 +42,9 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-10-19T16:00:00Z");
+        setupDomains("2025-10-22T10:30:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
     }
 
     function test_ETHEREUM_curveRlusdUsdcOnboarding() public onChain(ChainIdUtils.Ethereum()) {
