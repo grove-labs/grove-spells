@@ -19,7 +19,6 @@ import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-ev
 import { CastingHelpers }             from "../helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
-
 /**
  * @dev Base smart contract for Ethereum.
  * @author Steakhouse Financial
