@@ -23,8 +23,9 @@ import { ArbitrumBridgeTesting } from "xchain-helpers/testing/bridges/ArbitrumBr
 import { CCTPBridgeTesting }     from "xchain-helpers/testing/bridges/CCTPBridgeTesting.sol";
 import { LZBridgeTesting }       from "xchain-helpers/testing/bridges/LZBridgeTesting.sol";
 
-import { ChainIdUtils, ChainId } from "../libraries/ChainId.sol";
-import { GrovePayloadEthereum }  from "../libraries/GrovePayloadEthereum.sol";
+import { ChainIdUtils, ChainId } from "../libraries/helpers/ChainId.sol";
+
+import { GrovePayloadEthereum }  from "../libraries/payloads/GrovePayloadEthereum.sol";
 
 abstract contract SpellRunner is Test {
     using DomainHelpers for Domain;

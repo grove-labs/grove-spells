@@ -19,9 +19,9 @@ import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimi
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { CastingHelpers }             from "src/libraries/CastingHelpers.sol";
-import { ChainId, ChainIdUtils }      from "src/libraries/ChainId.sol";
-import { GroveLiquidityLayerHelpers } from "src/libraries/GroveLiquidityLayerHelpers.sol";
+import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
+import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
+import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 

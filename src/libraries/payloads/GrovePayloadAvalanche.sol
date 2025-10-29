@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 
-import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
+import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
 /**
  * @dev Base smart contract for Avalanche.
