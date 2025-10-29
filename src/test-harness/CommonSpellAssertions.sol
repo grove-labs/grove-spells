@@ -55,6 +55,14 @@ abstract contract CommonSpellAssertions is SpellRunner {
         _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
     }
 
+    function test_BASE_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Base());
+    }
+
+    function test_PLASMA_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Plasma());
+    }
+
     function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
         address actualPayload = chainData[chainId].payload;
         vm.skip(actualPayload == address(0));

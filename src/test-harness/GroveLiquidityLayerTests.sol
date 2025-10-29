@@ -11,6 +11,8 @@ import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.s
 import { Avalanche } from "grove-address-registry/Avalanche.sol";
 import { Ethereum }  from "grove-address-registry/Ethereum.sol";
 import { Plume }     from "grove-address-registry/Plume.sol";
+import { Base }      from "grove-address-registry/Base.sol";
+import { Plasma }    from "grove-address-registry/Plasma.sol";
 
 import { IALMProxy }         from "grove-alm-controller/src/interfaces/IALMProxy.sol";
 import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimits.sol";
@@ -185,6 +187,24 @@ abstract contract GroveLiquidityLayerTests is SpellRunner {
                 IRateLimits(Plume.ALM_RATE_LIMITS),
                 Plume.ALM_RELAYER,
                 Plume.ALM_FREEZER
+            );
+        } else if (chain == ChainIdUtils.Base()) {
+            ctx = GroveLiquidityLayerContext(
+                Base.GROVE_EXECUTOR,
+                controller,
+                IALMProxy(Base.ALM_PROXY),
+                IRateLimits(Base.ALM_RATE_LIMITS),
+                Base.ALM_RELAYER,
+                Base.ALM_FREEZER
+            );
+        } else if (chain == ChainIdUtils.Plasma()) {
+            ctx = GroveLiquidityLayerContext(
+                Plasma.GROVE_EXECUTOR,
+                controller,
+                IALMProxy(Plasma.ALM_PROXY),
+                IRateLimits(Plasma.ALM_RATE_LIMITS),
+                Plasma.ALM_RELAYER,
+                Plasma.ALM_FREEZER
             );
         } else {
             revert("Chain not supported by GroveLiquidityLayerTests context");

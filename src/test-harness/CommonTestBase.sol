@@ -17,6 +17,7 @@ library ChainIds {
     uint256 internal constant ARBITRUM = 42161;
     uint256 internal constant AVALANCHE = 43114;
     uint256 internal constant HARMONY = 1666600000;
+    uint256 internal constant PLASMA = 9745;
   }
 
 contract CommonTestBase is Test {

@@ -27,6 +27,14 @@ library CastingHelpers {
         return leftPaddedBytes32ToAddress(value);
     }
 
+    function addressToLayerZeroRecipient(address value) internal pure returns (bytes32) {
+        return addressToLeftPaddedBytes32(value);
+    }
+
+    function layerZeroRecipientToAddress(bytes32 value) internal pure returns (address) {
+        return leftPaddedBytes32ToAddress(value);
+    }
+
     function addressToCentrifugeRecipient(address value) internal pure returns (bytes32) {
         return addressToRightPaddedBytes32(value);
     }
