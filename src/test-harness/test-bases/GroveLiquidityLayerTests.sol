@@ -23,16 +23,9 @@ import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers
 import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { SpellRunner } from "../SpellRunner.sol";
+import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
 
-struct GroveLiquidityLayerContext {
-    address     admin;
-    address     controller;
-    IALMProxy   proxy;
-    IRateLimits rateLimits;
-    address     relayer;
-    address     freezer;
-}
+import { SpellRunner } from "../SpellRunner.sol";
 
 struct CentrifugeV3Config {
     address centrifugeVault;
@@ -150,110 +143,8 @@ interface ICurvePoolLike {
     function stored_rates() external view returns (uint256[] memory);
 }
 
-abstract contract GroveLiquidityLayerTests is SpellRunner {
+abstract contract GroveLiquidityLayerTests is CommonTestBase {
 
-    bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
-
-    function _getGroveLiquidityLayerContext(ChainId chain) internal view returns(GroveLiquidityLayerContext memory ctx) {
-        address controller;
-        if(chainData[chain].spellExecuted) {
-            controller = chainData[chain].newController;
-        } else {
-            controller = chainData[chain].prevController;
-        }
-        if (chain == ChainIdUtils.Ethereum()) {
-            ctx = GroveLiquidityLayerContext(
-                Ethereum.GROVE_PROXY,
-                controller,
-                IALMProxy(Ethereum.ALM_PROXY),
-                IRateLimits(Ethereum.ALM_RATE_LIMITS),
-                Ethereum.ALM_RELAYER,
-                Ethereum.ALM_FREEZER
-        );
-        } else if (chain == ChainIdUtils.Avalanche()) {
-            ctx = GroveLiquidityLayerContext(
-                Avalanche.GROVE_EXECUTOR,
-                controller,
-                IALMProxy(Avalanche.ALM_PROXY),
-                IRateLimits(Avalanche.ALM_RATE_LIMITS),
-                Avalanche.ALM_RELAYER,
-                Avalanche.ALM_FREEZER
-            );
-        } else if (chain == ChainIdUtils.Plume()) {
-            ctx = GroveLiquidityLayerContext(
-                Plume.GROVE_EXECUTOR,
-                controller,
-                IALMProxy(Plume.ALM_PROXY),
-                IRateLimits(Plume.ALM_RATE_LIMITS),
-                Plume.ALM_RELAYER,
-                Plume.ALM_FREEZER
-            );
-        } else if (chain == ChainIdUtils.Base()) {
-            ctx = GroveLiquidityLayerContext(
-                Base.GROVE_EXECUTOR,
-                controller,
-                IALMProxy(Base.ALM_PROXY),
-                IRateLimits(Base.ALM_RATE_LIMITS),
-                Base.ALM_RELAYER,
-                Base.ALM_FREEZER
-            );
-        } else if (chain == ChainIdUtils.Plasma()) {
-            ctx = GroveLiquidityLayerContext(
-                Plasma.GROVE_EXECUTOR,
-                controller,
-                IALMProxy(Plasma.ALM_PROXY),
-                IRateLimits(Plasma.ALM_RATE_LIMITS),
-                Plasma.ALM_RELAYER,
-                Plasma.ALM_FREEZER
-            );
-        } else {
-            revert("Chain not supported by GroveLiquidityLayerTests context");
-        }
-    }
-
-    function _getGroveLiquidityLayerContext() internal view returns(GroveLiquidityLayerContext memory) {
-        return _getGroveLiquidityLayerContext(ChainIdUtils.fromUint(block.chainid));
-    }
-
-   function _assertRateLimit(
-       bytes32 key,
-       uint256 maxAmount,
-       uint256 slope
-    ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
-        assertEq(rateLimit.maxAmount, maxAmount);
-        assertEq(rateLimit.slope,     slope);
-    }
-
-   function _assertUnlimitedRateLimit(
-       bytes32 key
-    ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
-        assertEq(rateLimit.maxAmount, type(uint256).max);
-        assertEq(rateLimit.slope,     0);
-    }
-
-    function _assertZeroRateLimit(
-        bytes32 key
-    ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
-        assertEq(rateLimit.maxAmount, 0);
-        assertEq(rateLimit.slope,     0);
-    }
-
-   function _assertRateLimit(
-       bytes32 key,
-       uint256 maxAmount,
-       uint256 slope,
-       uint256 lastAmount,
-       uint256 lastUpdated
-    ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
-        assertEq(rateLimit.maxAmount,   maxAmount);
-        assertEq(rateLimit.slope,       slope);
-        assertEq(rateLimit.lastAmount,  lastAmount);
-        assertEq(rateLimit.lastUpdated, lastUpdated);
-    }
 
     function _testERC4626Onboarding(
         address vault,

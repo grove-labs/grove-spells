@@ -3,9 +3,9 @@ pragma solidity ^0.8.0;
 
 import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 
-import { SpellRunner } from "./SpellRunner.sol";
+import { CommonTestBase } from "./CommonTestBase.sol";
 
-abstract contract CommonSpellTests is SpellRunner {
+abstract contract CommonSpellTests is CommonTestBase {
 
     uint256 public constant AVERAGE_EXECUTION_COST_TARGET = 15_000_000;
     uint256 public constant MAX_EXECUTION_COST            = 30_000_000;
