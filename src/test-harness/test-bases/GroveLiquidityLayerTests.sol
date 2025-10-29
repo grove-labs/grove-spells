@@ -23,7 +23,7 @@ import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers
 import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { SpellRunner } from "./SpellRunner.sol";
+import { SpellRunner } from "../SpellRunner.sol";
 
 struct GroveLiquidityLayerContext {
     address     admin;
