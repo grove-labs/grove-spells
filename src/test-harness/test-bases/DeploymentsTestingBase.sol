@@ -3,6 +3,14 @@ pragma solidity ^0.8.0;
 
 import { Test } from "forge-std/Test.sol";
 
+import { Avalanche } from "grove-address-registry/Avalanche.sol";
+import { Ethereum }  from "grove-address-registry/Ethereum.sol";
+import { Plume }     from "grove-address-registry/Plume.sol";
+import { Base }      from "grove-address-registry/Base.sol";
+import { Plasma }    from "grove-address-registry/Plasma.sol";
+
+import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
+
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 
@@ -14,11 +22,15 @@ import { Executor } from "grove-gov-relay/src/Executor.sol";
 import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
 import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
 
-import { CastingHelpers } from "src/libraries/helpers/CastingHelpers.sol";
+import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
+import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
+import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
+
+import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
-abstract contract DeploymentsTestBase is Test {
+abstract contract DeploymentsTestingBase is CommonTestBase {
 
     struct AlmSystemContracts {
         address admin;
@@ -187,6 +199,92 @@ abstract contract DeploymentsTestBase is Test {
 
         // Target has to be the executor
         assertEq(receiver.target(), _executor, "incorrect-target");
+    }
+
+    function _testControllerUpgrade(address oldController, address newController) internal {
+        ChainId currentChain = ChainIdUtils.fromUint(block.chainid);
+
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        // Note the functions used are interchangable with mainnet and foreign controllers
+        MainnetController controller = MainnetController(newController);
+
+        bytes32 CONTROLLER = ctx.proxy.CONTROLLER();
+        bytes32 RELAYER    = controller.RELAYER();
+        bytes32 FREEZER    = controller.FREEZER();
+
+        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false);
+
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false);
+
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), false);
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), false);
+
+        if (currentChain == ChainIdUtils.Ethereum()) {
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+                CastingHelpers.addressToCctpRecipient(address(0))
+            );
+        } else {
+            assertEq(controller.mintRecipients(
+                CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+                CastingHelpers.addressToCctpRecipient(address(0))
+            );
+        }
+
+        if (currentChain == ChainIdUtils.Ethereum()) {
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
+        } else {
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
+        }
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), false);
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), true);
+
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), false);
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), true);
+
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), true);
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), true);
+
+        if (currentChain == ChainIdUtils.Ethereum()) {
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+                CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
+            );
+            // Plume intentionally skipped - CCTPv1 is not deployed on Plume
+        } else {
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+                CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
+            );
+        }
+
+        if (currentChain == ChainIdUtils.Ethereum()) {
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
+            );
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
+            );
+        } else {
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
+            );
+        }
     }
 
 }
