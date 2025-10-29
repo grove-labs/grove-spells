@@ -7,17 +7,17 @@ import "forge-std/Test.sol";
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 
 library ChainIds {
-    uint256 internal constant MAINNET = 1;
-    uint256 internal constant OPTIMISM = 10;
-    uint256 internal constant GNOSIS = 100;
-    uint256 internal constant POLYGON = 137;
-    uint256 internal constant FANTOM = 250;
-    uint256 internal constant METIS = 1088;
-    uint256 internal constant BASE = 8453;
-    uint256 internal constant ARBITRUM = 42161;
+    uint256 internal constant MAINNET   = 1;
+    uint256 internal constant OPTIMISM  = 10;
+    uint256 internal constant GNOSIS    = 100;
+    uint256 internal constant POLYGON   = 137;
+    uint256 internal constant FANTOM    = 250;
+    uint256 internal constant METIS     = 1088;
+    uint256 internal constant BASE      = 8453;
+    uint256 internal constant ARBITRUM  = 42161;
     uint256 internal constant AVALANCHE = 43114;
-    uint256 internal constant HARMONY = 1666600000;
-    uint256 internal constant PLASMA = 9745;
+    uint256 internal constant HARMONY   = 1666600000;
+    uint256 internal constant PLASMA    = 9745;
   }
 
 contract CommonTestBase is Test {
