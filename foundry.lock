@@ -12,10 +12,10 @@
     "rev": "96a8986be24dedcce1df49554f13cbcf33b16dbc"
   },
   "lib/grove-gov-relay": {
-    "rev": "be8ba8906cd2788c49350ea262b09c8175e874d9"
+    "rev": "f314e2480204f4ab897ba757886b7af45d61b746"
   },
   "lib/spark-address-registry": {
-    "rev": "d3247083428eb9f7ebe797fd47758463401d1c26"
+    "rev": "7970fef921881720179967e5fa8b7305e59cf61e"
   },
   "lib/xchain-helpers": {
     "rev": "c93404800dbcaafec4af068b04ce7df6df7c95fa"
