@@ -32,10 +32,6 @@ contract GroveBase_20251113 is GrovePayloadBase {
         // TODO: Item title
         //   Forum : TODO: Forum link
         _onboardMorphoVault(); // TODO: Rename to more precisely describe the onboarding
-
-        // TODO: Item title
-        //   Forum : TODO: Forum link
-        _onboardCurvePool(); // TODO: Rename to more precisely describe the onboarding
     }
 
     function _initializeLiquidityLayer() internal {
@@ -86,10 +82,6 @@ contract GroveBase_20251113 is GrovePayloadBase {
     }
 
     function _onboardMorphoVault() internal {
-        // TODO: Implement
-    }
-
-    function _onboardCurvePool() internal {
         // TODO: Implement
     }
 
