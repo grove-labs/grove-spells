@@ -6,7 +6,7 @@ import { IRateLimits }       from "grove-alm-controller/src/interfaces/IRateLimi
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
-import { LZForwarder } from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
+import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Base }     from "lib/grove-address-registry/src/Base.sol";
@@ -75,8 +75,8 @@ contract GroveBase_20251113 is GrovePayloadBase {
             }),
             ForeignControllerInit.CheckAddressParams({
                 admin      : Base.GROVE_EXECUTOR,
-                cctp       : 0x1682Ae6375C4E4A97e4B583BC394c861A46D8962, // TODO: Use address registry - CCTP Messenger
-                psm        : 0x1601843c5E9bC251A3272907010AFa41Fa18347E, // TODO: Use address registry - PSM3
+                cctp       : Base.CCTP_TOKEN_MESSENGER,
+                psm        : Base.PSM3,
                 usdc       : Base.USDC
             }),
             mintRecipients,

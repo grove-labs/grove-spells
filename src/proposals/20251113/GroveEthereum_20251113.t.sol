@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { Base }     from "lib/grove-address-registry/src/Base.sol";
-import { Plasma }   from "lib/grove-address-registry/src/Plasma.sol";
+import { Base }   from "lib/grove-address-registry/src/Base.sol";
+import { Plasma } from "lib/grove-address-registry/src/Plasma.sol";
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
@@ -50,8 +50,8 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
                 relayer  : Base.ALM_RELAYER
             }),
             ForeignAlmSystemDependencies({
-                cctp : 0x1682Ae6375C4E4A97e4B583BC394c861A46D8962, // TODO: Use address registry - CCTP Messenger
-                psm  : 0x1601843c5E9bC251A3272907010AFa41Fa18347E, // TODO: Use address registry - PSM3
+                cctp : Base.CCTP_TOKEN_MESSENGER,
+                psm  : Base.PSM3,
                 usdc : Base.USDC
             })
         );
