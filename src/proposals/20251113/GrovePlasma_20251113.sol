@@ -22,7 +22,7 @@ contract GrovePlasma_20251113 is GrovePayloadPlasma {
     function execute() external {
         // // TODO: Item title
         //   Forum : TODO: Forum link
-        // _initializeLiquidityLayer();
+        _initializeLiquidityLayer();
 
         // TODO: Item title
         //   Forum : TODO: Forum link

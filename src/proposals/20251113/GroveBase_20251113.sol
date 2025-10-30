@@ -27,7 +27,7 @@ contract GroveBase_20251113 is GrovePayloadBase {
     function execute() external {
         // // TODO: Item title
         //   Forum : TODO: Forum link
-        // _initializeLiquidityLayer();
+        _initializeLiquidityLayer();
 
         // TODO: Item title
         //   Forum : TODO: Forum link
