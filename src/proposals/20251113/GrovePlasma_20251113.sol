@@ -59,8 +59,8 @@ contract GrovePlasma_20251113 is GrovePayloadPlasma {
             }),
             ForeignControllerInit.CheckAddressParams({
                 admin      : Plasma.GROVE_EXECUTOR,
-                psm        : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
                 cctp       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
+                psm        : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
                 usdc       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER
             }),
             mintRecipients,
