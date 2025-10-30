@@ -6,9 +6,9 @@ import "forge-std/Test.sol";
 
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
-import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
 import { Plasma }    from "lib/grove-address-registry/src/Plasma.sol";
+import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
@@ -30,16 +30,18 @@ struct GroveLiquidityLayerContext {
 
 library ChainIds {
     uint256 internal constant MAINNET   = 1;
-    uint256 internal constant OPTIMISM  = 10;
-    uint256 internal constant GNOSIS    = 100;
-    uint256 internal constant POLYGON   = 137;
-    uint256 internal constant FANTOM    = 250;
-    uint256 internal constant METIS     = 1088;
-    uint256 internal constant BASE      = 8453;
     uint256 internal constant ARBITRUM  = 42161;
     uint256 internal constant AVALANCHE = 43114;
+    uint256 internal constant BASE      = 8453;
+    uint256 internal constant FANTOM    = 250;
+    uint256 internal constant GNOSIS    = 100;
     uint256 internal constant HARMONY   = 1666600000;
+    uint256 internal constant OPTIMISM  = 10;
+    uint256 internal constant POLYGON   = 137;
+    uint256 internal constant METIS     = 1088;
     uint256 internal constant PLASMA    = 9745;
+    uint256 internal constant PLUME     = 98866;
+    uint256 internal constant UNICHAIN  = 130;
   }
 
 contract CommonTestBase is SpellRunner {
@@ -160,15 +162,6 @@ contract CommonTestBase is SpellRunner {
               Avalanche.ALM_RELAYER,
               Avalanche.ALM_FREEZER
           );
-      } else if (chain == ChainIdUtils.Plume()) {
-          ctx = GroveLiquidityLayerContext(
-              Plume.GROVE_EXECUTOR,
-              controller,
-              IALMProxy(Plume.ALM_PROXY),
-              IRateLimits(Plume.ALM_RATE_LIMITS),
-              Plume.ALM_RELAYER,
-              Plume.ALM_FREEZER
-          );
       } else if (chain == ChainIdUtils.Base()) {
           ctx = GroveLiquidityLayerContext(
               Base.GROVE_EXECUTOR,
@@ -186,6 +179,15 @@ contract CommonTestBase is SpellRunner {
               IRateLimits(Plasma.ALM_RATE_LIMITS),
               Plasma.ALM_RELAYER,
               Plasma.ALM_FREEZER
+          );
+      } else if (chain == ChainIdUtils.Plume()) {
+          ctx = GroveLiquidityLayerContext(
+              Plume.GROVE_EXECUTOR,
+              controller,
+              IALMProxy(Plume.ALM_PROXY),
+              IRateLimits(Plume.ALM_RATE_LIMITS),
+              Plume.ALM_RELAYER,
+              Plume.ALM_FREEZER
           );
       } else {
           revert("Chain not supported by GroveLiquidityLayerTests context");

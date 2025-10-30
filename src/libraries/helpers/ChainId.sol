@@ -23,28 +23,28 @@ library ChainIdUtils {
     }
 
     function fromUint(uint256 id) internal pure returns (ChainId chainId) {
-             if (id == 1)     return ChainId.wrap(id);
-        else if (id == 100)   return ChainId.wrap(id);
-        else if (id == 8453)  return ChainId.wrap(id);
-        else if (id == 42161) return ChainId.wrap(id);
-        else if (id == 10)    return ChainId.wrap(id);
-        else if (id == 130)   return ChainId.wrap(id);
-        else if (id == 43114) return ChainId.wrap(id);
-        else if (id == 98866) return ChainId.wrap(id);
-        else if (id == 9745)  return ChainId.wrap(id);
+             if (id == 1)     return ChainId.wrap(id); // Ethereum
+        else if (id == 42161) return ChainId.wrap(id); // ArbitrumOne
+        else if (id == 43114) return ChainId.wrap(id); // Avalanche
+        else if (id == 8453)  return ChainId.wrap(id); // Base
+        else if (id == 100)   return ChainId.wrap(id); // Gnosis
+        else if (id == 10)    return ChainId.wrap(id); // Optimism
+        else if (id == 9745)  return ChainId.wrap(id); // Plasma
+        else if (id == 98866) return ChainId.wrap(id); // Plume
+        else if (id == 130)   return ChainId.wrap(id); // Unichain
         require(false, "ChainIdUtils/invalid-chain-id");
     }
 
     function toDomainString(ChainId id) internal pure returns (string memory domainString) {
              if (ChainId.unwrap(id) == 1)     return "Ethereum";
-        else if (ChainId.unwrap(id) == 100)   return "Gnosis";
-        else if (ChainId.unwrap(id) == 8453)  return "Base";
         else if (ChainId.unwrap(id) == 42161) return "ArbitrumOne";
-        else if (ChainId.unwrap(id) == 10)    return "Optimism";
-        else if (ChainId.unwrap(id) == 130)   return "Unichain";
         else if (ChainId.unwrap(id) == 43114) return "Avalanche";
-        else if (ChainId.unwrap(id) == 98866) return "Plume";
+        else if (ChainId.unwrap(id) == 8453)  return "Base";
+        else if (ChainId.unwrap(id) == 100)   return "Gnosis";
+        else if (ChainId.unwrap(id) == 10)    return "Optimism";
         else if (ChainId.unwrap(id) == 9745)  return "Plasma";
+        else if (ChainId.unwrap(id) == 98866) return "Plume";
+        else if (ChainId.unwrap(id) == 130)   return "Unichain";
         require(false, "ChainIdUtils/invalid-chain-id");
     }
 
@@ -52,36 +52,36 @@ library ChainIdUtils {
         return ChainId.wrap(1);
     }
 
-    function Gnosis() internal pure returns (ChainId) {
-        return ChainId.wrap(100);
-    }
-
-    function Base() internal pure returns (ChainId) {
-        return ChainId.wrap(8453);
-    }
-
     function ArbitrumOne() internal pure returns (ChainId) {
         return ChainId.wrap(42161);
-    }
-
-    function Optimism() internal pure returns (ChainId) {
-        return ChainId.wrap(10);
-    }
-
-    function Unichain() internal pure returns (ChainId) {
-        return ChainId.wrap(130);
     }
 
     function Avalanche() internal pure returns (ChainId) {
         return ChainId.wrap(43114);
     }
 
-    function Plume() internal pure returns (ChainId) {
-        return ChainId.wrap(98866);
+    function Base() internal pure returns (ChainId) {
+        return ChainId.wrap(8453);
+    }
+
+    function Gnosis() internal pure returns (ChainId) {
+        return ChainId.wrap(100);
+    }
+
+    function Optimism() internal pure returns (ChainId) {
+        return ChainId.wrap(10);
     }
 
     function Plasma() internal pure returns (ChainId) {
         return ChainId.wrap(9745);
+    }
+
+    function Plume() internal pure returns (ChainId) {
+        return ChainId.wrap(98866);
+    }
+
+    function Unichain() internal pure returns (ChainId) {
+        return ChainId.wrap(130);
     }
 
 }

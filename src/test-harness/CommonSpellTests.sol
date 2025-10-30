@@ -35,16 +35,16 @@ abstract contract CommonSpellTests is CommonTestBase {
         _assertPayloadBytecodeMatches(ChainIdUtils.Avalanche());
     }
 
-    function test_PLUME_PayloadBytecodeMatches() public {
-        _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
-    }
-
     function test_BASE_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Base());
     }
 
     function test_PLASMA_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Plasma());
+    }
+
+    function test_PLUME_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
     }
 
     function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
