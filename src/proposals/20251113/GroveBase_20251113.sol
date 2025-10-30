@@ -75,9 +75,9 @@ contract GroveBase_20251113 is GrovePayloadBase {
             }),
             ForeignControllerInit.CheckAddressParams({
                 admin      : Base.GROVE_EXECUTOR,
-                psm        : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
-                cctp       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER,
-                usdc       : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER
+                psm        : 0x1601843c5E9bC251A3272907010AFa41Fa18347E, // TODO: Use address registry - PSM3
+                cctp       : 0x1682Ae6375C4E4A97e4B583BC394c861A46D8962, // TODO: Use address registry - CCTP Messenger
+                usdc       : Base.USDC
             }),
             mintRecipients,
             layerZeroRecipients,
