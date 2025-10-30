@@ -1,0 +1,23 @@
+{
+  "lib/dss-allocator": {
+    "rev": "6e99d87374cff66e93fe44c55d4ed240dac1c3dc"
+  },
+  "lib/forge-std": {
+    "rev": "3353993420c6e488a2914ce02d88174e80ad80f8"
+  },
+  "lib/grove-address-registry": {
+    "rev": "3bfc54c61bd45139d0a6feede9261a29ef46d4e7"
+  },
+  "lib/grove-alm-controller": {
+    "rev": "96a8986be24dedcce1df49554f13cbcf33b16dbc"
+  },
+  "lib/grove-gov-relay": {
+    "rev": "f314e2480204f4ab897ba757886b7af45d61b746"
+  },
+  "lib/spark-address-registry": {
+    "rev": "7970fef921881720179967e5fa8b7305e59cf61e"
+  },
+  "lib/xchain-helpers": {
+    "rev": "c93404800dbcaafec4af068b04ce7df6df7c95fa"
+  }
+}

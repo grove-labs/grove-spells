@@ -11,8 +11,9 @@ import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol
  */
 library GroveLiquidityLayerHelpers {
 
-    // This is the same on all chains
-    address private constant MORPHO = 0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb;
+    /**********************************************************************************************/
+    /*** Constants                                                                              ***/
+    /**********************************************************************************************/
 
     address public constant BLANK_ADDRESS_PLACEHOLDER = 0x00000000000000000000000000000000DeaDBeef;
 
@@ -29,9 +30,13 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CURVE_SWAP          = keccak256("LIMIT_CURVE_SWAP");
     bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
 
-    uint16 public constant ETHEREUM_DESTINATION_CENTRIFUGE_ID  = 1;
-    uint16 public constant PLUME_DESTINATION_CENTRIFUGE_ID     = 4;
+    uint16 public constant  ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
+    uint16 public constant     PLUME_DESTINATION_CENTRIFUGE_ID = 4;
     uint16 public constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
+
+    /**********************************************************************************************/
+    /*** ERC-4626 functions                                                                     ***/
+    /**********************************************************************************************/
 
     /**
      * @notice Onboard an ERC4626 vault
@@ -57,6 +62,10 @@ library GroveLiquidityLayerHelpers {
 
         IRateLimits(rateLimits).setUnlimitedRateLimitData(withdrawKey);
     }
+
+    /**********************************************************************************************/
+    /*** ERC-7540 functions                                                                     ***/
+    /**********************************************************************************************/
 
     /**
      * @notice Onboard an ERC7540 vault
@@ -99,6 +108,10 @@ library GroveLiquidityLayerHelpers {
         IRateLimits(rateLimits).setRateLimitData(redeemKey,  0, 0);
     }
 
+    /**********************************************************************************************/
+    /*** Aave functions                                                                         ***/
+    /**********************************************************************************************/
+
     /**
      * @notice Onboard an Aave token
      * @dev This will set the deposit to the given numbers with
@@ -123,8 +136,14 @@ library GroveLiquidityLayerHelpers {
         IRateLimits(rateLimits).setUnlimitedRateLimitData(withdrawKey);
     }
 
+    /**********************************************************************************************/
+    /*** Curve functions                                                                        ***/
+    /**********************************************************************************************/
+
     /**
      * @notice Onboard a Curve pool
+     * @dev This will set the rate limit for a Curve pool
+     *      for the swap, deposit, and withdraw functions.
      */
     function onboardCurvePool(
         address controller,
@@ -165,32 +184,14 @@ library GroveLiquidityLayerHelpers {
         }
     }
 
-    function setUSDSMintRateLimit(
-        address rateLimits,
-        uint256 maxAmount,
-        uint256 slope
-    ) internal {
-        bytes32 mintKey = RateLimitHelpers.makeAssetKey(
-            LIMIT_USDS_MINT,
-            MORPHO
-        );
+    /**********************************************************************************************/
+    /*** Centrifuge functions                                                                   ***/
+    /**********************************************************************************************/
 
-        IRateLimits(rateLimits).setRateLimitData(mintKey, maxAmount, slope);
-    }
-
-    function setUSDSToUSDCRateLimit(
-        address rateLimits,
-        uint256 maxUsdcAmount,
-        uint256 slope
-    ) internal {
-        bytes32 usdsToUsdcKey = RateLimitHelpers.makeAssetKey(
-            LIMIT_USDS_TO_USDC,
-            MORPHO
-        );
-
-        IRateLimits(rateLimits).setRateLimitData(usdsToUsdcKey, maxUsdcAmount, slope);
-    }
-
+    /**
+     * @notice Set the rate limit for a Centrifuge cross-chain transfer
+     * @dev This will set the rate limit for a Centrifuge cross-chain transfer
+     */
     function setCentrifugeCrosschainTransferRateLimit(
         address rateLimits,
         address centrifugeVault,
@@ -201,6 +202,42 @@ library GroveLiquidityLayerHelpers {
         bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
 
         IRateLimits(rateLimits).setRateLimitData(centrifugeCrosschainTransferKey, maxAmount, slope);
+    }
+
+    /**********************************************************************************************/
+    /*** Sky functions                                                                         ***/
+    /**********************************************************************************************/
+
+    /**
+     * @notice Set the rate limit for a USDS mint
+     * @dev This will set the rate limit for a USDS mint
+     */
+    function setUSDSMintRateLimit(
+        address rateLimits,
+        uint256 maxAmount,
+        uint256 slope
+    ) internal {
+        IRateLimits(rateLimits).setRateLimitData(
+            LIMIT_USDS_MINT,
+            maxAmount,
+            slope
+        );
+    }
+
+    /**
+     * @notice Set the rate limit for a USDS to USDC transfer
+     * @dev This will set the rate limit for a USDS to USDC transfer
+     */
+    function setUSDSToUSDCRateLimit(
+        address rateLimits,
+        uint256 maxUsdcAmount,
+        uint256 slope
+    ) internal {
+        IRateLimits(rateLimits).setRateLimitData(
+            LIMIT_USDS_TO_USDC,
+            maxUsdcAmount,
+            slope
+        );
     }
 
 }

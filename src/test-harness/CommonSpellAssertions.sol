@@ -16,8 +16,8 @@ import { MainnetController } from "grove-alm-controller/src/MainnetController.so
 import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
 import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
 
-import { CastingHelpers }        from "src/libraries/CastingHelpers.sol";
-import { ChainIdUtils, ChainId } from "src/libraries/ChainId.sol";
+import { CastingHelpers }        from "src/libraries/helpers/CastingHelpers.sol";
+import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
@@ -53,6 +53,14 @@ abstract contract CommonSpellAssertions is SpellRunner {
 
     function test_PLUME_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
+    }
+
+    function test_BASE_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Base());
+    }
+
+    function test_PLASMA_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Plasma());
     }
 
     function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {

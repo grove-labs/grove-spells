@@ -4,13 +4,21 @@ pragma solidity ^0.8.0;
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
+import { Base }      from "lib/grove-address-registry/src/Base.sol";
+import { Plasma }    from "lib/grove-address-registry/src/Plasma.sol";
 
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
-import { CCTPForwarder }          from "xchain-helpers/forwarders/CCTPForwarder.sol";
-import { ArbitrumERC20Forwarder } from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
+import { ArbitrumERC20Forwarder }            from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
+import { CCTPForwarder }                     from "xchain-helpers/forwarders/CCTPForwarder.sol";
+import { LZForwarder, ILayerZeroEndpointV2 } from "xchain-helpers/forwarders/LZForwarder.sol";
+import { OptimismForwarder }                 from "xchain-helpers/forwarders/OptimismForwarder.sol";
 
-import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
+import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
+
+import { CastingHelpers }             from "../helpers/CastingHelpers.sol";
+import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
+
 
 /**
  * @dev Base smart contract for Ethereum.
@@ -18,32 +26,57 @@ import { GroveLiquidityLayerHelpers } from "./GroveLiquidityLayerHelpers.sol";
  */
 abstract contract GrovePayloadEthereum {
 
-    // ADD SUPPORTED FOREIGN PAYLOADS HERE
+    using OptionsBuilder for bytes;
 
     // These need to be immutable (delegatecall) and can only be set in constructor
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_PLUME;
+    address public immutable PAYLOAD_BASE;
+    address public immutable PAYLOAD_PLASMA;
 
     function execute() external {
         _execute();
 
         if (PAYLOAD_AVALANCHE != address(0)) {
             CCTPForwarder.sendMessage({
-                messageTransmitter:  CCTPForwarder.MESSAGE_TRANSMITTER_CIRCLE_ETHEREUM,
-                destinationDomainId: CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
-                recipient:           Avalanche.GROVE_RECEIVER,
-                messageBody:         _encodePayloadQueue(PAYLOAD_AVALANCHE)
+                messageTransmitter  : CCTPForwarder.MESSAGE_TRANSMITTER_CIRCLE_ETHEREUM,
+                destinationDomainId : CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
+                recipient           : Avalanche.GROVE_RECEIVER,
+                messageBody         : _encodePayloadQueue(PAYLOAD_AVALANCHE)
             });
         }
 
         if (PAYLOAD_PLUME != address(0)) {
             ArbitrumERC20Forwarder.sendMessageL1toL2({
-                l1CrossDomain: ArbitrumERC20Forwarder.L1_CROSS_DOMAIN_PLUME,
-                target:        Plume.GROVE_RECEIVER,
-                message:       _encodePayloadQueue(PAYLOAD_PLUME),
-                gasLimit:      1_000_0000,
-                maxFeePerGas:  5_000e9,
-                baseFee:       block.basefee
+                l1CrossDomain : ArbitrumERC20Forwarder.L1_CROSS_DOMAIN_PLUME,
+                target        : Plume.GROVE_RECEIVER,
+                message       : _encodePayloadQueue(PAYLOAD_PLUME),
+                gasLimit      : 1_000_0000,
+                maxFeePerGas  : 5_000e9,
+                baseFee       : block.basefee
+            });
+        }
+
+        if (PAYLOAD_BASE != address(0)) {
+            OptimismForwarder.sendMessageL1toL2({
+                l1CrossDomain : OptimismForwarder.L1_CROSS_DOMAIN_BASE,
+                target        : Base.GROVE_RECEIVER,
+                message       : _encodePayloadQueue(PAYLOAD_BASE),
+                gasLimit      : 1_000_000
+            });
+        }
+
+        if (PAYLOAD_PLASMA != address(0)) {
+            bytes memory options = OptionsBuilder.newOptions().addExecutorLzReceiveOption(1_000_000, 0);
+
+            LZForwarder.sendMessage({
+                _dstEid        : LZForwarder.ENDPOINT_ID_PLASMA,
+                _receiver      : CastingHelpers.addressToLayerZeroRecipient(Plasma.GROVE_RECEIVER),
+                endpoint       : ILayerZeroEndpointV2(LZForwarder.ENDPOINT_ETHEREUM),
+                _message       : _encodePayloadQueue(PAYLOAD_PLASMA),
+                _options       : options,
+                _refundAddress : Ethereum.GROVE_PROXY,
+                _payInLzToken  : false
             });
         }
     }

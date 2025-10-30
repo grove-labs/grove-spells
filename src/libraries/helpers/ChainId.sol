@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.23;
+
 import { Domain } from "xchain-helpers/testing/Domain.sol";
 
 type ChainId is uint256;
@@ -22,26 +23,28 @@ library ChainIdUtils {
     }
 
     function fromUint(uint256 id) internal pure returns (ChainId chainId) {
-        if (id == 1) return ChainId.wrap(id);
-        else if (id == 100) return ChainId.wrap(id);
-        else if (id == 8453) return ChainId.wrap(id);
+             if (id == 1)     return ChainId.wrap(id);
+        else if (id == 100)   return ChainId.wrap(id);
+        else if (id == 8453)  return ChainId.wrap(id);
         else if (id == 42161) return ChainId.wrap(id);
-        else if (id == 10) return ChainId.wrap(id);
-        else if (id == 130) return ChainId.wrap(id);
+        else if (id == 10)    return ChainId.wrap(id);
+        else if (id == 130)   return ChainId.wrap(id);
         else if (id == 43114) return ChainId.wrap(id);
         else if (id == 98866) return ChainId.wrap(id);
+        else if (id == 9745)  return ChainId.wrap(id);
         require(false, "ChainIdUtils/invalid-chain-id");
     }
 
     function toDomainString(ChainId id) internal pure returns (string memory domainString) {
-        if (ChainId.unwrap(id) == 1) return "Ethereum";
-        else if (ChainId.unwrap(id) == 100) return "Gnosis";
-        else if (ChainId.unwrap(id) == 8453) return "Base";
+             if (ChainId.unwrap(id) == 1)     return "Ethereum";
+        else if (ChainId.unwrap(id) == 100)   return "Gnosis";
+        else if (ChainId.unwrap(id) == 8453)  return "Base";
         else if (ChainId.unwrap(id) == 42161) return "ArbitrumOne";
-        else if (ChainId.unwrap(id) == 10) return "Optimism";
-        else if (ChainId.unwrap(id) == 130) return "Unichain";
+        else if (ChainId.unwrap(id) == 10)    return "Optimism";
+        else if (ChainId.unwrap(id) == 130)   return "Unichain";
         else if (ChainId.unwrap(id) == 43114) return "Avalanche";
         else if (ChainId.unwrap(id) == 98866) return "Plume";
+        else if (ChainId.unwrap(id) == 9745)  return "Plasma";
         require(false, "ChainIdUtils/invalid-chain-id");
     }
 
@@ -76,4 +79,9 @@ library ChainIdUtils {
     function Plume() internal pure returns (ChainId) {
         return ChainId.wrap(98866);
     }
+
+    function Plasma() internal pure returns (ChainId) {
+        return ChainId.wrap(9745);
+    }
+
 }
