@@ -10,7 +10,7 @@ import { ERC4626TestingBase }     from "./test-bases/ERC4626TestingBase.sol";
 import { CommonSpellTests } from "./CommonSpellTests.sol";
 
 /// @dev convenience contract meant to be the single point of entry for all
-/// spell-specifictest contracts
+/// spell-specific test contracts
 abstract contract GroveTestBase is
     CommonSpellTests,
     AaveTestingBase,
