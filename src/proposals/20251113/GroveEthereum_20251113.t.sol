@@ -24,6 +24,21 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         deployPayloads();
     }
 
+    function test_ETHEREUM_onboardMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
+        vm.skip(true);
+        // TODO: Implement
+    }
+
+    function test_ETHEREUM_onboardSecuritize() public onChain(ChainIdUtils.Ethereum()) {
+        vm.skip(true);
+        // TODO: Implement
+    }
+
+    function test_ETHEREUM_onboardCurvePool() public onChain(ChainIdUtils.Ethereum()) {
+        vm.skip(true);
+        // TODO: Implement
+    }
+
     function test_BASE_governanceDeployment() public onChain(ChainIdUtils.Base()) {
         _verifyForeignDomainExecutorDeployment({
             _executor : Base.GROVE_EXECUTOR,
@@ -55,6 +70,11 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
                 usdc : Base.USDC
             })
         );
+    }
+
+    function test_BASE_onboardMorphoVault() public onChain(ChainIdUtils.Base()) {
+        vm.skip(true);
+        // TODO: Implement
     }
 
     function test_PLASMA_governanceDeployment() public onChain(ChainIdUtils.Plasma()) {
@@ -89,6 +109,11 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
                 cctp : GroveLiquidityLayerHelpers.BLANK_ADDRESS_PLACEHOLDER
             })
         );
+    }
+
+    function test_PLASMA_onboardAave() public onChain(ChainIdUtils.Plasma()) {
+        vm.skip(true);
+        // TODO: Implement
     }
 
 }
