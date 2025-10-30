@@ -36,9 +36,9 @@ library ChainIds {
     uint256 internal constant FANTOM    = 250;
     uint256 internal constant GNOSIS    = 100;
     uint256 internal constant HARMONY   = 1666600000;
+    uint256 internal constant METIS     = 1088;
     uint256 internal constant OPTIMISM  = 10;
     uint256 internal constant POLYGON   = 137;
-    uint256 internal constant METIS     = 1088;
     uint256 internal constant PLASMA    = 9745;
     uint256 internal constant PLUME     = 98866;
     uint256 internal constant UNICHAIN  = 130;
