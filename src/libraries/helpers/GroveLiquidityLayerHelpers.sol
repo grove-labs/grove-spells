@@ -31,6 +31,7 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
 
     uint16 public constant  ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
+    uint16 public constant      BASE_DESTINATION_CENTRIFUGE_ID = 2;
     uint16 public constant     PLUME_DESTINATION_CENTRIFUGE_ID = 4;
     uint16 public constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
 

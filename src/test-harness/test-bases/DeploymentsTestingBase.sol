@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Test } from "forge-std/Test.sol";
-
 import { Avalanche } from "grove-address-registry/Avalanche.sol";
 import { Ethereum }  from "grove-address-registry/Ethereum.sol";
 import { Plume }     from "grove-address-registry/Plume.sol";
 import { Base }      from "grove-address-registry/Base.sol";
-import { Plasma }    from "grove-address-registry/Plasma.sol";
 
 import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
 
@@ -27,8 +24,6 @@ import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
-
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
 abstract contract DeploymentsTestingBase is CommonTestBase {
 
@@ -222,11 +217,20 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         assertEq(controller.hasRole(RELAYER, ctx.relayer), false);
         assertEq(controller.hasRole(FREEZER, ctx.freezer), false);
 
+        // Verify CCTPv1 recipients are not set
+
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(
                 controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
                 CastingHelpers.addressToCctpRecipient(address(0))
             );
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
+                CastingHelpers.addressToCctpRecipient(address(0))
+            );
+            // Intentionally skipping the following (CCTPv1 is not deployed there)
+            // Plasma
+            // Plume
         } else {
             assertEq(controller.mintRecipients(
                 CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
@@ -234,17 +238,33 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
             );
         }
 
+        // Verify Centrifuge recipients are not set
+
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
                 CastingHelpers.addressToCentrifugeRecipient(address(0))
             );
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
+            assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(address(0))
+            );
+            // Intentionally skipping the following (Centrifuge is not deployed there)
+            // Plasma
         } else {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
                 CastingHelpers.addressToCentrifugeRecipient(address(0))
             );
         }
+
+        // Verify LayerZero recipients are not set
+
+        // TODO: Implement checks that LayerZero recipients are not set
 
         executeAllPayloadsAndBridges();
 
@@ -257,12 +277,20 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         assertEq(controller.hasRole(RELAYER, ctx.relayer), true);
         assertEq(controller.hasRole(FREEZER, ctx.freezer), true);
 
+        // Verify CCTPv1 recipients are set
+
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(
                 controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
                 CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
             );
-            // Plume intentionally skipped - CCTPv1 is not deployed on Plume
+            assertEq(
+                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
+                CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
+            );
+            // Intentionally skipping the following (CCTPv1 is not deployed there)
+            // Plasma
+            // Plume
         } else {
             assertEq(
                 controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
@@ -270,21 +298,33 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
             );
         }
 
+        // Verify Centrifuge recipients are set
+
         if (currentChain == ChainIdUtils.Ethereum()) {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
                 CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
             );
             assertEq(
+                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
+                CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
+            );
+            assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
                 CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
             );
+            // Intentionally skipping the following (Centrifuge is not deployed there)
+            // Plasma
         } else {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
                 CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
             );
         }
+
+        // Verify LayerZero recipients are set
+
+        // TODO: Implement checks that LayerZero recipients are set
     }
 
 }

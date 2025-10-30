@@ -132,7 +132,7 @@ abstract contract SpellRunner is Test {
 
         uint256[] memory hardcodedBlocks = new uint256[](2);
         hardcodedBlocks[0] = 30242550; // Plume
-        hardcodedBlocks[1] = 4738720; // Plasma
+        hardcodedBlocks[1] = 4738720;  // Plasma
 
         chainData[ChainIdUtils.Plume()].domain  = getChain("plume").createFork(hardcodedBlocks[0]);
         chainData[ChainIdUtils.Plasma()].domain = getChain("plasma").createFork(hardcodedBlocks[1]);

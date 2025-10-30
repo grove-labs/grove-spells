@@ -4,7 +4,7 @@ pragma solidity >=0.7.5 <0.9.0;
 import "forge-std/StdJson.sol";
 import "forge-std/Test.sol";
 
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
