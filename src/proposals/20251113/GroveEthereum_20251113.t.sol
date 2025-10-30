@@ -63,11 +63,11 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
             _receiver : Plasma.GROVE_RECEIVER,
             _deployer : DEPLOYER
         });
-        // TODO: Implement
-        // _verifyLayerZeroReceiverDeployment({
-        //     _executor : Plasma.GROVE_EXECUTOR,
-        //     _receiver : Plasma.GROVE_RECEIVER
-        // });
+
+        _verifyLayerZeroReceiverDeployment({
+            _executor : Plasma.GROVE_EXECUTOR,
+            _receiver : Plasma.GROVE_RECEIVER
+        });
     }
 
     function test_PLASMA_almSystemDeployment() public onChain(ChainIdUtils.Plasma()) {
