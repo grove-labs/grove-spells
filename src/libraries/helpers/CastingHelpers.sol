@@ -3,6 +3,10 @@ pragma solidity ^0.8.0;
 
 library CastingHelpers {
 
+    /**********************************************************************************************/
+    /*** Universal castings                                                                     ***/
+    /**********************************************************************************************/
+
     function addressToLeftPaddedBytes32(address value) internal pure returns (bytes32) {
         return bytes32(uint256(uint160(value)));
     }
@@ -19,6 +23,10 @@ library CastingHelpers {
         return address(bytes20(value));
     }
 
+    /**********************************************************************************************/
+    /*** CCTP castings                                                                          ***/
+    /**********************************************************************************************/
+
     function addressToCctpRecipient(address value) internal pure returns (bytes32) {
         return addressToLeftPaddedBytes32(value);
     }
@@ -26,6 +34,10 @@ library CastingHelpers {
     function cctpRecipientToAddress(bytes32 value) internal pure returns (address) {
         return leftPaddedBytes32ToAddress(value);
     }
+
+    /**********************************************************************************************/
+    /*** LayerZero castings                                                                     ***/
+    /**********************************************************************************************/
 
     function addressToLayerZeroRecipient(address value) internal pure returns (bytes32) {
         return addressToLeftPaddedBytes32(value);
@@ -35,6 +47,10 @@ library CastingHelpers {
         return leftPaddedBytes32ToAddress(value);
     }
 
+    /**********************************************************************************************/
+    /*** Centrifuge castings                                                                     ***/
+    /**********************************************************************************************/
+
     function addressToCentrifugeRecipient(address value) internal pure returns (bytes32) {
         return addressToRightPaddedBytes32(value);
     }
@@ -42,4 +58,5 @@ library CastingHelpers {
     function centrifugeRecipientToAddress(bytes32 value) internal pure returns (address) {
         return rightPaddedBytes32ToAddress(value);
     }
+
 }

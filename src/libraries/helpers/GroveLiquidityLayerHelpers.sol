@@ -30,9 +30,12 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CURVE_SWAP          = keccak256("LIMIT_CURVE_SWAP");
     bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
 
-    uint16 public constant  ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
-    uint16 public constant     PLUME_DESTINATION_CENTRIFUGE_ID = 4;
-    uint16 public constant AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
+    uint16 public constant        ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
+    uint16 public constant            BASE_DESTINATION_CENTRIFUGE_ID = 2;
+    // uint16 public constant    ARBITRUM_ONE_DESTINATION_CENTRIFUGE_ID = 3;
+    uint16 public constant           PLUME_DESTINATION_CENTRIFUGE_ID = 4;
+    uint16 public constant       AVALANCHE_DESTINATION_CENTRIFUGE_ID = 5;
+    // uint16 public constant BNB_SMART_CHAIN_DESTINATION_CENTRIFUGE_ID = 6;
 
     /**********************************************************************************************/
     /*** ERC-4626 functions                                                                     ***/
