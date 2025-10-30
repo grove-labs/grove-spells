@@ -191,7 +191,7 @@ contract CommonTestBase is SpellRunner {
               Plume.ALM_FREEZER
           );
       } else {
-          revert("Chain not supported by GroveLiquidityLayerTests context");
+          revert("Chain not supported by GroveLiquidityLayerContext");
       }
   }
 
