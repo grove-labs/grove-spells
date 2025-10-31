@@ -247,15 +247,15 @@ abstract contract SpellRunner is Test {
         // only execute mainnet payload
         executeMainnetPayload();
         // then use bridges to execute other chains' payloads
-        _relayMessageOverBridges();
+        _relayMessageOverBridges(allChains);
         // execute the foreign payloads (either by simulation or real execute)
         _executeForeignPayloads();
     }
 
     /// @dev bridge contracts themselves are stored on mainnet
-    function _relayMessageOverBridges() internal onChain(ChainIdUtils.Ethereum()) {
-        for (uint256 i = 0; i < allChains.length; i++) {
-            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+    function _relayMessageOverBridges(ChainId[] memory chains) internal onChain(ChainIdUtils.Ethereum()) {
+        for (uint256 i = 0; i < chains.length; i++) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[chains[i]].domain);
             for (uint256 j = 0; j < chainData[chainId].bridges.length ; j++){
                 _executeBridge(chainData[chainId].bridges[j]);
             }

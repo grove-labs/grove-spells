@@ -13,7 +13,7 @@ import { MainnetController } from "grove-alm-controller/src/MainnetController.so
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
+import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
@@ -273,10 +273,10 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_BASE_cctpTransferE2E() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Fix this test, relaying messages over bridges is not working correctly
-        vm.skip(true);
-
         executeAllPayloadsAndBridges();
+
+        ChainId[] memory chains = new ChainId[](1);
+        chains[0] = ChainIdUtils.Base();
 
         IERC20 baseUsdc     = IERC20(Base.USDC);
         IERC20 ethereumUsdc = IERC20(Ethereum.USDC);
@@ -298,11 +298,11 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
         selectChain(ChainIdUtils.Base());
 
-        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), 0);
+        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), 0, "Base ALM proxy should have no USDC before message relay");
 
-        _relayMessageOverBridges();
+        _relayMessageOverBridges(chains);
 
-        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), usdcAmount);
+        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), usdcAmount, "Base ALM proxy should have USDC after message relay");
 
         // --- Step 2: Bridge USDC back to mainnet and burn USDS
 
@@ -310,22 +310,22 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         baseController.transferUSDCToCCTP(usdcAmount, CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM);
         vm.stopPrank();
 
-        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), 0);
+        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), 0, "Base ALM proxy should have no USDC after transfer");
 
         selectChain(ChainIdUtils.Ethereum());
 
         uint256 usdcPrevBalance = ethereumUsdc.balanceOf(Ethereum.ALM_PROXY);
 
-        _relayMessageOverBridges();
+        _relayMessageOverBridges(chains);
 
-        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance + usdcAmount);
+        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance + usdcAmount, "Ethereum ALM proxy should have USDC after message relay");
 
         vm.startPrank(Ethereum.ALM_RELAYER);
         mainnetController.swapUSDCToUSDS(usdcAmount);
         mainnetController.burnUSDS(usdcAmount * 1e12);
         vm.stopPrank();
 
-        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance);
+        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance, "Ethereum ALM proxy should have no USDC after burn");
     }
 
 }
