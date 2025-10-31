@@ -50,7 +50,7 @@ contract CommonTestBase is SpellRunner {
 
   bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
-  address public constant USDC_MAINNET            = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address public constant USDC_MAINNET = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address public constant STAC_MAINNET = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
 
   address public constant EURE_GNOSIS  = 0xcB444e90D8198415266c6a2724b7900fb12FC56E;
