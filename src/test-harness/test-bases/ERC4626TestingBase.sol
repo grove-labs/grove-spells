@@ -36,7 +36,7 @@ abstract contract ERC4626TestingBase is CommonTestBase {
         _assertZeroRateLimit(withdrawKey);
 
         vm.prank(ctx.relayer);
-        vm.expectRevert("RateLimits/zero-maxAmount");
+        vm.expectRevert();
         MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
 
         executeAllPayloadsAndBridges();

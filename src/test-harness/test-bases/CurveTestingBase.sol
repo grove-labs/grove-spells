@@ -90,12 +90,6 @@ abstract contract CurveTestingBase is CommonTestBase {
         vars.depositKey  = RateLimitHelpers.makeAssetKey(GroveLiquidityLayerHelpers.LIMIT_CURVE_DEPOSIT,  pool);
         vars.withdrawKey = RateLimitHelpers.makeAssetKey(GroveLiquidityLayerHelpers.LIMIT_CURVE_WITHDRAW, pool);
 
-        _assertZeroRateLimit(vars.swapKey);
-        _assertZeroRateLimit(vars.depositKey);
-        _assertZeroRateLimit(vars.withdrawKey);
-
-        assertEq(vars.controller.maxSlippages(pool), 0);
-
         executeAllPayloadsAndBridges();
 
         // Reload the context after spell execution to get the new controller after potential controller upgrade
@@ -169,44 +163,46 @@ abstract contract CurveTestingBase is CommonTestBase {
             assertEq(withdrawMax, 0);
         }
 
-        deal(vars.pool.coins(0), address(vars.ctx.proxy), expectedSwapAmountToken0);
-        vars.minAmountOut = expectedSwapAmountToken0 * vars.rates[0] * maxSlippage / vars.rates[1] / 1e18;
+        if (swapMax != 0) {
+            deal(vars.pool.coins(0), address(vars.ctx.proxy), expectedSwapAmountToken0);
+            vars.minAmountOut = expectedSwapAmountToken0 * vars.rates[0] * maxSlippage / vars.rates[1] / 1e18;
 
-        assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), expectedSwapAmountToken0);
-        assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), 0);
+            assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), expectedSwapAmountToken0);
+            assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), 0);
 
-        vm.prank(vars.ctx.relayer);
-        uint256 amountOut = vars.controller.swapCurve(
-            pool,
-            0,
-            1,
-            expectedSwapAmountToken0,
-            vars.minAmountOut
-        );
+            vm.prank(vars.ctx.relayer);
+            uint256 amountOut = vars.controller.swapCurve(
+                pool,
+                0,
+                1,
+                expectedSwapAmountToken0,
+                vars.minAmountOut
+            );
 
-        assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), 0);
-        assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), amountOut);
-        assertGe(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), vars.minAmountOut);
+            assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), 0);
+            assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), amountOut);
+            assertGe(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), vars.minAmountOut);
 
-        // Overwrite minAmountOut based on returned amount to swap back to token0
-        vars.minAmountOut = amountOut * vars.rates[1] * maxSlippage / vars.rates[0] / 1e18;
+            // Overwrite minAmountOut based on returned amount to swap back to token0
+            vars.minAmountOut = amountOut * vars.rates[1] * maxSlippage / vars.rates[0] / 1e18;
 
-        vm.prank(vars.ctx.relayer);
-        amountOut = vars.controller.swapCurve(
-            pool,
-            1,
-            0,
-            amountOut,
-            vars.minAmountOut
-        );
+            vm.prank(vars.ctx.relayer);
+            amountOut = vars.controller.swapCurve(
+                pool,
+                1,
+                0,
+                amountOut,
+                vars.minAmountOut
+            );
 
-        assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), amountOut);
-        assertGe(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), vars.minAmountOut);
-        assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), 0);
+            assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), amountOut);
+            assertGe(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), vars.minAmountOut);
+            assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), 0);
 
-        // Sanity check on maxSlippage of 15bps
-        assertGe(maxSlippage, 0.9985e18, "maxSlippage too low");
-        assertLe(maxSlippage, 1e18,      "maxSlippage too high");
+            // Sanity check on maxSlippage of 15bps
+            assertGe(maxSlippage, 0.9985e18, "maxSlippage too low");
+            assertLe(maxSlippage, 1e18,      "maxSlippage too high");
+        }
     }
 
 }

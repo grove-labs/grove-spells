@@ -24,18 +24,26 @@ import { GrovePayloadBase } from "src/libraries/payloads/GrovePayloadBase.sol";
  */
 contract GroveBase_20251113 is GrovePayloadBase {
 
+    address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
+
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
+
+    uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
     function execute() external {
-        // // TODO: Item title
-        //   Forum : TODO: Forum link
+        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
         _initializeLiquidityLayer();
 
-        // TODO: Item title
-        //   Forum : TODO: Forum link
-        _onboardMorphoVault(); // TODO: Rename to more precisely describe the onboarding
+        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        _onboardGroveXSteakhouseUsdcMorphoVault();
 
-        // TODO: Item title
-        //   Forum : TODO: Forum link
-        _onboardCctpToEthereum(); // TODO: Rename to more precisely describe the onboarding
+        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        _onboardCctpTransfersToEthereum();
     }
 
     function _initializeLiquidityLayer() internal {
@@ -85,12 +93,24 @@ contract GroveBase_20251113 is GrovePayloadBase {
         );
     }
 
-    function _onboardMorphoVault() internal {
-        // TODO: Implement
+    function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
+        _onboardERC4626Vault({
+            vault        : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            depositMax   : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
+        });
     }
 
-    function _onboardCctpToEthereum() internal {
-        // TODO: Implement
+    function _onboardCctpTransfersToEthereum() internal {
+        // Mint recipient is set during the ForeignController initialization
+
+        bytes32 domainKey = RateLimitHelpers.makeDomainKey(
+            ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
+        );
+
+        IRateLimits(Base.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
+        IRateLimits(Base.ALM_RATE_LIMITS).setUnlimitedRateLimitData(ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP());
     }
 
 }

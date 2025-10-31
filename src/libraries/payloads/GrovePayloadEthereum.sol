@@ -189,4 +189,21 @@ abstract contract GrovePayloadEthereum {
         );
     }
 
+    function _onboardCurvePoolLP(
+        address pool,
+        uint256 depositMax,
+        uint256 depositSlope,
+        uint256 withdrawMax,
+        uint256 withdrawSlope
+    ) internal {
+        GroveLiquidityLayerHelpers.onboardCurvePoolLP(
+            Ethereum.ALM_RATE_LIMITS,
+            pool,
+            depositMax,
+            depositSlope,
+            withdrawMax,
+            withdrawSlope
+        );
+    }
+
 }

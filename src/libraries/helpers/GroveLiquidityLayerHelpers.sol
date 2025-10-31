@@ -29,6 +29,8 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CURVE_DEPOSIT       = keccak256("LIMIT_CURVE_DEPOSIT");
     bytes32 public constant LIMIT_CURVE_SWAP          = keccak256("LIMIT_CURVE_SWAP");
     bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
+    bytes32 public constant LIMIT_USDC_TO_CCTP        = keccak256("LIMIT_USDC_TO_CCTP");
+    bytes32 public constant LIMIT_USDC_TO_DOMAIN      = keccak256("LIMIT_USDC_TO_DOMAIN");
 
     uint16 public constant     ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
     uint16 public constant         BASE_DESTINATION_CENTRIFUGE_ID = 2;
@@ -140,6 +142,26 @@ library GroveLiquidityLayerHelpers {
     }
 
     /**********************************************************************************************/
+    /*** Centrifuge functions                                                                   ***/
+    /**********************************************************************************************/
+
+    /**
+     * @notice Set the rate limit for a Centrifuge cross-chain transfer
+     * @dev This will set the rate limit for a Centrifuge cross-chain transfer
+     */
+    function setCentrifugeCrosschainTransferRateLimit(
+        address rateLimits,
+        address centrifugeVault,
+        uint16  destinationCentrifugeId,
+        uint256 maxAmount,
+        uint256 slope
+    ) internal {
+        bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
+
+        IRateLimits(rateLimits).setRateLimitData(centrifugeCrosschainTransferKey, maxAmount, slope);
+    }
+
+    /**********************************************************************************************/
     /*** Curve functions                                                                        ***/
     /**********************************************************************************************/
 
@@ -187,24 +209,30 @@ library GroveLiquidityLayerHelpers {
         }
     }
 
-    /**********************************************************************************************/
-    /*** Centrifuge functions                                                                   ***/
-    /**********************************************************************************************/
-
     /**
-     * @notice Set the rate limit for a Centrifuge cross-chain transfer
-     * @dev This will set the rate limit for a Centrifuge cross-chain transfer
+     * @notice Onboard a Curve pool LP position management
+     * @dev This will set the rate limit for a Curve pool
+     *      for the deposit, and withdraw functions.
      */
-    function setCentrifugeCrosschainTransferRateLimit(
+    function onboardCurvePoolLP(
         address rateLimits,
-        address centrifugeVault,
-        uint16  destinationCentrifugeId,
-        uint256 maxAmount,
-        uint256 slope
+        address pool,
+        uint256 depositMax,
+        uint256 depositSlope,
+        uint256 withdrawMax,
+        uint256 withdrawSlope
     ) internal {
-        bytes32 centrifugeCrosschainTransferKey = keccak256(abi.encode(LIMIT_CENTRIFUGE_TRANSFER, centrifugeVault, destinationCentrifugeId));
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_CURVE_DEPOSIT,
+            pool
+        );
+        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_CURVE_WITHDRAW,
+            pool
+        );
 
-        IRateLimits(rateLimits).setRateLimitData(centrifugeCrosschainTransferKey, maxAmount, slope);
+        IRateLimits(rateLimits).setRateLimitData(depositKey,  depositMax,  depositSlope);
+        IRateLimits(rateLimits).setRateLimitData(withdrawKey, withdrawMax, withdrawSlope);
     }
 
     /**********************************************************************************************/

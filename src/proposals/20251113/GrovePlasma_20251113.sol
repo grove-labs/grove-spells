@@ -25,13 +25,13 @@ contract GrovePlasma_20251113 is GrovePayloadPlasma {
     uint256 internal constant AAVE_CORE_USDT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     function execute() external {
-        // // TODO: Item title
-        //   Forum : TODO: Forum link
+        // [Plasma] Grove - Onboard Aave v3 USDT0
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
         _initializeLiquidityLayer();
 
-        // TODO: Item title
-        //   Forum : TODO: Forum link
-        _onboardAave(); // TODO: Rename to more precisely describe the onboarding
+        // [Plasma] Grove - Onboard Aave v3 USDT0
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        _onboardAaveCoreUsdt();
     }
 
     function _initializeLiquidityLayer() internal {
@@ -74,7 +74,7 @@ contract GrovePlasma_20251113 is GrovePayloadPlasma {
         );
     }
 
-    function _onboardAave() internal {
+    function _onboardAaveCoreUsdt() internal {
         _onboardAaveToken({
             token        : AAVE_CORE_USDT,
             depositMax   : AAVE_CORE_USDT_DEPOSIT_MAX,

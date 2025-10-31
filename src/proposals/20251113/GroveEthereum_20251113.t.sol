@@ -20,13 +20,39 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
     address internal constant MAINNET_SECURITIZE_DEPOSIT_WALLET = 0x51e4C4A356784D0B3b698BFB277C626b2b9fe178;
     address internal constant MAINNET_SECURITIZE_REDEEM_WALLET  = 0xbb543C77436645C8b95B64eEc39E3C0d48D4842b;
-    address internal constant SECURITIZE_STAC_CLO               = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
+    address internal constant MAINNET_SECURITIZE_STAC_CLO       = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
+
+    address internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
+
+    address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
     address internal constant PLASMA_AAVE_CORE_USDT = 0x5D72a9d9A9510Cd8cBdBA12aC62593A58930a948;
 
     uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT  = 50_000_000e6;
     uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
+    uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
+    uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
+
+    uint256 internal constant MAINNET_EXPECTED_SWAP_AMOUNT_TOKEN0    = 50_000e6;
+    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_MAX_SLIPPAGE  = 0.9990e18;
+    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_SWAP_MAX      = 20_000_000e18;
+    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_SWAP_SLOPE    = 100_000_000e18 / uint256(1 days);
+    uint256 internal constant MAINNET_EXPECTED_DEPOSIT_AMOUNT_TOKEN0 = 1_000e6;
+    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e6;
+    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
+
+    uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
+    uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
+    uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
+
+    uint256 internal constant BASE_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant BASE_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant PLASMA_AAVE_CORE_USDT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant PLASMA_AAVE_CORE_USDT_DEPOSIT_MAX   = 20_000_000e6;
@@ -42,12 +68,16 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         deployPayloads();
     }
 
-    function test_ETHEREUM_onboardMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
+    function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
+        _testERC4626Onboarding({
+            vault                 : MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            expectedDepositAmount : MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT,
+            depositMax            : MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope          : MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
+        });
     }
 
-    function test_ETHEREUM_onboardSecuritizeDeposits() public onChain(ChainIdUtils.Ethereum()) {
+    function test_ETHEREUM_onboardSecuritizeStacCloDeposits() public onChain(ChainIdUtils.Ethereum()) {
         _testDirectUsdcTransferOnboarding({
             usdc                  : Ethereum.USDC,
             destination           : MAINNET_SECURITIZE_DEPOSIT_WALLET,
@@ -57,10 +87,10 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         });
     }
 
-    function test_ETHEREUM_onboardSecuritizeRedemptions() public onChain(ChainIdUtils.Ethereum()) {
+    function test_ETHEREUM_onboardSecuritizeStacCloRedemptions() public onChain(ChainIdUtils.Ethereum()) {
         _assertZeroRateLimit(RateLimitHelpers.makeAssetDestinationKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            SECURITIZE_STAC_CLO,
+            MAINNET_SECURITIZE_STAC_CLO,
             MAINNET_SECURITIZE_REDEEM_WALLET
         ));
 
@@ -68,21 +98,40 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
         _assertUnlimitedRateLimit(RateLimitHelpers.makeAssetDestinationKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            SECURITIZE_STAC_CLO,
+            MAINNET_SECURITIZE_STAC_CLO,
             MAINNET_SECURITIZE_REDEEM_WALLET
         ));
 
-        // TODO: Try fixing. Doesn't work because SECURITIZE_STAC_CLO doesn't work with deal2
+        // TODO: Try fixing. Doesn't work because MAINNET_SECURITIZE_STAC_CLO doesn't work with deal2
 
         // _testUnlimitedDirectTokenTransferOnboarding({
-        //     token                 : SECURITIZE_STAC_CLO,
+        //     token                 : MAINNET_SECURITIZE_STAC_CLO,
         //     destination           : MAINNET_SECURITIZE_REDEEM_WALLET,
         //     expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT
         // });
     }
 
-    function test_ETHEREUM_onboardCurvePool() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
+    function test_ETHEREUM_onboardCurvePoolRlusdUsdcLP() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO: Fix this test
+        revert("Work in progress");
+
+        // Testing full onboarding, including swap configuration introduced in the previous proposal
+        _testCurveOnboarding({
+            pool                        : Ethereum.CURVE_RLUSD_USDC,
+            expectedDepositAmountToken0 : MAINNET_EXPECTED_DEPOSIT_AMOUNT_TOKEN0,
+            expectedSwapAmountToken0    : 0, // MAINNET_EXPECTED_SWAP_AMOUNT_TOKEN0,   // TODO Use proper values after previous proposal is executed
+            maxSlippage                 : 0, // MAINNET_CURVE_RLUSD_USDC_MAX_SLIPPAGE, // TODO Use proper values after previous proposal is executed
+            swapMax                     : 0, // MAINNET_CURVE_RLUSD_USDC_SWAP_MAX,     // TODO Use proper values after previous proposal is executed
+            swapSlope                   : 0, // MAINNET_CURVE_RLUSD_USDC_SWAP_SLOPE,   // TODO Use proper values after previous proposal is executed
+            depositMax                  : MAINNET_CURVE_RLUSD_USDC_DEPOSIT_MAX,
+            depositSlope                : MAINNET_CURVE_RLUSD_USDC_DEPOSIT_SLOPE,
+            withdrawMax                 : type(uint256).max,
+            withdrawSlope               : 0
+        });
+    }
+
+    function test_ETHEREUM_onboardCctpTransfersToBase() public onChain(ChainIdUtils.Ethereum()) {
+        revert("Not implemented");
         // TODO: Implement
     }
 
@@ -119,8 +168,17 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         );
     }
 
-    function test_BASE_onboardMorphoVault() public onChain(ChainIdUtils.Base()) {
-        vm.skip(true);
+    function test_BASE_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Base()) {
+        _testERC4626Onboarding({
+            vault                 : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            expectedDepositAmount : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT,
+            depositMax            : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope          : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
+        });
+    }
+
+    function test_BASE_onboardCctpTransfersToEthereum() public onChain(ChainIdUtils.Base()) {
+        revert("Not implemented");
         // TODO: Implement
     }
 
@@ -158,13 +216,18 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         );
     }
 
-    function test_PLASMA_onboardAave() public onChain(ChainIdUtils.Plasma()) {
+    function test_PLASMA_onboardAaveCoreUsdt() public onChain(ChainIdUtils.Plasma()) {
         _testAaveOnboarding({
             aToken                : PLASMA_AAVE_CORE_USDT,
             expectedDepositAmount : PLASMA_AAVE_CORE_USDT_TEST_DEPOSIT,
             depositMax            : PLASMA_AAVE_CORE_USDT_DEPOSIT_MAX,
             depositSlope          : PLASMA_AAVE_CORE_USDT_DEPOSIT_SLOPE
         });
+    }
+
+    function test_ETHEREUM_BASE_cctpTransferE2E() public onChain(ChainIdUtils.Ethereum()) {
+        revert("Not implemented");
+        // TODO: Implement
     }
 
 }
