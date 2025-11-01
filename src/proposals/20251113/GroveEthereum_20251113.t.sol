@@ -61,8 +61,8 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     uint256 internal constant MAINNET_CURVE_RLUSD_USDC_SWAP_MAX      = 20_000_000e18;
     uint256 internal constant MAINNET_CURVE_RLUSD_USDC_SWAP_SLOPE    = 100_000_000e18 / uint256(1 days);
     uint256 internal constant MAINNET_EXPECTED_DEPOSIT_AMOUNT_TOKEN0 = 1_000e6;
-    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e6;
-    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
+    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e18;
+    uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);

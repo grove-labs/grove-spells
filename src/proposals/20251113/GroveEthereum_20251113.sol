@@ -33,8 +33,8 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
-    uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e6;
-    uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e6 / uint256(1 days);
+    uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e18;
+    uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
