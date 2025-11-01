@@ -133,8 +133,8 @@ abstract contract CurveTestingBase is CommonTestBase {
 
             // Go slightly above maxSlippage due to rounding
             vars.withdrawAmounts = new uint256[](2);
-            vars.withdrawAmounts[0] = vars.lpBalance * vars.pool.balances(0) * (maxSlippage + 0.001e18) / vars.pool.get_virtual_price() / vars.pool.totalSupply();
-            vars.withdrawAmounts[1] = vars.lpBalance * vars.pool.balances(1) * (maxSlippage + 0.001e18) / vars.pool.get_virtual_price() / vars.pool.totalSupply();
+            vars.withdrawAmounts[0] = vars.lpBalance * vars.pool.balances(0) * (maxSlippage + 0.001e18) / vars.pool.totalSupply() / 1e18;
+            vars.withdrawAmounts[1] = vars.lpBalance * vars.pool.balances(1) * (maxSlippage + 0.001e18) / vars.pool.totalSupply() / 1e18;
 
             vm.prank(vars.ctx.relayer);
             vars.controller.removeLiquidityCurve(
