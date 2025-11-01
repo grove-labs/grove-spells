@@ -20,11 +20,20 @@ import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidity
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
+// TODO: Remove this once the previous proposal is executed
+import { IExecutor } from 'lib/grove-gov-relay/src/interfaces/IExecutor.sol';
+
+import { console } from "forge-std/console.sol";
+import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
+
 interface AutoLineLike {
     function exec(bytes32) external;
 }
 
 contract GroveEthereum_20251030_Test is GroveTestBase {
+
+    // TODO: Remove this once the previous proposal is executed
+    address internal constant PREVIOUS_ETHEREUM_PAYLOAD = 0x8b4A92f8375ef89165AeF4639E640e077d7C656b;
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
@@ -76,6 +85,16 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     function setUp() public {
         setupDomains("2025-10-30T12:00:00Z");
 
+        // TODO: Remove this once the previous proposal is executed
+        IExecutor executor = IExecutor(Ethereum.GROVE_PROXY);
+        vm.prank(Ethereum.PAUSE_PROXY);
+        (bool success,) = address(executor).call(abi.encodeWithSignature(
+            'exec(address,bytes)',
+            PREVIOUS_ETHEREUM_PAYLOAD,
+            abi.encodeWithSignature('execute()')
+        ));
+        require(success, "FAILED TO EXECUTE PREVIOUS PAYLOAD");
+
         deployPayloads();
     }
 
@@ -124,16 +143,16 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
     function test_ETHEREUM_onboardCurvePoolRlusdUsdcLP() public onChain(ChainIdUtils.Ethereum()) {
         // TODO: Fix this test
-        vm.skip(true);
+        // vm.skip(true);
 
         // Testing full onboarding, including swap configuration introduced in the previous proposal
         _testCurveOnboarding({
             pool                        : Ethereum.CURVE_RLUSD_USDC,
             expectedDepositAmountToken0 : MAINNET_EXPECTED_DEPOSIT_AMOUNT_TOKEN0,
-            expectedSwapAmountToken0    : 0, // MAINNET_EXPECTED_SWAP_AMOUNT_TOKEN0,   // TODO Use proper values after previous proposal is executed
-            maxSlippage                 : 0, // MAINNET_CURVE_RLUSD_USDC_MAX_SLIPPAGE, // TODO Use proper values after previous proposal is executed
-            swapMax                     : 0, // MAINNET_CURVE_RLUSD_USDC_SWAP_MAX,     // TODO Use proper values after previous proposal is executed
-            swapSlope                   : 0, // MAINNET_CURVE_RLUSD_USDC_SWAP_SLOPE,   // TODO Use proper values after previous proposal is executed
+            expectedSwapAmountToken0    : MAINNET_EXPECTED_SWAP_AMOUNT_TOKEN0,   // TODO Use proper values after previous proposal is executed
+            maxSlippage                 : MAINNET_CURVE_RLUSD_USDC_MAX_SLIPPAGE, // TODO Use proper values after previous proposal is executed
+            swapMax                     : MAINNET_CURVE_RLUSD_USDC_SWAP_MAX,     // TODO Use proper values after previous proposal is executed
+            swapSlope                   : MAINNET_CURVE_RLUSD_USDC_SWAP_SLOPE,   // TODO Use proper values after previous proposal is executed
             depositMax                  : MAINNET_CURVE_RLUSD_USDC_DEPOSIT_MAX,
             depositSlope                : MAINNET_CURVE_RLUSD_USDC_DEPOSIT_SLOPE,
             withdrawMax                 : type(uint256).max,
