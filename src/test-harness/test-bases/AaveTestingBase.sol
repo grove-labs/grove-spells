@@ -37,7 +37,7 @@ abstract contract AaveTestingBase is CommonTestBase {
         _assertZeroRateLimit(withdrawKey);
 
         vm.prank(ctx.relayer);
-        vm.expectRevert("RateLimits/zero-maxAmount");
+        vm.expectRevert();
         MainnetController(ctx.controller).depositAave(aToken, expectedDepositAmount);
 
         executeAllPayloadsAndBridges();

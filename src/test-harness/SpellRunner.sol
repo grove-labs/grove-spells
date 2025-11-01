@@ -132,7 +132,7 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Base()].domain      = getChain("base").createFork(blocks[2]);
 
         uint256[] memory hardcodedBlocks = new uint256[](2);
-        hardcodedBlocks[0] = 4738720;  // Plasma
+        hardcodedBlocks[0] = 4917350;  // Plasma
         hardcodedBlocks[1] = 30242550; // Plume
 
         chainData[ChainIdUtils.Plasma()].domain = getChain("plasma").createFork(hardcodedBlocks[0]);
@@ -247,15 +247,15 @@ abstract contract SpellRunner is Test {
         // only execute mainnet payload
         executeMainnetPayload();
         // then use bridges to execute other chains' payloads
-        _relayMessageOverBridges();
+        _relayMessageOverBridges(allChains);
         // execute the foreign payloads (either by simulation or real execute)
         _executeForeignPayloads();
     }
 
     /// @dev bridge contracts themselves are stored on mainnet
-    function _relayMessageOverBridges() internal onChain(ChainIdUtils.Ethereum()) {
-        for (uint256 i = 0; i < allChains.length; i++) {
-            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+    function _relayMessageOverBridges(ChainId[] memory chains) internal onChain(ChainIdUtils.Ethereum()) {
+        for (uint256 i = 0; i < chains.length; i++) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[chains[i]].domain);
             for (uint256 j = 0; j < chainData[chainId].bridges.length ; j++){
                 _executeBridge(chainData[chainId].bridges[j]);
             }
@@ -283,7 +283,6 @@ abstract contract SpellRunner is Test {
             ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
             if (chainId == ChainIdUtils.Ethereum()) continue;  // Don't execute mainnet
 
-            // UNCOMMENT AFTER OTHER DOMAINS ARE SET UP
             address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
             IExecutor executor = chainData[chainId].executor;
             if (mainnetSpellPayload != address(0)) {
