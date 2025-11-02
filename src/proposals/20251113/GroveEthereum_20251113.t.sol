@@ -23,9 +23,6 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 // TODO: Remove this once the previous proposal is executed
 import { IExecutor } from 'lib/grove-gov-relay/src/interfaces/IExecutor.sol';
 
-import { console } from "forge-std/console.sol";
-import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
-
 interface AutoLineLike {
     function exec(bytes32) external;
 }
