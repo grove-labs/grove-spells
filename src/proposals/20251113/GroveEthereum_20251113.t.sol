@@ -73,6 +73,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     function setUp() public {
         setupDomains("2025-10-30T12:00:00Z");
 
+       // TODO: Remove this once the previous proposal is executed
        _executePreviousPayload();
 
         deployPayloads();
