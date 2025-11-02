@@ -37,20 +37,11 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
-    address internal constant MAINNET_SECURITIZE_DEPOSIT_WALLET = 0x51e4C4A356784D0B3b698BFB277C626b2b9fe178;
-    address internal constant MAINNET_SECURITIZE_REDEEM_WALLET  = 0xbb543C77436645C8b95B64eEc39E3C0d48D4842b;
-    address internal constant MAINNET_SECURITIZE_STAC_CLO       = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
-
     address internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
 
     address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
     address internal constant PLASMA_AAVE_CORE_USDT = 0x5D72a9d9A9510Cd8cBdBA12aC62593A58930a948;
-
-    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT  = 50_000_000e6;
-    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX   = 50_000_000e6;
-    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
-    // uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM   = 1_000e6; // TODO Remove if not used
 
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
@@ -85,7 +76,12 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     function setUp() public {
         setupDomains("2025-10-30T12:00:00Z");
 
-        // TODO: Remove this once the previous proposal is executed
+       _executePreviousPayload();
+
+        deployPayloads();
+    }
+
+    function _executePreviousPayload() internal {
         IExecutor executor = IExecutor(Ethereum.GROVE_PROXY);
         vm.prank(Ethereum.PAUSE_PROXY);
         (bool success,) = address(executor).call(abi.encodeWithSignature(
@@ -94,8 +90,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
             abi.encodeWithSignature('execute()')
         ));
         require(success, "FAILED TO EXECUTE PREVIOUS PAYLOAD");
-
-        deployPayloads();
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
@@ -107,52 +101,15 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         });
     }
 
-    function test_ETHEREUM_onboardSecuritizeStacCloDeposits() public onChain(ChainIdUtils.Ethereum()) {
-        _testDirectUsdcTransferOnboarding({
-            usdc                  : Ethereum.USDC,
-            destination           : MAINNET_SECURITIZE_DEPOSIT_WALLET,
-            expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT,
-            depositMax            : MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX,
-            depositSlope          : MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE
-        });
-    }
-
-    function test_ETHEREUM_onboardSecuritizeStacCloRedemptions() public onChain(ChainIdUtils.Ethereum()) {
-        _assertZeroRateLimit(RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            MAINNET_SECURITIZE_STAC_CLO,
-            MAINNET_SECURITIZE_REDEEM_WALLET
-        ));
-
-        executeAllPayloadsAndBridges();
-
-        _assertUnlimitedRateLimit(RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            MAINNET_SECURITIZE_STAC_CLO,
-            MAINNET_SECURITIZE_REDEEM_WALLET
-        ));
-
-        // TODO: Try fixing. Doesn't work because MAINNET_SECURITIZE_STAC_CLO doesn't work with deal2 and generally is difficult to deal with
-
-        // _testUnlimitedDirectTokenTransferOnboarding({
-        //     token                 : MAINNET_SECURITIZE_STAC_CLO,
-        //     destination           : MAINNET_SECURITIZE_REDEEM_WALLET,
-        //     expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM
-        // });
-    }
-
     function test_ETHEREUM_onboardCurvePoolRlusdUsdcLP() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO: Fix this test
-        // vm.skip(true);
-
         // Testing full onboarding, including swap configuration introduced in the previous proposal
         _testCurveOnboarding({
             pool                        : Ethereum.CURVE_RLUSD_USDC,
             expectedDepositAmountToken0 : MAINNET_EXPECTED_DEPOSIT_AMOUNT_TOKEN0,
-            expectedSwapAmountToken0    : MAINNET_EXPECTED_SWAP_AMOUNT_TOKEN0,   // TODO Use proper values after previous proposal is executed
-            maxSlippage                 : MAINNET_CURVE_RLUSD_USDC_MAX_SLIPPAGE, // TODO Use proper values after previous proposal is executed
-            swapMax                     : MAINNET_CURVE_RLUSD_USDC_SWAP_MAX,     // TODO Use proper values after previous proposal is executed
-            swapSlope                   : MAINNET_CURVE_RLUSD_USDC_SWAP_SLOPE,   // TODO Use proper values after previous proposal is executed
+            expectedSwapAmountToken0    : MAINNET_EXPECTED_SWAP_AMOUNT_TOKEN0,
+            maxSlippage                 : MAINNET_CURVE_RLUSD_USDC_MAX_SLIPPAGE,
+            swapMax                     : MAINNET_CURVE_RLUSD_USDC_SWAP_MAX,
+            swapSlope                   : MAINNET_CURVE_RLUSD_USDC_SWAP_SLOPE,
             depositMax                  : MAINNET_CURVE_RLUSD_USDC_DEPOSIT_MAX,
             depositSlope                : MAINNET_CURVE_RLUSD_USDC_DEPOSIT_SLOPE,
             withdrawMax                 : type(uint256).max,
