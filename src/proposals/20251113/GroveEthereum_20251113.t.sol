@@ -28,11 +28,19 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
+    address internal constant MAINNET_SECURITIZE_DEPOSIT_WALLET = 0x51e4C4A356784D0B3b698BFB277C626b2b9fe178;
+    address internal constant MAINNET_SECURITIZE_REDEEM_WALLET  = 0xbb543C77436645C8b95B64eEc39E3C0d48D4842b;
+    address internal constant MAINNET_SECURITIZE_STAC_CLO       = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
+
     address internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
 
     address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
     address internal constant PLASMA_AAVE_CORE_USDT = 0x5D72a9d9A9510Cd8cBdBA12aC62593A58930a948;
+
+    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT  = 50_000_000e6;
+    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX   = 50_000_000e6;
+    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
@@ -77,6 +85,40 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
             depositMax            : MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
             depositSlope          : MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
         });
+    }
+
+    function test_ETHEREUM_onboardSecuritizeStacCloDeposits() public onChain(ChainIdUtils.Ethereum()) {
+        _testDirectUsdcTransferOnboarding({
+            usdc                  : Ethereum.USDC,
+            destination           : MAINNET_SECURITIZE_DEPOSIT_WALLET,
+            expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT,
+            depositMax            : MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX,
+            depositSlope          : MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE
+        });
+    }
+
+    function test_ETHEREUM_onboardSecuritizeStacCloRedemptions() public onChain(ChainIdUtils.Ethereum()) {
+        _assertZeroRateLimit(RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            MAINNET_SECURITIZE_STAC_CLO,
+            MAINNET_SECURITIZE_REDEEM_WALLET
+        ));
+
+        executeAllPayloadsAndBridges();
+
+        _assertUnlimitedRateLimit(RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            MAINNET_SECURITIZE_STAC_CLO,
+            MAINNET_SECURITIZE_REDEEM_WALLET
+        ));
+
+        // TODO: Try fixing. Doesn't work because MAINNET_SECURITIZE_STAC_CLO doesn't work with deal2 and generally is difficult to deal with
+
+        // _testUnlimitedDirectTokenTransferOnboarding({
+        //     token                 : MAINNET_SECURITIZE_STAC_CLO,
+        //     destination           : MAINNET_SECURITIZE_REDEEM_WALLET,
+        //     expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM
+        // });
     }
 
     function test_ETHEREUM_onboardCurvePoolRlusdUsdcLP() public onChain(ChainIdUtils.Ethereum()) {
