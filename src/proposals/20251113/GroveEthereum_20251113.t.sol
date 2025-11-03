@@ -20,17 +20,11 @@ import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidity
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
-// TODO: Remove this once the previous proposal is executed
-import { IExecutor } from 'lib/grove-gov-relay/src/interfaces/IExecutor.sol';
-
 interface AutoLineLike {
     function exec(bytes32) external;
 }
 
 contract GroveEthereum_20251030_Test is GroveTestBase {
-
-    // TODO: Remove this once the previous proposal is executed
-    address internal constant PREVIOUS_ETHEREUM_PAYLOAD = 0x8b4A92f8375ef89165AeF4639E640e077d7C656b;
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
@@ -71,23 +65,9 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-10-30T12:00:00Z");
-
-       // TODO: Remove this once the previous proposal is executed
-       _executePreviousPayload();
+        setupDomains("2025-11-03T14:41:00Z");
 
         deployPayloads();
-    }
-
-    function _executePreviousPayload() internal {
-        IExecutor executor = IExecutor(Ethereum.GROVE_PROXY);
-        vm.prank(Ethereum.PAUSE_PROXY);
-        (bool success,) = address(executor).call(abi.encodeWithSignature(
-            'exec(address,bytes)',
-            PREVIOUS_ETHEREUM_PAYLOAD,
-            abi.encodeWithSignature('execute()')
-        ));
-        require(success, "FAILED TO EXECUTE PREVIOUS PAYLOAD");
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
