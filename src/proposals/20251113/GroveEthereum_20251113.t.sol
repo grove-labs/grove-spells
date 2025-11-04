@@ -38,10 +38,10 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
     address internal constant PLASMA_AAVE_CORE_USDT = 0x5D72a9d9A9510Cd8cBdBA12aC62593A58930a948;
 
-    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT  = 50_000_000e6;
     uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
-    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM   = 50_000_000e6;
+    uint256 internal constant MAINNET_SECURITIZE_TEST_DEPOSIT_AMOUNT   = 50_000_000e6;
+    uint256 internal constant MAINNET_SECURITIZE_TEST_REDEEM_AMOUNT    = 50_000_000e6;
 
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
@@ -96,7 +96,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         _testDirectUsdcTransferOnboarding({
             usdc                  : Ethereum.USDC,
             destination           : MAINNET_SECURITIZE_DEPOSIT_WALLET,
-            expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT,
+            expectedDepositAmount : MAINNET_SECURITIZE_TEST_DEPOSIT_AMOUNT,
             depositMax            : MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX,
             depositSlope          : MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE
         });
@@ -106,7 +106,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         _testUnlimitedDirectTokenTransferOnboarding({
             token                 : MAINNET_SECURITIZE_STAC_CLO,
             destination           : MAINNET_SECURITIZE_REDEEM_WALLET,
-            expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM
+            expectedDepositAmount : MAINNET_SECURITIZE_TEST_REDEEM_AMOUNT
         });
     }
 
