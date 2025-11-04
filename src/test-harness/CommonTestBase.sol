@@ -76,6 +76,7 @@ contract CommonTestBase is SpellRunner {
       }
       // Securitize STAC
       if (asset == STAC_MAINNET) {
+        // TODO: Change transfer to issuance
         vm.prank(0xf8b24c85D5b35906E09c0d4Dd1D7f6A454532e0c);
         IERC20(asset).transfer(user, amount);
         return true;

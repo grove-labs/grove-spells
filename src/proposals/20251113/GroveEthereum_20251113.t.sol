@@ -38,9 +38,10 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
     address internal constant PLASMA_AAVE_CORE_USDT = 0x5D72a9d9A9510Cd8cBdBA12aC62593A58930a948;
 
-    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT  = 50_000_000e6;
+    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_DEPOSIT  = 25_000_000e6;
     uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM   = 2_500e6;
 
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant MAINNET_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
@@ -73,7 +74,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-11-03T14:41:00Z");
+        setupDomains("2025-11-04T13:37:00Z");
 
         deployPayloads();
     }
@@ -98,27 +99,11 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardSecuritizeStacCloRedemptions() public onChain(ChainIdUtils.Ethereum()) {
-        _assertZeroRateLimit(RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            MAINNET_SECURITIZE_STAC_CLO,
-            MAINNET_SECURITIZE_REDEEM_WALLET
-        ));
-
-        executeAllPayloadsAndBridges();
-
-        _assertUnlimitedRateLimit(RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            MAINNET_SECURITIZE_STAC_CLO,
-            MAINNET_SECURITIZE_REDEEM_WALLET
-        ));
-
-        // TODO: Try fixing. Doesn't work because MAINNET_SECURITIZE_STAC_CLO doesn't work with deal2 and generally is difficult to deal with
-
-        // _testUnlimitedDirectTokenTransferOnboarding({
-        //     token                 : MAINNET_SECURITIZE_STAC_CLO,
-        //     destination           : MAINNET_SECURITIZE_REDEEM_WALLET,
-        //     expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM
-        // });
+        _testUnlimitedDirectTokenTransferOnboarding({
+            token                 : MAINNET_SECURITIZE_STAC_CLO,
+            destination           : MAINNET_SECURITIZE_REDEEM_WALLET,
+            expectedDepositAmount : MAINNET_SECURITIZE_DEPOSIT_TEST_REDEEM
+        });
     }
 
     function test_ETHEREUM_onboardCurvePoolRlusdUsdcLP() public onChain(ChainIdUtils.Ethereum()) {
@@ -282,7 +267,7 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
         // --- Step 1: Mint and bridge 10m USDC to Base ---
 
-        uint256 usdcAmount = 50_000_000e6;
+        uint256 usdcAmount = 25_000_000e6;
 
         AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
 
