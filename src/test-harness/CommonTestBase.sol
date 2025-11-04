@@ -19,6 +19,10 @@ import { ChainId, ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
+interface ISecuritizeAssetLike {
+  function issueTokens(address to, uint256 amount) external;
+}
+
 struct GroveLiquidityLayerContext {
     address     admin;
     address     controller;
@@ -50,8 +54,9 @@ contract CommonTestBase is SpellRunner {
 
   bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
-  address public constant USDC_MAINNET = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-  address public constant STAC_MAINNET = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
+  address public constant USDC_MAINNET  = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address public constant STAC_MAINNET  = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
+  address public constant BUIDL_MAINNET = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
 
   address public constant EURE_GNOSIS  = 0xcB444e90D8198415266c6a2724b7900fb12FC56E;
   address public constant USDCE_GNOSIS = 0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0;
@@ -76,9 +81,14 @@ contract CommonTestBase is SpellRunner {
       }
       // Securitize STAC
       if (asset == STAC_MAINNET) {
-        // TODO: Change transfer to issuance
-        vm.prank(0xf8b24c85D5b35906E09c0d4Dd1D7f6A454532e0c);
-        IERC20(asset).transfer(user, amount);
+        vm.prank(0x22F53B51E4272F954f25BC377B1b759c6C5A528B);
+        ISecuritizeAssetLike(asset).issueTokens(user, amount);
+        return true;
+      }
+      // Securitize BUIDL
+      if (asset == BUIDL_MAINNET) {
+        vm.prank(0xe01605f6b6dC593b7d2917F4a0940db2A625b09e);
+        ISecuritizeAssetLike(asset).issueTokens(user, amount);
         return true;
       }
     } else if (block.chainid == ChainIds.GNOSIS) {
