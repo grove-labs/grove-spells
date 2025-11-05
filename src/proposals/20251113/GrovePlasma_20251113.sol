@@ -21,7 +21,9 @@ contract GrovePlasma_20251113 is GrovePayloadPlasma {
 
     address internal constant AAVE_CORE_USDT = 0x5D72a9d9A9510Cd8cBdBA12aC62593A58930a948;
 
+    // Before: 0, After: 20,000,000
     uint256 internal constant AAVE_CORE_USDT_DEPOSIT_MAX   = 20_000_000e6;
+    // Before: 0, After: 20,000,000/day
     uint256 internal constant AAVE_CORE_USDT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     function execute() external {
