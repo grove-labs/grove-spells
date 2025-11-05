@@ -40,7 +40,7 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
         _onboardGroveXSteakhouseUsdcMorphoVault();
 
         // [Ethereum] Grove - Onboard Securitize Tokenized AAA CLO Fund (STAC)
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-ethereum-grove-onboard-curve-rlusdusdc-pool-lp-deposits-7
         _onboardSecuritizeStac();
 
         // [Ethereum] Grove - Onboard Curve RLUSD/USDC Pool LP Deposits
