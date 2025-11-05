@@ -3,8 +3,6 @@ pragma solidity 0.8.25;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
-
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Base }     from "lib/grove-address-registry/src/Base.sol";
 import { Plasma }   from "lib/grove-address-registry/src/Plasma.sol";
@@ -55,15 +53,9 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e18;
     uint256 internal constant MAINNET_CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
-    uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
     uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
     uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
-
-    uint256 internal constant BASE_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
-    uint256 internal constant BASE_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant PLASMA_AAVE_CORE_USDT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant PLASMA_AAVE_CORE_USDT_DEPOSIT_MAX   = 20_000_000e6;
@@ -126,29 +118,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         });
     }
 
-    function test_ETHEREUM_onboardCctpTransfersToBase() public onChain(ChainIdUtils.Ethereum()) {
-        bytes32 generalCctpKey  = MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
-        bytes32 baseCctpKey = RateLimitHelpers.makeDomainKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE
-        );
-
-        _assertUnlimitedRateLimit(generalCctpKey); // Set in the GroveEthereum_20250807 proposal
-        _assertRateLimit(baseCctpKey, 0, 0);
-
-        assertEq(MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE), bytes32(0));
-
-        executeAllPayloadsAndBridges();
-
-        _assertUnlimitedRateLimit(generalCctpKey);
-        _assertRateLimit(baseCctpKey, MAINNET_CCTP_RATE_LIMIT_MAX, MAINNET_CCTP_RATE_LIMIT_SLOPE);
-
-        assertEq(
-            MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
-            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
-        );
-    }
-
     function test_BASE_governanceDeployment() public onChain(ChainIdUtils.Base()) {
         _verifyForeignDomainExecutorDeployment({
             _executor : Base.GROVE_EXECUTOR,
@@ -189,29 +158,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
             depositMax            : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
             depositSlope          : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
         });
-    }
-
-    function test_BASE_onboardCctpTransfersToEthereum() public onChain(ChainIdUtils.Base()) {
-        bytes32 generalCctpKey = ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
-        bytes32 ethereumCctpKey = RateLimitHelpers.makeDomainKey(
-            ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
-        );
-
-        _assertRateLimit(generalCctpKey,  0, 0);
-        _assertRateLimit(ethereumCctpKey, 0, 0);
-
-        assertEq(ForeignController(Base.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM), bytes32(0));
-
-        executeAllPayloadsAndBridges();
-
-        _assertUnlimitedRateLimit(generalCctpKey);
-        _assertRateLimit(ethereumCctpKey, BASE_CCTP_RATE_LIMIT_MAX, BASE_CCTP_RATE_LIMIT_SLOPE);
-
-        assertEq(
-            ForeignController(Base.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
-            CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
-        );
     }
 
     function test_PLASMA_governanceDeployment() public onChain(ChainIdUtils.Plasma()) {
@@ -255,60 +201,6 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
             depositMax            : PLASMA_AAVE_CORE_USDT_DEPOSIT_MAX,
             depositSlope          : PLASMA_AAVE_CORE_USDT_DEPOSIT_SLOPE
         });
-    }
-
-    function test_ETHEREUM_BASE_cctpTransferE2E() public onChain(ChainIdUtils.Ethereum()) {
-        executeAllPayloadsAndBridges();
-
-        ChainId[] memory chains = new ChainId[](1);
-        chains[0] = ChainIdUtils.Base();
-
-        IERC20 baseUsdc     = IERC20(Base.USDC);
-        IERC20 ethereumUsdc = IERC20(Ethereum.USDC);
-
-        MainnetController mainnetController = MainnetController(Ethereum.ALM_CONTROLLER);
-        ForeignController baseController    = ForeignController(Base.ALM_CONTROLLER);
-
-        // --- Step 1: Mint and bridge 10m USDC to Base ---
-
-        uint256 usdcAmount = 50_000_000e6;
-
-        vm.startPrank(Ethereum.ALM_RELAYER);
-        mainnetController.mintUSDS(usdcAmount * 1e12);
-        mainnetController.swapUSDSToUSDC(usdcAmount);
-        mainnetController.transferUSDCToCCTP(usdcAmount, CCTPForwarder.DOMAIN_ID_CIRCLE_BASE);
-        vm.stopPrank();
-
-        selectChain(ChainIdUtils.Base());
-
-        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), 0, "Base ALM proxy should have no USDC before message relay");
-
-        _relayMessageOverBridges(chains);
-
-        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), usdcAmount, "Base ALM proxy should have USDC after message relay");
-
-        // --- Step 2: Bridge USDC back to mainnet and burn USDS
-
-        vm.startPrank(Base.ALM_RELAYER);
-        baseController.transferUSDCToCCTP(usdcAmount, CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM);
-        vm.stopPrank();
-
-        assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), 0, "Base ALM proxy should have no USDC after transfer");
-
-        selectChain(ChainIdUtils.Ethereum());
-
-        uint256 usdcPrevBalance = ethereumUsdc.balanceOf(Ethereum.ALM_PROXY);
-
-        _relayMessageOverBridges(chains);
-
-        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance + usdcAmount, "Ethereum ALM proxy should have USDC after message relay");
-
-        vm.startPrank(Ethereum.ALM_RELAYER);
-        mainnetController.swapUSDCToUSDS(usdcAmount);
-        mainnetController.burnUSDS(usdcAmount * 1e12);
-        vm.stopPrank();
-
-        assertEq(ethereumUsdc.balanceOf(Ethereum.ALM_PROXY), usdcPrevBalance, "Ethereum ALM proxy should have no USDC after burn");
     }
 
 }
