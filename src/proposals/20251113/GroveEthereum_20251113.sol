@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
+import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
+
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Base }     from "lib/grove-address-registry/src/Base.sol";
 
@@ -34,6 +36,9 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
     uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e18;
     uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
+    uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
     function _execute() internal override {
         // [Ethereum] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
         //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-ethereum-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-4
@@ -46,6 +51,10 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
         // [Ethereum] Grove - Onboard Curve RLUSD/USDC Pool LP Deposits
         //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
         _onboardCurvePoolRlusdUsdcLP();
+
+        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        _onboardCctpTransfersToBase();
     }
 
     function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
@@ -86,6 +95,21 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
             withdrawMax   : type(uint256).max,
             withdrawSlope : 0
         });
+    }
+
+    function _onboardCctpTransfersToBase() internal {
+        MainnetController(Ethereum.ALM_CONTROLLER).setMintRecipient(
+            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE,
+            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
+        );
+
+        // General key rate limit for all CCTP transfers was set in the GroveEthereum_20250807 proposal
+
+        bytes32 domainKey = RateLimitHelpers.makeDomainKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE
+        );
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
     }
 
 }

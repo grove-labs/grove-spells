@@ -29,6 +29,9 @@ contract GroveBase_20251113 is GrovePayloadBase {
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
+    uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
+    uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
     function execute() external {
         // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
         //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-base-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-5
@@ -37,6 +40,10 @@ contract GroveBase_20251113 is GrovePayloadBase {
         // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
         //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-base-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-5
         _onboardGroveXSteakhouseUsdcMorphoVault();
+
+        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        _onboardCctpTransfersToEthereum();
     }
 
     function _initializeLiquidityLayer() internal {
@@ -92,6 +99,18 @@ contract GroveBase_20251113 is GrovePayloadBase {
             depositMax   : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
             depositSlope : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
         });
+    }
+
+    function _onboardCctpTransfersToEthereum() internal {
+        // Mint recipient is set during the ForeignController initialization
+
+        bytes32 domainKey = RateLimitHelpers.makeDomainKey(
+            ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
+        );
+
+        IRateLimits(Base.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
+        IRateLimits(Base.ALM_RATE_LIMITS).setUnlimitedRateLimitData(ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP());
     }
 
 }
