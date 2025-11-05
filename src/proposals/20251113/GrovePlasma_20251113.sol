@@ -26,11 +26,11 @@ contract GrovePlasma_20251113 is GrovePayloadPlasma {
 
     function execute() external {
         // [Plasma] Grove - Onboard Aave v3 USDT0
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        //   Forum: https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-plasma-grove-onboard-aave-v3-usdt0-6
         _initializeLiquidityLayer();
 
         // [Plasma] Grove - Onboard Aave v3 USDT0
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        //   Forum: https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-plasma-grove-onboard-aave-v3-usdt0-6
         _onboardAaveCoreUsdt();
     }
 
