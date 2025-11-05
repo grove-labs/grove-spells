@@ -42,7 +42,7 @@ contract GroveBase_20251113 is GrovePayloadBase {
         _onboardGroveXSteakhouseUsdcMorphoVault();
 
         // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376
+        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-base-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-5
         _onboardCctpTransfersToEthereum();
     }
 
