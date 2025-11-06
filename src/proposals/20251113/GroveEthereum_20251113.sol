@@ -47,6 +47,11 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
+    constructor() {
+        PAYLOAD_BASE   = 0x7cEa53dCf28b603c0E3b6d05C0aD517d79a90dD1; // GroveBase_20251113
+        PAYLOAD_PLASMA = 0x4a4bA6886Be41Db0783CA76540801BC3Eebd39A0; // GrovePlasma_20251113
+    }
+
     function _execute() internal override {
         // [Ethereum] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
         //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-ethereum-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-4

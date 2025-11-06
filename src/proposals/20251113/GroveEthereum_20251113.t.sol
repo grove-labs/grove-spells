@@ -30,6 +30,10 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
+    address internal constant ETHEREUM_PAYLOAD = 0x6D711E13Bee2b12c774EE70C70997bdFC835A819;
+    address internal constant BASE_PAYLOAD     = 0x7cEa53dCf28b603c0E3b6d05C0aD517d79a90dD1;
+    address internal constant PLASMA_PAYLOAD   = 0x4a4bA6886Be41Db0783CA76540801BC3Eebd39A0;
+
     address internal constant MAINNET_STAC_DEPOSIT_WALLET = 0x51e4C4A356784D0B3b698BFB277C626b2b9fe178;
     address internal constant MAINNET_STAC_REDEEM_WALLET  = 0xbb543C77436645C8b95B64eEc39E3C0d48D4842b;
     address internal constant MAINNET_STAC                = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
@@ -76,13 +80,15 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-11-04T13:37:00Z");
+        setupDomains("2025-11-06T17:47:00Z");
+
+        chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
+        chainData[ChainIdUtils.Base()].payload     = BASE_PAYLOAD;
+        chainData[ChainIdUtils.Plasma()].payload   = PLASMA_PAYLOAD;
 
         // Warp to ensure all rate limits and autoline cooldown are reset
         vm.warp(block.timestamp + 1 days);
         AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
-
-        deployPayloads();
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
