@@ -35,8 +35,6 @@ abstract contract ERC4626TestingBase is CommonTestBase {
         _assertZeroRateLimit(depositKey);
         _assertZeroRateLimit(withdrawKey);
 
-        vm.prank(ctx.relayer);
-        vm.startPrank(ctx.relayer);
         if (MainnetController(ctx.controller).hasRole(keccak256("RELAYER"), ctx.relayer)) {
             // Liquidity Layer is initialized so Relayer has permission but no RateLimit init
             vm.expectRevert("RateLimits/zero-maxAmount");
@@ -44,8 +42,7 @@ abstract contract ERC4626TestingBase is CommonTestBase {
             // Liquidity Layer not initialized, so the relayer should not be able to deposit
             vm.expectRevert(abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", ctx.relayer, keccak256("RELAYER")));
         }
-        MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
-        vm.stopPrank();
+        vm.prank(ctx.relayer);
         MainnetController(ctx.controller).depositERC4626(vault, expectedDepositAmount);
 
         executeAllPayloadsAndBridges();

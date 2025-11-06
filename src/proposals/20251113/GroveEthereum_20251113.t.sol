@@ -1,8 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { IERC20 } from "forge-std/interfaces/IERC20.sol";
-
 import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
@@ -22,6 +20,10 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 interface AutoLineLike {
     function exec(bytes32) external;
+}
+
+interface IERC20Like {
+    function balanceOf(address account) external view returns (uint256);
 }
 
 contract GroveEthereum_20251030_Test is GroveTestBase {
@@ -263,8 +265,8 @@ contract GroveEthereum_20251030_Test is GroveTestBase {
         ChainId[] memory chains = new ChainId[](1);
         chains[0] = ChainIdUtils.Base();
 
-        IERC20 baseUsdc     = IERC20(Base.USDC);
-        IERC20 ethereumUsdc = IERC20(Ethereum.USDC);
+        IERC20Like baseUsdc     = IERC20Like(Base.USDC);
+        IERC20Like ethereumUsdc = IERC20Like(Ethereum.USDC);
 
         MainnetController mainnetController = MainnetController(Ethereum.ALM_CONTROLLER);
         ForeignController baseController    = ForeignController(Base.ALM_CONTROLLER);
