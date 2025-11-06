@@ -27,19 +27,23 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
 
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
 
-    // BEFORE: 0 max ; 0 slope >> AFTER: 50,000,000 max ; 50,000,000/day slope
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 50,000,000 max ; 50,000,000/day slope
     uint256 internal constant SECURITIZE_STAC_USDC_DEPOSIT_MAX   = 50_000_000e6;
     uint256 internal constant SECURITIZE_STAC_USDC_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    // BEFORE: 0 max ; 0 slope >> AFTER: 20,000,000 max ; 20,000,000/day slope
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 20,000,000 max ; 20,000,000/day slope
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
-    // BEFORE: 0 max ; 0 slope >> AFTER: 25,000,000 max ; 25,000,000/day slope
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 25,000,000 max ; 25,000,000/day slope
     uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e18;
     uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
-    // BEFORE: 0 max ; 0 slope >> AFTER: 50,000,000 max ; 50,000,000/day slope
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 50,000,000 max ; 50,000,000/day slope
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
