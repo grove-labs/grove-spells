@@ -26,6 +26,7 @@ contract GroveBase_20251113 is GrovePayloadBase {
 
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
+    // BEFORE: 0 max ; 0 slope >> AFTER: 20,000,000 max ; 20,000,000/day slope
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
