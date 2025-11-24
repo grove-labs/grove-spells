@@ -19,10 +19,10 @@ import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidity
 import { GrovePayloadBase } from "src/libraries/payloads/GrovePayloadBase.sol";
 
 /**
- * @title  November 13, 2025 Grove Base Proposal
+ * @title  December 11, 2025 Grove Base Proposal
  * @author Grove Labs
  */
-contract GroveBase_20251113 is GrovePayloadBase {
+contract GroveBase_20251211 is GrovePayloadBase {
 
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
@@ -37,16 +37,16 @@ contract GroveBase_20251113 is GrovePayloadBase {
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function execute() external {
-        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-base-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-5
+        // [Base] Onboard Grove Liquidity Layer and CCTP for Base
+        //   Forum : TODO: Add forum post link
         _initializeLiquidityLayer();
 
-        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-base-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-5
+        // [Base] Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : TODO: Add forum post link
         _onboardGroveXSteakhouseUsdcMorphoVault();
 
-        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-base-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-5
+        // [Base] Onboard Grove Liquidity Layer and CCTP for Base
+        //   Forum : TODO: Add forum post link
         _onboardCctpTransfersToEthereum();
     }
 

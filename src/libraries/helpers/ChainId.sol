@@ -27,7 +27,6 @@ library ChainIdUtils {
         else if (id == 42161) return ChainId.wrap(id); // ArbitrumOne
         else if (id == 43114) return ChainId.wrap(id); // Avalanche
         else if (id == 8453)  return ChainId.wrap(id); // Base
-        else if (id == 56)    return ChainId.wrap(id); // BNB Smart Chain
         else if (id == 100)   return ChainId.wrap(id); // Gnosis
         else if (id == 10)    return ChainId.wrap(id); // Optimism
         else if (id == 9745)  return ChainId.wrap(id); // Plasma
@@ -41,7 +40,6 @@ library ChainIdUtils {
         else if (ChainId.unwrap(id) == 42161) return "ArbitrumOne";
         else if (ChainId.unwrap(id) == 43114) return "Avalanche";
         else if (ChainId.unwrap(id) == 8453)  return "Base";
-        else if (ChainId.unwrap(id) == 56)    return "BNB";
         else if (ChainId.unwrap(id) == 100)   return "Gnosis";
         else if (ChainId.unwrap(id) == 10)    return "Optimism";
         else if (ChainId.unwrap(id) == 9745)  return "Plasma";
@@ -64,10 +62,6 @@ library ChainIdUtils {
 
     function Base() internal pure returns (ChainId) {
         return ChainId.wrap(8453);
-    }
-
-    function BNB() internal pure returns (ChainId) {
-        return ChainId.wrap(56);
     }
 
     function Gnosis() internal pure returns (ChainId) {

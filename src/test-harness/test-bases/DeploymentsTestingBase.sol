@@ -218,12 +218,6 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         else if (currentChain == ChainIdUtils.Base())
             assertEq(address(receiver.endpoint()), LZForwarder.ENDPOINT_BASE, "incorrect-destination-endpoint-address");
 
-        else if (currentChain == ChainIdUtils.BNB())
-            assertEq(address(receiver.endpoint()), LZForwarder.ENDPOINT_BNB, "incorrect-destination-endpoint-address");
-
-        else if (currentChain == ChainIdUtils.Plasma())
-            assertEq(address(receiver.endpoint()), LZForwarder.ENDPOINT_PLASMA, "incorrect-destination-endpoint-address");
-
         else revert("incorrect-chain-id");
 
         // Receiver's destination endpoint id has to be the Ethereum Mainnet endpoint id
@@ -258,10 +252,15 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         bytes32 RELAYER    = controller.RELAYER();
         bytes32 FREEZER    = controller.FREEZER();
 
-        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
+        if (oldController != address(0)) {
+            assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
+        }
         assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false);
 
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
+
+        if (oldController != address(0)) {
+            assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
+        }
         assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false);
 
         assertEq(controller.hasRole(RELAYER, ctx.relayer), false);

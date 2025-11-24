@@ -107,14 +107,15 @@ abstract contract SpellRunner is Test {
 
     function setupBlocksFromDate(string memory date) internal {
         setChain("plasma", ChainData({
-            name: "Plasma",
-            rpcUrl: vm.envString("PLASMA_RPC_URL"),
-            chainId: 9745
+            name    : "Plasma",
+            rpcUrl  : vm.envString("PLASMA_RPC_URL"),
+            chainId : 9745
         }));
+
         setChain("plume", ChainData({
-            name: "Plume",
-            rpcUrl: vm.envString("PLUME_RPC_URL"),
-            chainId: 98866
+            name    : "Plume",
+            rpcUrl  : vm.envString("PLUME_RPC_URL"),
+            chainId : 98866
         }));
 
         string[] memory chains = new string[](5);
@@ -132,7 +133,7 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Base()].domain      = getChain("base").createFork(blocks[2]);
 
         uint256[] memory hardcodedBlocks = new uint256[](2);
-        hardcodedBlocks[0] = 5515410;  // Plasma
+        hardcodedBlocks[0] = 4738720;  // Plasma
         hardcodedBlocks[1] = 30242550; // Plume
 
         chainData[ChainIdUtils.Plasma()].domain = getChain("plasma").createFork(hardcodedBlocks[0]);

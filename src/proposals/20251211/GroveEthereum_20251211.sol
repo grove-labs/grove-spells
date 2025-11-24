@@ -16,14 +16,16 @@ import { CastingHelpers } from "src/libraries/helpers/CastingHelpers.sol";
 import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereum.sol";
 
 /**
- * @title  November 13, 2025 Grove Ethereum Proposal
+ * @title  December 11, 2025 Grove Ethereum Proposal
  * @author Grove Labs
  */
-contract GroveEthereum_20251113 is GrovePayloadEthereum {
+contract GroveEthereum_20251211 is GrovePayloadEthereum {
 
     address internal constant SECURITIZE_STAC_USDC_DEPOSIT_WALLET = 0x51e4C4A356784D0B3b698BFB277C626b2b9fe178;
     address internal constant SECURITIZE_STAC_USDC_REDEEM_WALLET  = 0xbb543C77436645C8b95B64eEc39E3C0d48D4842b;
     address internal constant SECURITIZE_STAC                     = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
+
+    address internal constant GALAXY_ARCH_CLOS_USDC_DEPOSIT_WALLET = 0x2E3A11807B94E689387f60CD4BF52A56857f2eDC;
 
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
 
@@ -33,40 +35,35 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
     uint256 internal constant SECURITIZE_STAC_USDC_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 50,000,000 max ; 50,000,000/day slope
+    uint256 internal constant GALAXY_ARCH_CLOS_USDC_DEPOSIT_MAX   = 50_000_000e6;
+    uint256 internal constant GALAXY_ARCH_CLOS_USDC_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
     // AFTER  : 20,000,000 max ; 20,000,000/day slope
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
-
-    // BEFORE :          0 max ;          0/day slope
-    // AFTER  : 25,000,000 max ; 25,000,000/day slope
-    uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_MAX   = 25_000_000e18;
-    uint256 internal constant CURVE_RLUSD_USDC_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
 
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    constructor() {
-        PAYLOAD_BASE   = 0x7cEa53dCf28b603c0E3b6d05C0aD517d79a90dD1; // GroveBase_20251113
-        PAYLOAD_PLASMA = 0x4a4bA6886Be41Db0783CA76540801BC3Eebd39A0; // GrovePlasma_20251113
-    }
-
     function _execute() internal override {
-        // [Ethereum] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-ethereum-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-4
-        _onboardGroveXSteakhouseUsdcMorphoVault();
-
-        // [Ethereum] Grove - Onboard Securitize Tokenized AAA CLO Fund (STAC)
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-ethereum-grove-onboard-securitize-tokenized-aaa-clo-fund-stac-3
+        // [Ethereum] Onboard Securitize Tokenized AAA CLO Fund (STAC)
+        //   Forum : TODO: Add forum post link
         _onboardSecuritizeStac();
 
-        // [Ethereum] Grove - Onboard Curve RLUSD/USDC Pool LP Deposits
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-ethereum-grove-onboard-curve-rlusdusdc-pool-lp-deposits-7
-        _onboardCurvePoolRlusdUsdcLP();
+        // [Ethereum] Onboard Galaxy Arch CLOs
+        //   Forum : TODO: Add forum post link
+        _onboardGalaxyArchClos();
 
-        // [Base] Grove - Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : https://forum.sky.money/t/november-13th-2025-proposed-changes-to-grove-for-upcoming-spell/27376#p-104622-base-grove-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-5
+        // [Ethereum] Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : TODO: Add forum post link
+        _onboardGroveXSteakhouseUsdcMorphoVault();
+
+        // [Base] Onboard Grove Liquidity Layer and CCTP for Base
+        //   Forum : TODO: Add forum post link
         _onboardCctpTransfersToBase();
     }
 
@@ -100,14 +97,18 @@ contract GroveEthereum_20251113 is GrovePayloadEthereum {
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setUnlimitedRateLimitData(redeemKey);
     }
 
-    function _onboardCurvePoolRlusdUsdcLP() internal {
-        _onboardCurvePoolLP({
-            pool          : Ethereum.CURVE_RLUSD_USDC,
-            depositMax    : CURVE_RLUSD_USDC_DEPOSIT_MAX,
-            depositSlope  : CURVE_RLUSD_USDC_DEPOSIT_SLOPE,
-            withdrawMax   : type(uint256).max,
-            withdrawSlope : 0
-        });
+    function _onboardGalaxyArchClos() internal {
+        bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.USDC,
+            GALAXY_ARCH_CLOS_USDC_DEPOSIT_WALLET
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            depositKey,
+            GALAXY_ARCH_CLOS_USDC_DEPOSIT_MAX,
+            GALAXY_ARCH_CLOS_USDC_DEPOSIT_SLOPE
+        );
     }
 
     function _onboardCctpTransfersToBase() internal {

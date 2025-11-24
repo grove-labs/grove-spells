@@ -20,29 +20,4 @@ abstract contract GrovePayloadBase {
         );
     }
 
-    function _onboardCurvePool(
-        address controller,
-        address pool,
-        uint256 maxSlippage,
-        uint256 swapMax,
-        uint256 swapSlope,
-        uint256 depositMax,
-        uint256 depositSlope,
-        uint256 withdrawMax,
-        uint256 withdrawSlope
-    ) internal {
-        GroveLiquidityLayerHelpers.onboardCurvePool(
-            controller,
-            Base.ALM_RATE_LIMITS,
-            pool,
-            maxSlippage,
-            swapMax,
-            swapSlope,
-            depositMax,
-            depositSlope,
-            withdrawMax,
-            withdrawSlope
-        );
-    }
-
 }
