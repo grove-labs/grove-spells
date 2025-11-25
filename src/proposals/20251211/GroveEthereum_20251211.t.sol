@@ -140,7 +140,7 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
             _receiver : Base.GROVE_RECEIVER,
             _deployer : DEPLOYER
         });
-        _verifyArbitrumReceiverDeployment({
+        _verifyOptimismReceiverDeployment({
             _executor : Base.GROVE_EXECUTOR,
             _receiver : Base.GROVE_RECEIVER
         });
