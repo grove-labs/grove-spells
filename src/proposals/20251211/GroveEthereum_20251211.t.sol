@@ -1,14 +1,14 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
+import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Base }     from "lib/grove-address-registry/src/Base.sol";
 
-import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
-import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
-import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { ForeignController } from "lib/grove-alm-controller/src/ForeignController.sol";
+import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 
