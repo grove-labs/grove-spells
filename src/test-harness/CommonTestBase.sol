@@ -7,7 +7,6 @@ import "forge-std/Test.sol";
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
-import { Plasma }    from "lib/grove-address-registry/src/Plasma.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
@@ -170,15 +169,6 @@ contract CommonTestBase is SpellRunner {
               IRateLimits(Base.ALM_RATE_LIMITS),
               Base.ALM_RELAYER,
               Base.ALM_FREEZER
-          );
-      } else if (chain == ChainIdUtils.Plasma()) {
-          ctx = GroveLiquidityLayerContext(
-              Plasma.GROVE_EXECUTOR,
-              controller,
-              IALMProxy(Plasma.ALM_PROXY),
-              IRateLimits(Plasma.ALM_RATE_LIMITS),
-              Plasma.ALM_RELAYER,
-              Plasma.ALM_FREEZER
           );
       } else if (chain == ChainIdUtils.Plume()) {
           ctx = GroveLiquidityLayerContext(

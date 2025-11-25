@@ -7,8 +7,16 @@ import { CommonTestBase } from "./CommonTestBase.sol";
 
 abstract contract CommonSpellTests is CommonTestBase {
 
+    /**********************************************************************************************/
+    /*** Constants                                                                              ***/
+    /**********************************************************************************************/
+
     uint256 public constant AVERAGE_EXECUTION_COST_TARGET = 15_000_000;
     uint256 public constant MAX_EXECUTION_COST            = 30_000_000;
+
+    /**********************************************************************************************/
+    /*** Tests                                                                                  ***/
+    /**********************************************************************************************/
 
     function test_ETHEREUM_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Ethereum());
@@ -39,13 +47,13 @@ abstract contract CommonSpellTests is CommonTestBase {
         _assertPayloadBytecodeMatches(ChainIdUtils.Base());
     }
 
-    function test_PLASMA_PayloadBytecodeMatches() public {
-        _assertPayloadBytecodeMatches(ChainIdUtils.Plasma());
-    }
-
     function test_PLUME_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
     }
+
+    /**********************************************************************************************/
+    /*** Helper Functions                                                                      ***/
+    /**********************************************************************************************/
 
     function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
         address actualPayload = chainData[chainId].payload;

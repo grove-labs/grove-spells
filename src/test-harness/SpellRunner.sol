@@ -8,7 +8,6 @@ import { console }   from "forge-std/console.sol";
 import { Ethereum }  from 'grove-address-registry/Ethereum.sol';
 import { Avalanche } from 'grove-address-registry/Avalanche.sol';
 import { Base }      from 'grove-address-registry/Base.sol';
-import { Plasma }    from 'grove-address-registry/Plasma.sol';
 import { Plume }     from 'grove-address-registry/Plume.sol';
 
 import { IExecutor } from 'lib/grove-gov-relay/src/interfaces/IExecutor.sol';
@@ -106,15 +105,10 @@ abstract contract SpellRunner is Test {
     }
 
     function setupBlocksFromDate(string memory date) internal {
-        setChain("plasma", ChainData({
-            name: "Plasma",
-            rpcUrl: vm.envString("PLASMA_RPC_URL"),
-            chainId: 9745
-        }));
         setChain("plume", ChainData({
-            name: "Plume",
-            rpcUrl: vm.envString("PLUME_RPC_URL"),
-            chainId: 98866
+            name    : "Plume",
+            rpcUrl  : vm.envString("PLUME_RPC_URL"),
+            chainId : 98866
         }));
 
         string[] memory chains = new string[](5);
@@ -131,18 +125,15 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Avalanche()].domain = getChain("avalanche").createFork(blocks[1]);
         chainData[ChainIdUtils.Base()].domain      = getChain("base").createFork(blocks[2]);
 
-        uint256[] memory hardcodedBlocks = new uint256[](2);
-        hardcodedBlocks[0] = 4738720;  // Plasma
-        hardcodedBlocks[1] = 30242550; // Plume
+        uint256[] memory hardcodedBlocks = new uint256[](1);
+        hardcodedBlocks[0] = 30242550; // Plume
 
-        chainData[ChainIdUtils.Plasma()].domain = getChain("plasma").createFork(hardcodedBlocks[0]);
-        chainData[ChainIdUtils.Plume()].domain  = getChain("plume").createFork(hardcodedBlocks[1]);
+        chainData[ChainIdUtils.Plume()].domain = getChain("plume").createFork(hardcodedBlocks[0]);
 
         console.log("   Mainnet block:", blocks[0]);
         console.log(" Avalanche block:", blocks[1]);
         console.log("      Base block:", blocks[2]);
-        console.log("    Plasma block:", hardcodedBlocks[0]);
-        console.log("     Plume block:", hardcodedBlocks[1]);
+        console.log("     Plume block:", hardcodedBlocks[0]);
     }
 
     /// @dev to be called in setUp
@@ -163,10 +154,6 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Base()].executor       = IExecutor(Base.GROVE_EXECUTOR);
         chainData[ChainIdUtils.Base()].prevController = Base.ALM_CONTROLLER;
         chainData[ChainIdUtils.Base()].newController  = Base.ALM_CONTROLLER;
-
-        chainData[ChainIdUtils.Plasma()].executor       = IExecutor(Plasma.GROVE_EXECUTOR);
-        chainData[ChainIdUtils.Plasma()].prevController = Plasma.ALM_CONTROLLER;
-        chainData[ChainIdUtils.Plasma()].newController  = Plasma.ALM_CONTROLLER;
 
         chainData[ChainIdUtils.Plume()].executor       = IExecutor(Plume.GROVE_EXECUTOR);
         chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
@@ -194,14 +181,6 @@ abstract contract SpellRunner is Test {
             )
         );
 
-        // Plasma
-        chainData[ChainIdUtils.Plasma()].bridges.push(
-            LZBridgeTesting.createLZBridge(
-                chainData[ChainIdUtils.Ethereum()].domain,
-                chainData[ChainIdUtils.Plasma()].domain
-            )
-        );
-
         // Plume
         chainData[ChainIdUtils.Plume()].bridges.push(
             ArbitrumBridgeTesting.createNativeBridge(
@@ -213,7 +192,6 @@ abstract contract SpellRunner is Test {
         allChains.push(ChainIdUtils.Ethereum());
         allChains.push(ChainIdUtils.Avalanche());
         allChains.push(ChainIdUtils.Base());
-        allChains.push(ChainIdUtils.Plasma());
         allChains.push(ChainIdUtils.Plume());
     }
 
@@ -247,15 +225,15 @@ abstract contract SpellRunner is Test {
         // only execute mainnet payload
         executeMainnetPayload();
         // then use bridges to execute other chains' payloads
-        _relayMessageOverBridges();
+        _relayMessageOverBridges(allChains);
         // execute the foreign payloads (either by simulation or real execute)
         _executeForeignPayloads();
     }
 
     /// @dev bridge contracts themselves are stored on mainnet
-    function _relayMessageOverBridges() internal onChain(ChainIdUtils.Ethereum()) {
-        for (uint256 i = 0; i < allChains.length; i++) {
-            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+    function _relayMessageOverBridges(ChainId[] memory chains) internal onChain(ChainIdUtils.Ethereum()) {
+        for (uint256 i = 0; i < chains.length; i++) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[chains[i]].domain);
             for (uint256 j = 0; j < chainData[chainId].bridges.length ; j++){
                 _executeBridge(chainData[chainId].bridges[j]);
             }
@@ -273,8 +251,6 @@ abstract contract SpellRunner is Test {
             AMBBridgeTesting.relayMessagesToDestination(bridge, false);
         } else if (bridge.bridgeType == BridgeType.ARBITRUM) {
             ArbitrumBridgeTesting.relayMessagesToDestination(bridge, false);
-        } else if (bridge.bridgeType == BridgeType.LZ) {
-            LZBridgeTesting.relayMessagesToDestination(bridge, false, Ethereum.GROVE_PROXY, Plasma.GROVE_RECEIVER); // TODO: Fix, make chain agnostic
         }
     }
 
@@ -283,7 +259,6 @@ abstract contract SpellRunner is Test {
             ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
             if (chainId == ChainIdUtils.Ethereum()) continue;  // Don't execute mainnet
 
-            // UNCOMMENT AFTER OTHER DOMAINS ARE SET UP
             address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
             IExecutor executor = chainData[chainId].executor;
             if (mainnetSpellPayload != address(0)) {
@@ -318,7 +293,6 @@ abstract contract SpellRunner is Test {
 
         if (chainId == ChainIdUtils.Avalanche()) return spell.PAYLOAD_AVALANCHE();
         if (chainId == ChainIdUtils.Base())      return spell.PAYLOAD_BASE();
-        if (chainId == ChainIdUtils.Plasma())    return spell.PAYLOAD_PLASMA();
         if (chainId == ChainIdUtils.Plume())     return spell.PAYLOAD_PLUME();
 
         revert("Unsupported chainId");

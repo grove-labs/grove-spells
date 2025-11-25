@@ -36,8 +36,14 @@ abstract contract AaveTestingBase is CommonTestBase {
         _assertZeroRateLimit(depositKey);
         _assertZeroRateLimit(withdrawKey);
 
+        if (MainnetController(ctx.controller).hasRole(keccak256("RELAYER"), ctx.relayer)) {
+            // Liquidity Layer is initialized so Relayer has permission but no RateLimit init
+            vm.expectRevert("RateLimits/zero-maxAmount");
+        } else {
+            // Liquidity Layer not initialized, so the relayer should not be able to deposit
+            vm.expectRevert(abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", ctx.relayer, keccak256("RELAYER")));
+        }
         vm.prank(ctx.relayer);
-        vm.expectRevert("RateLimits/zero-maxAmount");
         MainnetController(ctx.controller).depositAave(aToken, expectedDepositAmount);
 
         executeAllPayloadsAndBridges();
