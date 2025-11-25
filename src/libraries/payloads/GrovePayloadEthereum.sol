@@ -4,7 +4,6 @@ pragma solidity ^0.8.0;
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
-import { Plasma }    from "lib/grove-address-registry/src/Plasma.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
@@ -30,7 +29,6 @@ abstract contract GrovePayloadEthereum {
     // These need to be immutable (delegatecall) and can only be set in constructor
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_BASE;
-    address public immutable PAYLOAD_PLASMA;
     address public immutable PAYLOAD_PLUME;
 
     function execute() external {
@@ -51,20 +49,6 @@ abstract contract GrovePayloadEthereum {
                 target        : Base.GROVE_RECEIVER,
                 message       : _encodePayloadQueue(PAYLOAD_BASE),
                 gasLimit      : 1_000_000
-            });
-        }
-
-        if (PAYLOAD_PLASMA != address(0)) {
-            bytes memory options = OptionsBuilder.newOptions().addExecutorLzReceiveOption(1_000_000, 0);
-
-            LZForwarder.sendMessage({
-                _dstEid        : LZForwarder.ENDPOINT_ID_PLASMA,
-                _receiver      : CastingHelpers.addressToLayerZeroRecipient(Plasma.GROVE_RECEIVER),
-                endpoint       : ILayerZeroEndpointV2(LZForwarder.ENDPOINT_ETHEREUM),
-                _message       : _encodePayloadQueue(PAYLOAD_PLASMA),
-                _options       : options,
-                _refundAddress : Ethereum.GROVE_PROXY,
-                _payInLzToken  : false
             });
         }
 
