@@ -24,7 +24,8 @@ import { LZBridgeTesting }       from "xchain-helpers/testing/bridges/LZBridgeTe
 
 import { ChainIdUtils, ChainId } from "../libraries/helpers/ChainId.sol";
 
-import { GrovePayloadEthereum }  from "../libraries/payloads/GrovePayloadEthereum.sol";
+import { GrovePayloadEthereum } from "../libraries/payloads/GrovePayloadEthereum.sol";
+import { IStarSpellLike }       from "../libraries/payloads/StarSpell.sol";
 
 abstract contract SpellRunner is Test {
     using DomainHelpers for Domain;
@@ -267,6 +268,7 @@ abstract contract SpellRunner is Test {
                 uint256 actionsSetId = executor.actionsSetCount() - 1;
                 uint256 prevTimestamp = block.timestamp;
                 vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
+                require(IStarSpellLike(mainnetSpellPayload).isExecutable(), "FOREIGN PAYLOAD IS NOT EXECUTABLE");
                 executor.execute(actionsSetId);
                 chainData[chainId].spellExecuted = true;
                 vm.warp(prevTimestamp);
@@ -275,10 +277,11 @@ abstract contract SpellRunner is Test {
                 address payload = chainData[chainId].payload;
                 if (payload != address(0)) {
                     chainData[chainId].domain.selectFork();
+                    require(IStarSpellLike(payload).isExecutable(), "FOREIGN PAYLOAD IS NOT EXECUTABLE");
                     vm.prank(address(executor));
                     executor.executeDelegateCall(
                         payload,
-                        abi.encodeWithSignature('execute()')
+                        abi.encodeWithSelector(IStarSpellLike.execute.selector)
                     );
                     chainData[chainId].spellExecuted = true;
                     console.log("simulating execution payload for network: ", chainId.toDomainString());
@@ -302,6 +305,8 @@ abstract contract SpellRunner is Test {
         address payloadAddress = chainData[ChainIdUtils.Ethereum()].payload;
         IExecutor executor     = chainData[ChainIdUtils.Ethereum()].executor;
         require(_isContract(payloadAddress), "PAYLOAD IS NOT A CONTRACT");
+
+        require(IStarSpellLike(payloadAddress).isExecutable(), "MAINNET PAYLOAD IS NOT EXECUTABLE");
 
         vm.prank(Ethereum.PAUSE_PROXY);
         (bool success,) = address(executor).call(abi.encodeWithSignature(
