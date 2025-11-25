@@ -7,6 +7,7 @@ import { Plume }     from "grove-address-registry/Plume.sol";
 import { Base }      from "grove-address-registry/Base.sol";
 
 import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
+import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
@@ -18,12 +19,17 @@ import { Executor } from "grove-gov-relay/src/Executor.sol";
 
 import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
 import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
+import { LZReceiver }       from "lib/xchain-helpers/src/receivers/LZReceiver.sol";
 
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+
+interface ILayerZeroEndpointV2 {
+    function delegates(address sender) external view returns (address);
+}
 
 abstract contract DeploymentsTestingBase is CommonTestBase {
 
@@ -196,6 +202,44 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         assertEq(receiver.target(), _executor, "incorrect-target");
     }
 
+    function _verifyLayerZeroReceiverDeployment(
+        address _executor,
+        address _receiver
+    ) internal view {
+        LZReceiver receiver = LZReceiver(_receiver);
+
+        ChainId currentChain = ChainIdUtils.fromUint(block.chainid);
+
+        // Receiver's destination endpoint address has to be the correct one for the current chain
+        // Currently supported chains - add more if needed
+        if (currentChain == ChainIdUtils.Avalanche())
+            assertEq(address(receiver.endpoint()), LZForwarder.ENDPOINT_AVALANCHE, "incorrect-destination-endpoint-address");
+
+        else if (currentChain == ChainIdUtils.Base())
+            assertEq(address(receiver.endpoint()), LZForwarder.ENDPOINT_BASE, "incorrect-destination-endpoint-address");
+
+        else revert("incorrect-chain-id");
+
+        // Receiver's destination endpoint id has to be the Ethereum Mainnet endpoint id
+        assertEq(receiver.srcEid(), LZForwarder.ENDPOINT_ID_ETHEREUM, "incorrect-destination-endpoint-id");
+
+        // Source authority has to be the Ethereum Mainnet Grove Proxy
+        assertEq(receiver.sourceAuthority(), CastingHelpers.addressToLayerZeroRecipient(Ethereum.GROVE_PROXY), "incorrect-source-authority");
+
+        // Target has to be the executor
+        assertEq(receiver.target(), _executor, "incorrect-target");
+
+        // Delegate has to be set to blank, non-zero address placeholder
+        assertEq(
+            ILayerZeroEndpointV2(address(receiver.endpoint())).delegates(address(receiver)),
+            address(1),
+            "incorrect-delegate"
+        );
+
+        // Owner has to be set to blank, non-zero address placeholder
+        assertEq(receiver.owner(), address(1), "incorrect-owner");
+    }
+
     function _testControllerUpgrade(address oldController, address newController) internal {
         ChainId currentChain = ChainIdUtils.fromUint(block.chainid);
 
@@ -208,10 +252,15 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         bytes32 RELAYER    = controller.RELAYER();
         bytes32 FREEZER    = controller.FREEZER();
 
-        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
+        if (oldController != address(0)) {
+            assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
+        }
         assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false);
 
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
+
+        if (oldController != address(0)) {
+            assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
+        }
         assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false);
 
         assertEq(controller.hasRole(RELAYER, ctx.relayer), false);
