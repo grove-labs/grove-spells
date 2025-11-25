@@ -6,7 +6,7 @@ import { Base } from "lib/grove-address-registry/src/Base.sol";
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
 /**
- * @dev Base smart contract for Base.
+ * @dev    Base smart contract for Base.
  * @author Steakhouse Financial
  */
 abstract contract GrovePayloadBase {
