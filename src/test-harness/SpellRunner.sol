@@ -304,8 +304,8 @@ abstract contract SpellRunner is Test {
     function executeMainnetPayload() internal onChain(ChainIdUtils.Ethereum()) {
         address payloadAddress = chainData[ChainIdUtils.Ethereum()].payload;
         IExecutor executor     = chainData[ChainIdUtils.Ethereum()].executor;
-        require(_isContract(payloadAddress), "PAYLOAD IS NOT A CONTRACT");
 
+        require(_isContract(payloadAddress),                   "PAYLOAD IS NOT A CONTRACT");
         require(IStarSpellLike(payloadAddress).isExecutable(), "MAINNET PAYLOAD IS NOT EXECUTABLE");
 
         vm.prank(Ethereum.PAUSE_PROXY);
