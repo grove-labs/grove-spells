@@ -5,8 +5,8 @@ import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
-import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
-import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
 
