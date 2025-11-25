@@ -55,7 +55,6 @@ contract GroveBase_20251211 is GrovePayloadBase {
         address[] memory relayers = new address[](1);
         relayers[0] = Base.ALM_RELAYER;
 
-
         ForeignControllerInit.MintRecipient[] memory mintRecipients = new ForeignControllerInit.MintRecipient[](1);
         mintRecipients[0] = ForeignControllerInit.MintRecipient({
             domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
@@ -86,10 +85,10 @@ contract GroveBase_20251211 is GrovePayloadBase {
                 oldController : address(0)
             }),
             ForeignControllerInit.CheckAddressParams({
-                admin      : Base.GROVE_EXECUTOR,
-                cctp       : Base.CCTP_TOKEN_MESSENGER,
-                psm        : Base.PSM3,
-                usdc       : Base.USDC
+                admin : Base.GROVE_EXECUTOR,
+                cctp  : Base.CCTP_TOKEN_MESSENGER,
+                psm   : Base.PSM3,
+                usdc  : Base.USDC
             }),
             mintRecipients,
             layerZeroRecipients,

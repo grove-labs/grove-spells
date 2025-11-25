@@ -67,14 +67,6 @@ contract GroveEthereum_20251211 is GrovePayloadEthereum {
         _onboardCctpTransfersToBase();
     }
 
-    function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
-        _onboardERC4626Vault({
-            vault        : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            depositMax   : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
-            depositSlope : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
-        });
-    }
-
     function _onboardSecuritizeStac() internal {
         bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
@@ -109,6 +101,14 @@ contract GroveEthereum_20251211 is GrovePayloadEthereum {
             GALAXY_ARCH_CLOS_USDC_DEPOSIT_MAX,
             GALAXY_ARCH_CLOS_USDC_DEPOSIT_SLOPE
         );
+    }
+
+    function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
+        _onboardERC4626Vault({
+            vault        : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            depositMax   : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
+        });
     }
 
     function _onboardCctpTransfersToBase() internal {
