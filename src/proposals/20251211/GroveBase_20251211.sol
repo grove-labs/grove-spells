@@ -36,7 +36,7 @@ contract GroveBase_20251211 is GrovePayloadBase {
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
-    function execute() external {
+    function execute() external override {
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
         //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-4-base-onboard-grove-liquidity-layer-and-cctp-for-base-20
         _initializeLiquidityLayer();

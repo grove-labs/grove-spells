@@ -18,11 +18,13 @@ import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-ev
 import { CastingHelpers }             from "../helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
+import { StarSpell } from "./StarSpell.sol";
+
 /**
- * @dev Base smart contract for Ethereum.
+ * @dev    Base smart contract for Ethereum.
  * @author Steakhouse Financial
  */
-abstract contract GrovePayloadEthereum {
+abstract contract GrovePayloadEthereum is StarSpell {
 
     using OptionsBuilder for bytes;
 
@@ -31,7 +33,7 @@ abstract contract GrovePayloadEthereum {
     address public immutable PAYLOAD_BASE;
     address public immutable PAYLOAD_PLUME;
 
-    function execute() external {
+    function execute() external override {
         _execute();
 
         if (PAYLOAD_AVALANCHE != address(0)) {
