@@ -38,15 +38,15 @@ contract GroveBase_20251211 is GrovePayloadBase {
 
     function execute() external {
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
-        //   Forum : TODO: Add forum post link
+        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-4-base-onboard-grove-liquidity-layer-and-cctp-for-base-20
         _initializeLiquidityLayer();
 
         // [Base] Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : TODO: Add forum post link
+        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-5-base-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-26
         _onboardGroveXSteakhouseUsdcMorphoVault();
 
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
-        //   Forum : TODO: Add forum post link
+        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-4-base-onboard-grove-liquidity-layer-and-cctp-for-base-20
         _onboardCctpTransfersToEthereum();
     }
 

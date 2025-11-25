@@ -51,19 +51,19 @@ contract GroveEthereum_20251211 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Onboard Securitize Tokenized AAA CLO Fund (STAC)
-        //   Forum : TODO: Add forum post link
+        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-1-ethereum-onboard-securitize-tokenized-aaa-clo-fund-stac-2
         _onboardSecuritizeStac();
 
         // [Ethereum] Onboard Galaxy Arch CLOs
-        //   Forum : TODO: Add forum post link
+        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-2-ethereum-onboard-galaxy-arch-clos-8
         _onboardGalaxyArchClos();
 
         // [Ethereum] Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : TODO: Add forum post link
+        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-3-ethereum-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-14
         _onboardGroveXSteakhouseUsdcMorphoVault();
 
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
-        //   Forum : TODO: Add forum post link
+        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-4-base-onboard-grove-liquidity-layer-and-cctp-for-base-20
         _onboardCctpTransfersToBase();
     }
 
