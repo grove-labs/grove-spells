@@ -47,10 +47,6 @@ abstract contract CommonSpellTests is CommonTestBase {
         _assertPayloadBytecodeMatches(ChainIdUtils.Base());
     }
 
-    function test_PLASMA_PayloadBytecodeMatches() public {
-        _assertPayloadBytecodeMatches(ChainIdUtils.Plasma());
-    }
-
     function test_PLUME_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
     }

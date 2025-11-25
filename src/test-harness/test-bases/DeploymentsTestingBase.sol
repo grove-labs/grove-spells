@@ -278,8 +278,8 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
                 CastingHelpers.addressToCctpRecipient(address(0))
             );
             // Intentionally skipping the following (CCTPv1 is not deployed there)
-            // Plasma
             // Plume
+            // ...
         } else {
             assertEq(controller.mintRecipients(
                 CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
@@ -303,7 +303,7 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
                 CastingHelpers.addressToCentrifugeRecipient(address(0))
             );
             // Intentionally skipping the following (Centrifuge is not deployed there)
-            // Plasma
+            // ...
         } else {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
@@ -338,8 +338,8 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
                 CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
             );
             // Intentionally skipping the following (CCTPv1 is not deployed there)
-            // Plasma
             // Plume
+            // ...
         } else {
             assertEq(
                 controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
@@ -363,7 +363,7 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
                 CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
             );
             // Intentionally skipping the following (Centrifuge is not deployed there)
-            // Plasma
+            // ...
         } else {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
