@@ -6,7 +6,7 @@
     "rev": "3353993420c6e488a2914ce02d88174e80ad80f8"
   },
   "lib/grove-address-registry": {
-    "rev": "e1aadd7d766e95ed113972ca00173e6fd9c82a90"
+    "rev": "484cf9a05b64c9b74933d59201e501ff4a3db3c7"
   },
   "lib/grove-alm-controller": {
     "rev": "d2378c794cddda99b85d6f4d7387a5a5efd35486"
@@ -15,7 +15,7 @@
     "rev": "f314e2480204f4ab897ba757886b7af45d61b746"
   },
   "lib/spark-address-registry": {
-    "rev": "484cf9a05b64c9b74933d59201e501ff4a3db3c7"
+    "rev": "7970fef921881720179967e5fa8b7305e59cf61e"
   },
   "lib/xchain-helpers": {
     "rev": "c93404800dbcaafec4af068b04ce7df6df7c95fa"
