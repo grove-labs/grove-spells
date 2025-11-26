@@ -23,6 +23,10 @@ interface IERC20Like {
     function balanceOf(address account) external view returns (uint256);
 }
 
+interface ISubProxyLike {
+    function rely(address) external;
+}
+
 contract GroveEthereum_20251211_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
@@ -72,6 +76,10 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
         // Warp to ensure all rate limits and autoline cooldown are reset
         vm.warp(block.timestamp + 1 days);
         AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
+
+        // One-time simplified onboarding of StarGuard to the proxy
+        vm.prank(Ethereum.PAUSE_PROXY);
+        ISubProxyLike(Ethereum.GROVE_PROXY).rely(Ethereum.GROVE_STAR_GUARD);
     }
 
     function test_ETHEREUM_onboardSecuritizeStacDeposits() public onChain(ChainIdUtils.Ethereum()) {
