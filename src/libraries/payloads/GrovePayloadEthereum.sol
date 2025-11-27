@@ -52,7 +52,7 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         return true;
     }
 
-    function execute() external override {
+    function execute() external {
         _execute();
 
         if (PAYLOAD_AVALANCHE != address(0)) {
