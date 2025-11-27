@@ -20,7 +20,6 @@ import { Executor } from "grove-gov-relay/src/Executor.sol";
 import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
 import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
 import { LZReceiver }       from "lib/xchain-helpers/src/receivers/LZReceiver.sol";
-import { OptimismReceiver } from "lib/xchain-helpers/src/receivers/OptimismReceiver.sol";
 
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
@@ -195,19 +194,6 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         address _receiver
     ) internal view {
         ArbitrumReceiver receiver = ArbitrumReceiver(_receiver);
-
-        // L1 authority has to be the Ethereum Mainnet Grove Proxy
-        assertEq(receiver.l1Authority(), Ethereum.GROVE_PROXY, "incorrect-l1-authority");
-
-        // Target has to be the executor
-        assertEq(receiver.target(), _executor, "incorrect-target");
-    }
-
-    function _verifyOptimismReceiverDeployment(
-        address _executor,
-        address _receiver
-    ) internal view {
-        OptimismReceiver receiver = OptimismReceiver(_receiver);
 
         // L1 authority has to be the Ethereum Mainnet Grove Proxy
         assertEq(receiver.l1Authority(), Ethereum.GROVE_PROXY, "incorrect-l1-authority");
