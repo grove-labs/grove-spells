@@ -18,13 +18,28 @@ import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-ev
 import { CastingHelpers }             from "../helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
-import { StarSpell } from "./StarSpell.sol";
+interface IStarSpellLike {
+
+    /**
+     * @notice Executes actions performed on behalf of the `SubProxy` – i.e. the actual payload
+     * @dev Required, will be called by the StarGuard during permissionless execution
+     */
+    function execute() external;
+
+    /**
+     * @notice Checks if the star payload is executable in the current block
+     * @dev Required, useful for implementing "earliest launch date" or "office hours" strategy
+     * @return result The result of the check (true = executable, false = not)
+     */
+    function isExecutable() external view returns (bool result);
+
+}
 
 /**
  * @dev Base smart contract for Ethereum.
  * @author Steakhouse Financial
  */
-abstract contract GrovePayloadEthereum is StarSpell {
+abstract contract GrovePayloadEthereum is IStarSpellLike {
 
     using OptionsBuilder for bytes;
 
@@ -32,6 +47,10 @@ abstract contract GrovePayloadEthereum is StarSpell {
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_BASE;
     address public immutable PAYLOAD_PLUME;
+
+    function isExecutable() external view virtual returns (bool result) {
+        return true;
+    }
 
     function execute() external override {
         _execute();

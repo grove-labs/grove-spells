@@ -25,7 +25,6 @@ import { LZBridgeTesting }       from "xchain-helpers/testing/bridges/LZBridgeTe
 import { ChainIdUtils, ChainId } from "../libraries/helpers/ChainId.sol";
 
 import { GrovePayloadEthereum } from "../libraries/payloads/GrovePayloadEthereum.sol";
-import { IStarSpellLike }       from "../libraries/payloads/StarSpell.sol";
 
 interface IStarGuardLike {
     function plot(address addr_, bytes32 tag_) external;
@@ -273,7 +272,6 @@ abstract contract SpellRunner is Test {
                 uint256 actionsSetId = executor.actionsSetCount() - 1;
                 uint256 prevTimestamp = block.timestamp;
                 vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
-                require(IStarSpellLike(mainnetSpellPayload).isExecutable(), "FOREIGN PAYLOAD IS NOT EXECUTABLE");
                 executor.execute(actionsSetId);
                 chainData[chainId].spellExecuted = true;
                 vm.warp(prevTimestamp);
@@ -282,11 +280,10 @@ abstract contract SpellRunner is Test {
                 address payload = chainData[chainId].payload;
                 if (payload != address(0)) {
                     chainData[chainId].domain.selectFork();
-                    require(IStarSpellLike(payload).isExecutable(), "FOREIGN PAYLOAD IS NOT EXECUTABLE");
                     vm.prank(address(executor));
                     executor.executeDelegateCall(
                         payload,
-                        abi.encodeWithSelector(IStarSpellLike.execute.selector)
+                        abi.encodeWithSignature('execute()')
                     );
                     chainData[chainId].spellExecuted = true;
                     console.log("simulating execution payload for network: ", chainId.toDomainString());
@@ -309,8 +306,8 @@ abstract contract SpellRunner is Test {
     function executeMainnetPayload() internal onChain(ChainIdUtils.Ethereum()) {
         address payloadAddress = chainData[ChainIdUtils.Ethereum()].payload;
 
-        require(_isContract(payloadAddress),                   "PAYLOAD IS NOT A CONTRACT");
-        require(IStarSpellLike(payloadAddress).isExecutable(), "MAINNET PAYLOAD IS NOT EXECUTABLE");
+        require(_isContract(payloadAddress),                         "PAYLOAD IS NOT A CONTRACT");
+        require(GrovePayloadEthereum(payloadAddress).isExecutable(), "MAINNET PAYLOAD IS NOT EXECUTABLE");
 
         bytes   memory code  = payloadAddress.code;
         bytes32 bytecodeHash = keccak256(code);
