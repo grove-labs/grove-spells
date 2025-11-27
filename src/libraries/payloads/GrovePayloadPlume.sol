@@ -5,13 +5,11 @@ import { Plume } from "lib/grove-address-registry/src/Plume.sol";
 
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
-import { StarSpell } from "./StarSpell.sol";
-
 /**
- * @dev    Base smart contract for Plume.
+ * @dev Base smart contract for Plume.
  * @author Steakhouse Financial
  */
-abstract contract GrovePayloadPlume is StarSpell {
+abstract contract GrovePayloadPlume {
 
     function _onboardERC7540Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
         GroveLiquidityLayerHelpers.onboardERC7540Vault(

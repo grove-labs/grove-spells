@@ -5,13 +5,11 @@ import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
-import { StarSpell } from "./StarSpell.sol";
-
 /**
- * @dev    Base smart contract for Avalanche.
+ * @dev Base smart contract for Avalanche.
  * @author Steakhouse Financial
  */
-abstract contract GrovePayloadAvalanche is StarSpell {
+abstract contract GrovePayloadAvalanche {
 
     function _onboardERC7540Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
         GroveLiquidityLayerHelpers.onboardERC7540Vault(

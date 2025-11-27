@@ -21,7 +21,7 @@ import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelper
 import { StarSpell } from "./StarSpell.sol";
 
 /**
- * @dev    Base smart contract for Ethereum.
+ * @dev Base smart contract for Ethereum.
  * @author Steakhouse Financial
  */
 abstract contract GrovePayloadEthereum is StarSpell {
