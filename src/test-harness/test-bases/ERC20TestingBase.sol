@@ -27,7 +27,7 @@ abstract contract ERC20TestingBase is CommonTestBase {
 
         deal2(token, address(ctx.proxy), expectedDepositAmount);
 
-        __testDirectTokenTransferOnboarding(token, destination, expectedDepositAmount, depositMax, depositSlope);
+        __runDirectTokenTransferOnboardingTests(token, destination, expectedDepositAmount, depositMax, depositSlope);
     }
 
     function _testUnlimitedDirectTokenTransferOnboarding(
@@ -52,7 +52,7 @@ abstract contract ERC20TestingBase is CommonTestBase {
         MainnetController(ctx.controller).swapUSDSToUSDC(expectedDepositAmount);
         vm.stopPrank();
 
-        __testDirectTokenTransferOnboarding(
+        __runDirectTokenTransferOnboardingTests(
             usdc,
             destination,
             expectedDepositAmount,
@@ -65,7 +65,7 @@ abstract contract ERC20TestingBase is CommonTestBase {
     /*** Internal helper functions                                                              ***/
     /**********************************************************************************************/
 
-    function __testDirectTokenTransferOnboarding(
+    function __runDirectTokenTransferOnboardingTests(
         address token,
         address destination,
         uint256 expectedDepositAmount,
