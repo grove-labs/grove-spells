@@ -22,6 +22,10 @@ contract GroveEthereum_20251211 is GrovePayloadEthereum {
 
     address internal constant GALAXY_ARCH_CLOS_USDC_DEPOSIT_WALLET = 0x2E3A11807B94E689387f60CD4BF52A56857f2eDC;
 
+    address internal constant RIPPLE_RLUSD_USDC_MINT_BURN_WALLET = 0xD178a90C41ff3DcffbfDEF7De0BAF76Cbfe6a121;
+
+    address internal constant AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
+
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
 
     // BEFORE :          0 max ;          0/day slope
@@ -35,21 +39,44 @@ contract GroveEthereum_20251211 is GrovePayloadEthereum {
     uint256 internal constant GALAXY_ARCH_CLOS_USDC_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 50,000,000 max ; 50,000,000/day slope
+    uint256 internal constant RIPPLE_RLUSD_USDC_MINT_MAX   = 50_000_000e6;
+    uint256 internal constant RIPPLE_RLUSD_USDC_MINT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 50,000,000 max ; 50,000,000/day slope
+    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_MAX   = 50_000_000e6;
+    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 50,000,000 max ; 50,000,000/day slope
+    uint256 internal constant AGORA_AUSD_USDC_MINT_MAX   = 50_000_000e6;
+    uint256 internal constant AGORA_AUSD_USDC_MINT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
     // AFTER  : 20,000,000 max ; 20,000,000/day slope
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     function _execute() internal override {
         // [Ethereum] Onboard Securitize Tokenized AAA CLO Fund (STAC)
-        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-1-ethereum-onboard-securitize-tokenized-aaa-clo-fund-stac-2
+        //   Forum : TODO - Add forum link (proper section)
         _onboardSecuritizeStac();
 
         // [Ethereum] Onboard Galaxy Arch CLOs
-        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-2-ethereum-onboard-galaxy-arch-clos-8
+        //   Forum : TODO - Add forum link (proper section)
         _onboardGalaxyArchClos();
 
+        // [Ethereum] Onboard Ripple RLUSD USDC Minting
+        //   Forum : TODO - Add forum link (proper section)
+        _onboardRippleRlusd();
+
+        // [Ethereum] Onboard Agora AUSD USDC Minting
+        //   Forum : TODO - Add forum link (proper section)
+        _onboardAgoraAusd();
+
         // [Ethereum] Onboard Morpho Grove x Steakhouse High Yield Vault USDC
-        //   Forum : https://forum.sky.money/t/december-11th-2025-proposed-changes-to-grove-for-upcoming-spell/27459#p-104940-h-3-ethereum-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-14
+        //   Forum : TODO - Add forum link (proper section)
         _onboardGroveXSteakhouseUsdcMorphoVault();
     }
 
@@ -86,6 +113,46 @@ contract GroveEthereum_20251211 is GrovePayloadEthereum {
             depositKey,
             GALAXY_ARCH_CLOS_USDC_DEPOSIT_MAX,
             GALAXY_ARCH_CLOS_USDC_DEPOSIT_SLOPE
+        );
+    }
+
+    function _onboardRippleRlusd() internal {
+        bytes32 mintKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.USDC,
+            RIPPLE_RLUSD_USDC_MINT_BURN_WALLET
+        );
+
+        bytes32 burnKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.RLUSD,
+            RIPPLE_RLUSD_USDC_MINT_BURN_WALLET
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            mintKey,
+            RIPPLE_RLUSD_USDC_MINT_MAX,
+            RIPPLE_RLUSD_USDC_MINT_SLOPE
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            burnKey,
+            RIPPLE_RLUSD_USDC_BURN_MAX,
+            RIPPLE_RLUSD_USDC_BURN_SLOPE
+        );
+    }
+
+    function _onboardAgoraAusd() internal {
+        bytes32 mintKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.USDC,
+            AGORA_AUSD_USDC_MINT_WALLET
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            mintKey,
+            AGORA_AUSD_USDC_MINT_MAX,
+            AGORA_AUSD_USDC_MINT_SLOPE
         );
     }
 
