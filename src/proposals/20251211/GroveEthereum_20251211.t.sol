@@ -25,11 +25,11 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
 
     address internal constant GALAXY_DEPOSIT_WALLET = 0x2E3A11807B94E689387f60CD4BF52A56857f2eDC;
 
+    address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
+
     address internal constant RIPPLE_RLUSD_USDC_MINT_BURN_WALLET = 0xD178a90C41ff3DcffbfDEF7De0BAF76Cbfe6a121;
 
     address internal constant AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
-
-    address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBEEf2B5FD3D94469b7782aeBe6364E6e6FB1B709;
 
     uint256 internal constant STAC_DEPOSIT_MAX         = 50_000_000e6;
     uint256 internal constant STAC_DEPOSIT_SLOPE       = 50_000_000e6 / uint256(1 days);
@@ -39,6 +39,10 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
     uint256 internal constant GALAXY_DEPOSIT_MAX         = 50_000_000e6;
     uint256 internal constant GALAXY_DEPOSIT_SLOPE       = 50_000_000e6 / uint256(1 days);
     uint256 internal constant GALAXY_TEST_DEPOSIT_AMOUNT = 50_000_000e6;
+
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     uint256 internal constant RIPPLE_RLUSD_USDC_MINT_MAX         = 50_000_000e6;
     uint256 internal constant RIPPLE_RLUSD_USDC_MINT_SLOPE       = 50_000_000e6 / uint256(1 days);
@@ -51,10 +55,6 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
     uint256 internal constant AGORA_AUSD_USDC_MINT_MAX         = 50_000_000e6;
     uint256 internal constant AGORA_AUSD_USDC_MINT_SLOPE       = 50_000_000e6 / uint256(1 days);
     uint256 internal constant AGORA_AUSD_USDC_TEST_MINT_AMOUNT = 50_000_000e6;
-
-    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
-    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
-    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     constructor() {
         id = "20251211";
@@ -102,6 +102,15 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
         });
     }
 
+    function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
+        _testERC4626Onboarding({
+            vault                 : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            expectedDepositAmount : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT,
+            depositMax            : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope          : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
+        });
+    }
+
     function test_ETHEREUM_onboardRippleRlusdMinting() public onChain(ChainIdUtils.Ethereum()) {
         _testDirectUsdcTransferOnboarding({
             usdc                  : Ethereum.USDC,
@@ -129,15 +138,6 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
             expectedDepositAmount : AGORA_AUSD_USDC_TEST_MINT_AMOUNT,
             depositMax            : AGORA_AUSD_USDC_MINT_MAX,
             depositSlope          : AGORA_AUSD_USDC_MINT_SLOPE
-        });
-    }
-
-    function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
-        _testERC4626Onboarding({
-            vault                 : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            expectedDepositAmount : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT,
-            depositMax            : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
-            depositSlope          : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
         });
     }
 
