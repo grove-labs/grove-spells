@@ -48,9 +48,9 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
     uint256 internal constant RIPPLE_RLUSD_USDC_MINT_SLOPE       = 50_000_000e6 / uint256(1 days);
     uint256 internal constant RIPPLE_RLUSD_USDC_TEST_MINT_AMOUNT = 50_000_000e6;
 
-    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_MAX         = 50_000_000e6;
-    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_SLOPE       = 50_000_000e6 / uint256(1 days);
-    uint256 internal constant RIPPLE_RLUSD_USDC_TEST_BURN_AMOUNT = 50_000_000e6;
+    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_MAX         = 50_000_000e18;
+    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_SLOPE       = 50_000_000e18 / uint256(1 days);
+    uint256 internal constant RIPPLE_RLUSD_USDC_TEST_BURN_AMOUNT = 50_000_000e18;
 
     uint256 internal constant AGORA_AUSD_USDC_MINT_MAX         = 50_000_000e6;
     uint256 internal constant AGORA_AUSD_USDC_MINT_SLOPE       = 50_000_000e6 / uint256(1 days);

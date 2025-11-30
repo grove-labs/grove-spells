@@ -50,8 +50,8 @@ contract GroveEthereum_20251211 is GrovePayloadEthereum {
 
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
-    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_MAX   = 50_000_000e6;
-    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_MAX   = 50_000_000e18;
+    uint256 internal constant RIPPLE_RLUSD_USDC_BURN_SLOPE = 50_000_000e18 / uint256(1 days);
 
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
