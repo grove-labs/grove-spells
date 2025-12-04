@@ -17,6 +17,8 @@ interface ISubProxyLike {
 
 contract GroveEthereum_20251211_Test is GroveTestBase {
 
+    address internal constant ETHEREUM_PAYLOAD = 0x6772d7eaaB1c2e275f46B99D8cce8d470fA790Ab;
+
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
     address internal constant STAC_DEPOSIT_WALLET = 0x51e4C4A356784D0B3b698BFB277C626b2b9fe178;
@@ -61,9 +63,9 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-11-23T12:00:00Z");
+        setupDomains("2025-12-04T20:43:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
 
         // Warp to ensure all rate limits and autoline cooldown are reset
         vm.warp(block.timestamp + 1 days);
