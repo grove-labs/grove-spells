@@ -11,10 +11,6 @@ interface AutoLineLike {
     function exec(bytes32) external;
 }
 
-interface ISubProxyLike {
-    function rely(address) external;
-}
-
 contract GroveEthereum_20251211_Test is GroveTestBase {
 
     address internal constant ETHEREUM_PAYLOAD = 0x6772d7eaaB1c2e275f46B99D8cce8d470fA790Ab;
@@ -70,10 +66,6 @@ contract GroveEthereum_20251211_Test is GroveTestBase {
         // Warp to ensure all rate limits and autoline cooldown are reset
         vm.warp(block.timestamp + 1 days);
         AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
-
-        // One-time simplified onboarding of StarGuard to the proxy
-        vm.prank(Ethereum.PAUSE_PROXY);
-        ISubProxyLike(Ethereum.GROVE_PROXY).rely(Ethereum.GROVE_STAR_GUARD);
     }
 
     function test_ETHEREUM_onboardSecuritizeStacDeposits() public onChain(ChainIdUtils.Ethereum()) {
