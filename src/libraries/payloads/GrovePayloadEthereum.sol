@@ -10,19 +10,34 @@ import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
 import { ArbitrumERC20Forwarder }            from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
 import { CCTPForwarder }                     from "xchain-helpers/forwarders/CCTPForwarder.sol";
-import { LZForwarder, ILayerZeroEndpointV2 } from "xchain-helpers/forwarders/LZForwarder.sol";
 import { OptimismForwarder }                 from "xchain-helpers/forwarders/OptimismForwarder.sol";
 
 import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
-import { CastingHelpers }             from "../helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
+
+interface IStarSpellLike {
+
+    /**
+     * @notice Executes actions performed on behalf of the `SubProxy` – i.e. the actual payload
+     * @dev Required, will be called by the StarGuard during permissionless execution
+     */
+    function execute() external;
+
+    /**
+     * @notice Checks if the star payload is executable in the current block
+     * @dev Required, useful for implementing "earliest launch date" or "office hours" strategy
+     * @return result The result of the check (true = executable, false = not)
+     */
+    function isExecutable() external view returns (bool result);
+
+}
 
 /**
  * @dev Base smart contract for Ethereum.
  * @author Steakhouse Financial
  */
-abstract contract GrovePayloadEthereum {
+abstract contract GrovePayloadEthereum is IStarSpellLike {
 
     using OptionsBuilder for bytes;
 
@@ -30,6 +45,10 @@ abstract contract GrovePayloadEthereum {
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_BASE;
     address public immutable PAYLOAD_PLUME;
+
+    function isExecutable() external view virtual returns (bool result) {
+        return true;
+    }
 
     function execute() external {
         _execute();

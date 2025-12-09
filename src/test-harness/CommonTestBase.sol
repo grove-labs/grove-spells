@@ -18,6 +18,10 @@ import { ChainId, ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
+interface ISecuritizeAssetLike {
+  function issueTokens(address to, uint256 amount) external;
+}
+
 struct GroveLiquidityLayerContext {
     address     admin;
     address     controller;
@@ -49,6 +53,7 @@ contract CommonTestBase is SpellRunner {
   bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
   address public constant USDC_MAINNET = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address public constant STAC_MAINNET = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
 
   address public constant EURE_GNOSIS  = 0xcB444e90D8198415266c6a2724b7900fb12FC56E;
   address public constant USDCE_GNOSIS = 0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0;
@@ -69,6 +74,12 @@ contract CommonTestBase is SpellRunner {
       if (asset == USDC_MAINNET) {
         vm.prank(0x28C6c06298d514Db089934071355E5743bf21d60);
         IERC20(asset).transfer(user, amount);
+        return true;
+      }
+      // Securitize STAC
+      if (asset == STAC_MAINNET) {
+        vm.prank(0x22F53B51E4272F954f25BC377B1b759c6C5A528B);
+        ISecuritizeAssetLike(asset).issueTokens(user, amount);
         return true;
       }
     } else if (block.chainid == ChainIds.GNOSIS) {
@@ -180,7 +191,7 @@ contract CommonTestBase is SpellRunner {
               Plume.ALM_FREEZER
           );
       } else {
-          revert("Chain not supported by GroveLiquidityLayerTests context");
+          revert("Chain not supported by GroveLiquidityLayerContext");
       }
   }
 

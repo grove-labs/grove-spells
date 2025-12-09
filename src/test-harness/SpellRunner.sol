@@ -24,7 +24,12 @@ import { LZBridgeTesting }       from "xchain-helpers/testing/bridges/LZBridgeTe
 
 import { ChainIdUtils, ChainId } from "../libraries/helpers/ChainId.sol";
 
-import { GrovePayloadEthereum }  from "../libraries/payloads/GrovePayloadEthereum.sol";
+import { GrovePayloadEthereum } from "../libraries/payloads/GrovePayloadEthereum.sol";
+
+interface IStarGuardLike {
+    function plot(address addr_, bytes32 tag_) external;
+    function exec() external returns (address);
+}
 
 abstract contract SpellRunner is Test {
     using DomainHelpers for Domain;
@@ -300,16 +305,22 @@ abstract contract SpellRunner is Test {
 
     function executeMainnetPayload() internal onChain(ChainIdUtils.Ethereum()) {
         address payloadAddress = chainData[ChainIdUtils.Ethereum()].payload;
-        IExecutor executor     = chainData[ChainIdUtils.Ethereum()].executor;
-        require(_isContract(payloadAddress), "PAYLOAD IS NOT A CONTRACT");
+
+        require(_isContract(payloadAddress),                         "PAYLOAD IS NOT A CONTRACT");
+        require(GrovePayloadEthereum(payloadAddress).isExecutable(), "MAINNET PAYLOAD IS NOT EXECUTABLE");
+
+        bytes   memory code  = payloadAddress.code;
+        bytes32 bytecodeHash = keccak256(code);
 
         vm.prank(Ethereum.PAUSE_PROXY);
-        (bool success,) = address(executor).call(abi.encodeWithSignature(
-            'exec(address,bytes)',
-            payloadAddress,
-            abi.encodeWithSignature('execute()')
-        ));
-        require(success, "FAILED TO EXECUTE PAYLOAD");
+        IStarGuardLike(Ethereum.GROVE_STAR_GUARD).plot({
+            addr_ : payloadAddress,
+            tag_  : bytecodeHash
+        });
+
+        address returnedPayloadAddress = IStarGuardLike(Ethereum.GROVE_STAR_GUARD).exec();
+
+        require(payloadAddress == returnedPayloadAddress, "FAILED TO EXECUTE PAYLOAD");
         chainData[ChainIdUtils.Ethereum()].spellExecuted = true;
     }
 
