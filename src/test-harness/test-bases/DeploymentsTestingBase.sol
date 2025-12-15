@@ -3,11 +3,8 @@ pragma solidity ^0.8.0;
 
 import { Avalanche } from "grove-address-registry/Avalanche.sol";
 import { Ethereum }  from "grove-address-registry/Ethereum.sol";
-import { Plume }     from "grove-address-registry/Plume.sol";
-import { Base }      from "grove-address-registry/Base.sol";
 
-import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
-import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
+import { LZForwarder } from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
 import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
@@ -22,11 +19,10 @@ import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.
 import { LZReceiver }       from "lib/xchain-helpers/src/receivers/LZReceiver.sol";
 import { OptimismReceiver } from "lib/xchain-helpers/src/receivers/OptimismReceiver.sol";
 
-import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
-import { ChainId, ChainIdUtils }      from "src/libraries/helpers/ChainId.sol";
-import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
+import { CastingHelpers }        from "src/libraries/helpers/CastingHelpers.sol";
+import { ChainId, ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { CommonTestBase } from "../CommonTestBase.sol";
 
 interface ILayerZeroEndpointV2 {
     function delegates(address sender) external view returns (address);
@@ -252,142 +248,6 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
 
         // Target has to be the executor
         assertEq(receiver.target(), _executor, "incorrect-target");
-    }
-
-    function _testControllerUpgrade(address oldController, address newController) internal {
-        ChainId currentChain = ChainIdUtils.fromUint(block.chainid);
-
-        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
-
-        // Note the functions used are interchangable with mainnet and foreign controllers
-        MainnetController controller = MainnetController(newController);
-
-        bytes32 CONTROLLER = ctx.proxy.CONTROLLER();
-        bytes32 RELAYER    = controller.RELAYER();
-        bytes32 FREEZER    = controller.FREEZER();
-
-        if (oldController != address(0)) {
-            assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
-        }
-        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false);
-
-
-        if (oldController != address(0)) {
-            assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
-        }
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false);
-
-        assertEq(controller.hasRole(RELAYER, ctx.relayer), false);
-        assertEq(controller.hasRole(FREEZER, ctx.freezer), false);
-
-        // Verify CCTPv1 recipients are not set
-
-        if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(
-                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
-                CastingHelpers.addressToCctpRecipient(address(0))
-            );
-            assertEq(
-                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
-                CastingHelpers.addressToCctpRecipient(address(0))
-            );
-            // Intentionally skipping the following (CCTPv1 is not deployed there)
-            // Plume
-            // ...
-        } else {
-            assertEq(controller.mintRecipients(
-                CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
-                CastingHelpers.addressToCctpRecipient(address(0))
-            );
-        }
-
-        // Verify Centrifuge recipients are not set
-
-        if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(address(0))
-            );
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(address(0))
-            );
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(address(0))
-            );
-            // Intentionally skipping the following (Centrifuge is not deployed there)
-            // ...
-        } else {
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(address(0))
-            );
-        }
-
-        // Verify LayerZero recipients are not set
-
-        // TODO: Implement checks that LayerZero recipients are not set
-
-        executeAllPayloadsAndBridges();
-
-        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), false);
-        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), true);
-
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), false);
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), true);
-
-        assertEq(controller.hasRole(RELAYER, ctx.relayer), true);
-        assertEq(controller.hasRole(FREEZER, ctx.freezer), true);
-
-        // Verify CCTPv1 recipients are set
-
-        if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(
-                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
-                CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
-            );
-            assertEq(
-                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
-                CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
-            );
-            // Intentionally skipping the following (CCTPv1 is not deployed there)
-            // Plume
-            // ...
-        } else {
-            assertEq(
-                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
-                CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
-            );
-        }
-
-        // Verify Centrifuge recipients are set
-
-        if (currentChain == ChainIdUtils.Ethereum()) {
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
-            );
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
-            );
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
-            );
-            // Intentionally skipping the following (Centrifuge is not deployed there)
-            // ...
-        } else {
-            assertEq(
-                controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
-                CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
-            );
-        }
-
-        // Verify LayerZero recipients are set
-
-        // TODO: Implement checks that LayerZero recipients are set
     }
 
 }
