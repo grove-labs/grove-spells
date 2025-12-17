@@ -6,7 +6,7 @@ import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
 /**
- * @dev Base smart contract for Avalanche.
+ * @dev    Base smart contract for Avalanche.
  * @author Steakhouse Financial
  */
 abstract contract GrovePayloadAvalanche {
