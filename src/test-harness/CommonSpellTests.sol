@@ -58,7 +58,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         assertLe(totalGas, MAX_EXECUTION_COST, "TestError/spell-deploy-cost-too-high");
     }
 
-    function test_MAINNET_ForeignRecipientsSet() public {
+    function test_ETHEREUM_ForeignRecipientsSet() public {
         _testForeignDomainsRecipientsSetting();
     }
 

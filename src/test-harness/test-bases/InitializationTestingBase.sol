@@ -25,7 +25,7 @@ abstract contract InitializationTestingBase is CommonTestBase {
     function _testControllerUpgrade(address oldController, address newController) internal {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        // Note the functions used are interchangable with mainnet and foreign controllers
+        // Note the functions used are interchangeable with mainnet and foreign controllers
         MainnetController controller = MainnetController(newController);
 
         bytes32 CONTROLLER = ctx.proxy.CONTROLLER();
@@ -36,7 +36,6 @@ abstract contract InitializationTestingBase is CommonTestBase {
             assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true, "InitTest/incorrect-old-controller");
         }
         assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false, "InitTest/incorrect-new-controller");
-
 
         if (oldController != address(0)) {
             assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true, "InitTest/incorrect-old-controller");
