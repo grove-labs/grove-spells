@@ -73,16 +73,7 @@ abstract contract SpellRunner is Test {
         require(chainIds.length > 0, "No chains provided");
         blocks = new uint256[](chainIds.length);
 
-        // Parse the date string to a Unix timestamp (assume UTC and ISO 8601)
-        // Requires 'date' CLI tool on build machine. Format: YYYY-MM-DDTHH:MM:SSZ or similar.
-        string[] memory dateCmd = new string[](6);
-        dateCmd[0] = "date";
-        dateCmd[1] = "-j";
-        dateCmd[2] = "-f";
-        dateCmd[3] = "%Y-%m-%dT%H:%M:%SZ";
-        dateCmd[4] = date;
-        dateCmd[5] = "+%s";
-        string memory timestampString = strip0x(vm.toString(vm.ffi(dateCmd)));
+        string memory timestampString = isoToUnix(date);
 
         for (uint256 i = 0; i < chainIds.length; ++i) {
             string memory urlBase   = "https://api.etherscan.io/v2/api?";
@@ -116,6 +107,26 @@ abstract contract SpellRunner is Test {
             // Result: {"status":"1","message":"OK","result":"18518418"}
             blocks[i] = vm.parseJsonUint(response, ".result");
         }
+    }
+
+    function isoToUnix(string memory iso) internal returns (string memory) {
+        // Build a bash script that works on both GNU date (Linux) and BSD date (macOS)
+        string memory sh = string.concat(
+            "ISO='", iso, "'; ",
+            "if date --version >/dev/null 2>&1; then ",
+                "date -d \"$ISO\" +%s; ",
+            "else ",
+                "date -j -f '%Y-%m-%dT%H:%M:%SZ' \"$ISO\" +%s; ",
+            "fi"
+        );
+
+        string[] memory cmd = new string[](3);
+        cmd[0] = "bash";
+        cmd[1] = "-lc";
+        cmd[2] = sh;
+
+        bytes memory out = vm.ffi(cmd);
+        return strip0x(vm.toString(out));
     }
 
     function strip0x(string memory s) internal pure returns (string memory) {
