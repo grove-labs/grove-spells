@@ -23,8 +23,6 @@ abstract contract InitializationTestingBase is CommonTestBase {
     }
 
     function _testControllerUpgrade(address oldController, address newController) internal {
-        ChainId currentChain = ChainIdUtils.fromUint(block.chainid);
-
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         // Note the functions used are interchangable with mainnet and foreign controllers
