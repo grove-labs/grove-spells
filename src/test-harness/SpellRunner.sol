@@ -79,7 +79,7 @@ abstract contract SpellRunner is Test {
         string memory apiKey          = vm.envString(apiKeyEnv);
 
         for (uint256 i = 0; i < chainIds.length; ++i) {
-            string memory chainId   = vm.toString(ChainId.unwrap(chainIds[i]));
+            string memory chainId = vm.toString(ChainId.unwrap(chainIds[i]));
 
             string memory url = string(
                 abi.encodePacked(
