@@ -66,47 +66,79 @@ abstract contract SpellRunner is Test {
         if (chainData[chainId].domain.forkId != vm.activeFork()) chainData[chainId].domain.selectFork();
     }
 
-    /// @dev maximum 3 chains in 1 query
-    function getBlocksFromDate(string memory date, string[] memory chains) internal returns (uint256[] memory blocks) {
-        blocks = new uint256[](chains.length);
+    /// @dev Query Etherscan "get block number by timestamp" endpoint for multiple chains.
+    /// The 'chainIds' array should have the chain IDs [1, 43114, 8453, ...]
+    /// and the function expects environment variables: ETHERSCAN_API_KEY
+    function getBlocksFromDateByChainIds(string memory date, ChainId[] memory chainIds) internal returns (uint256[] memory blocks) {
+        require(chainIds.length > 0, "No chains provided");
+        blocks = new uint256[](chainIds.length);
 
-        // Process chains in batches of 3
-        for (uint256 batchStart; batchStart < chains.length; batchStart += 3) {
-            uint256 batchSize = chains.length - batchStart < 3 ? chains.length - batchStart : 3;
-            string[] memory batchChains = new string[](batchSize);
+        string memory timestampString = isoToUnix(date);
+        string memory urlBase         = "https://api.etherscan.io/v2/api?";
+        string memory apiKeyEnv       = "ETHERSCAN_API_KEY";
+        string memory apiKey          = vm.envString(apiKeyEnv);
 
-            // Create batch of chains
-            for (uint256 i = 0; i < batchSize; i++) {
-                batchChains[i] = chains[batchStart + i];
-            }
+        for (uint256 i = 0; i < chainIds.length; ++i) {
+            string memory chainId = vm.toString(ChainId.unwrap(chainIds[i]));
 
-            // Build networks parameter for this batch
-            string memory networks = "";
-            for (uint256 i = 0; i < batchSize; i++) {
-                if (i == 0) {
-                    networks = string(abi.encodePacked("networks=", batchChains[i]));
-                } else {
-                    networks = string(abi.encodePacked(networks, "&networks=", batchChains[i]));
-                }
-            }
+            string memory url = string(
+                abi.encodePacked(
+                    urlBase,
+                    "chainId=", chainId,
+                    "&module=block",
+                    "&action=getblocknobytime",
+                    "&timestamp=", timestampString,
+                    "&closest=after",
+                    "&apikey=", apiKey
+                )
+            );
 
-            string[] memory inputs = new string[](8);
-            inputs[0] = "curl";
-            inputs[1] = "-s";
-            inputs[2] = "--request";
-            inputs[3] = "GET";
-            inputs[4] = "--url";
-            inputs[5] = string(abi.encodePacked("https://api.g.alchemy.com/data/v1/", vm.envString("ALCHEMY_API_KEY"), "/utility/blocks/by-timestamp?", networks, "&timestamp=", date, "&direction=AFTER"));
-            inputs[6] = "--header";
-            inputs[7] = "accept: application/json";
+            string[] memory curlCmd = new string[](8);
+            curlCmd[0] = "curl";
+            curlCmd[1] = "-s";
+            curlCmd[2] = "--request";
+            curlCmd[3] = "GET";
+            curlCmd[4] = "--url";
+            curlCmd[5] = url;
+            curlCmd[6] = "--header";
+            curlCmd[7] = "accept: application/json";
 
-            string memory response = string(vm.ffi(inputs));
-
-            // Store results in the correct positions of the final blocks array
-            for (uint256 i = 0; i < batchSize; i++) {
-                blocks[batchStart + i] = vm.parseJsonUint(response, string(abi.encodePacked(".data[", vm.toString(i), "].block.number")));
-            }
+            string memory response = string(vm.ffi(curlCmd));
+            // Result: {"status":"1","message":"OK","result":"18518418"}
+            blocks[i] = vm.parseJsonUint(response, ".result");
         }
+    }
+
+    function isoToUnix(string memory iso) internal returns (string memory) {
+        // Build a bash script that works on both GNU date (Linux) and BSD date (macOS)
+        string memory sh = string.concat(
+            "ISO='", iso, "'; ",
+            "if date --version >/dev/null 2>&1; then ",
+                "date -d \"$ISO\" +%s; ",
+            "else ",
+                "date -j -f '%Y-%m-%dT%H:%M:%SZ' \"$ISO\" +%s; ",
+            "fi"
+        );
+
+        string[] memory cmd = new string[](3);
+        cmd[0] = "bash";
+        cmd[1] = "-lc";
+        cmd[2] = sh;
+
+        bytes memory out = vm.ffi(cmd);
+        return strip0x(vm.toString(out));
+    }
+
+    function strip0x(string memory s) internal pure returns (string memory) {
+        bytes memory b = bytes(s);
+        if (b.length >= 2 && b[0] == "0" && (b[1] == "x" || b[1] == "X")) {
+            bytes memory out = new bytes(b.length - 2);
+            for (uint256 i = 2; i < b.length; i++) {
+                out[i - 2] = b[i];
+            }
+            return string(out);
+        }
+        return s;
     }
 
     function setupBlocksFromDate(string memory date) internal {
@@ -116,15 +148,12 @@ abstract contract SpellRunner is Test {
             chainId : 98866
         }));
 
-        string[] memory chains = new string[](5);
-        chains[0] = "eth-mainnet";
-        chains[1] = "avax-mainnet";
-        chains[2] = "base-mainnet";
-        // Not used for now, but API requires at least 5 chains in a single request
-        chains[3] = "arb-mainnet"; // Not used
-        chains[4] = "opt-mainnet"; // Not used
+        ChainId[] memory chainIds = new ChainId[](3);
+        chainIds[0] = ChainIdUtils.Ethereum();
+        chainIds[1] = ChainIdUtils.Avalanche();
+        chainIds[2] = ChainIdUtils.Base();
 
-        uint256[] memory blocks = getBlocksFromDate(date, chains);
+        uint256[] memory blocks = getBlocksFromDateByChainIds(date, chainIds);
 
         chainData[ChainIdUtils.Ethereum()].domain  = getChain("mainnet").createFork(blocks[0]);
         chainData[ChainIdUtils.Avalanche()].domain = getChain("avalanche").createFork(blocks[1]);
