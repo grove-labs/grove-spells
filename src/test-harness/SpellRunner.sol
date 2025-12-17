@@ -74,12 +74,12 @@ abstract contract SpellRunner is Test {
         blocks = new uint256[](chainIds.length);
 
         string memory timestampString = isoToUnix(date);
+        string memory urlBase         = "https://api.etherscan.io/v2/api?";
+        string memory apiKeyEnv       = "ETHERSCAN_API_KEY";
+        string memory apiKey          = vm.envString(apiKeyEnv);
 
         for (uint256 i = 0; i < chainIds.length; ++i) {
-            string memory urlBase   = "https://api.etherscan.io/v2/api?";
-            string memory apiKeyEnv = "ETHERSCAN_API_KEY";
-            string memory apiKey    = vm.envString(apiKeyEnv);
-            string memory chainId   = vm.toString(ChainId.unwrap(chainIds[i]));
+            string memory chainId = vm.toString(ChainId.unwrap(chainIds[i]));
 
             string memory url = string(
                 abi.encodePacked(
@@ -139,13 +139,6 @@ abstract contract SpellRunner is Test {
             return string(out);
         }
         return s;
-    }
-
-    function bytesToUint(bytes memory b) internal override pure returns (uint256 x) {
-        require(b.length <= 32, "too long");
-        assembly {
-            x := mload(add(b, 32))
-        }
     }
 
     function setupBlocksFromDate(string memory date) internal {
