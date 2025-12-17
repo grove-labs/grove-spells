@@ -141,13 +141,6 @@ abstract contract SpellRunner is Test {
         return s;
     }
 
-    function bytesToUint(bytes memory b) internal override pure returns (uint256 x) {
-        require(b.length <= 32, "too long");
-        assembly {
-            x := mload(add(b, 32))
-        }
-    }
-
     function setupBlocksFromDate(string memory date) internal {
         setChain("plume", ChainData({
             name    : "Plume",
