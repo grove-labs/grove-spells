@@ -6,7 +6,7 @@ import { Plume } from "lib/grove-address-registry/src/Plume.sol";
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
 /**
- * @dev Base smart contract for Plume.
+ * @dev    Base smart contract for Plume.
  * @author Steakhouse Financial
  */
 abstract contract GrovePayloadPlume {

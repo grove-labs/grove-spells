@@ -34,7 +34,7 @@ interface IStarSpellLike {
 }
 
 /**
- * @dev Base smart contract for Ethereum.
+ * @dev    Base smart contract for Ethereum.
  * @author Steakhouse Financial
  */
 abstract contract GrovePayloadEthereum is IStarSpellLike {
