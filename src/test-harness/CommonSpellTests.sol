@@ -20,6 +20,12 @@ import { GroveLiquidityLayerContext, CommonTestBase } from "./CommonTestBase.sol
 
 abstract contract CommonSpellTests is CommonTestBase {
 
+    struct BridgeTypesToTest {
+        bool cctp;
+        bool centrifuge;
+        bool layerZero;
+    }
+
     /**********************************************************************************************/
     /*** Constants                                                                              ***/
     /**********************************************************************************************/
@@ -77,7 +83,14 @@ abstract contract CommonSpellTests is CommonTestBase {
 
     function test_BASE_ForeignRecipientsSet() public {
         vm.skip(true); // NOTE Base not initialized yet
-        _testMainnetDomainRecipientsSetting(ChainIdUtils.Base());
+        _testMainnetDomainRecipientsSetting(
+            ChainIdUtils.Base(),
+            BridgeTypesToTest({
+                cctp       : true,
+                centrifuge : true,
+                layerZero  : true
+            })
+        );
     }
 
     function test_PLUME_PayloadBytecodeMatches() public {
@@ -164,7 +177,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         assertEq(
             controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
             CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY),
-            "InitTest/Avalanche/incorrect-cctp-recipient"
+            "CommonTest/Avalanche/incorrect-cctp-recipient"
         );
 
         // Centrifuge
@@ -197,25 +210,11 @@ abstract contract CommonSpellTests is CommonTestBase {
         assertEq(
             controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
             CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY),
-            "InitTest/Plume/incorrect-centrifuge-recipient"
+            "CommonTest/Plume/incorrect-centrifuge-recipient"
         );
 
         // LayerZero
         // NOTE LayerZero crosschain transfers to Plume are not onboarded yet
-    }
-
-    struct BridgeTypesToTest {
-        bool cctp;
-        bool centrifuge;
-        bool layerZero;
-    }
-
-    function _testMainnetDomainRecipientsSetting(ChainId chainId) private onChain(chainId) {
-        _testMainnetDomainRecipientsSetting(chainId, BridgeTypesToTest({
-            cctp       : true,
-            centrifuge : true,
-            layerZero  : true
-        }));
     }
 
     function _testMainnetDomainRecipientsSetting(ChainId chainId, BridgeTypesToTest memory bridgeTypesToTest) private onChain(chainId) {
@@ -229,7 +228,7 @@ abstract contract CommonSpellTests is CommonTestBase {
             assertEq(
                 controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
                 CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY),
-                "InitTest/Mainnet/incorrect-cctp-recipient"
+                "CommonTest/Mainnet/incorrect-cctp-recipient"
             );
         }
 
@@ -238,7 +237,7 @@ abstract contract CommonSpellTests is CommonTestBase {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
                 CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY),
-                "InitTest/Mainnet/incorrect-centrifuge-recipient"
+                "CommonTest/Mainnet/incorrect-centrifuge-recipient"
             );
         }
 
@@ -247,7 +246,7 @@ abstract contract CommonSpellTests is CommonTestBase {
             assertEq(
                 controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_ETHEREUM),
                 CastingHelpers.addressToLayerZeroRecipient(Ethereum.ALM_PROXY),
-                "InitTest/Mainnet/incorrect-layerzero-recipient"
+                "CommonTest/Mainnet/incorrect-layerzero-recipient"
             );
         }
     }

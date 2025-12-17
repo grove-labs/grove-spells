@@ -33,29 +33,29 @@ abstract contract InitializationTestingBase is CommonTestBase {
         bytes32 FREEZER    = controller.FREEZER();
 
         if (oldController != address(0)) {
-            assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true);
+            assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true, "InitTest/incorrect-old-controller");
         }
-        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false);
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false, "InitTest/incorrect-new-controller");
 
 
         if (oldController != address(0)) {
-            assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true);
+            assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true, "InitTest/incorrect-old-controller");
         }
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false);
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false, "InitTest/incorrect-new-controller");
 
-        assertEq(controller.hasRole(RELAYER, ctx.relayer), false);
-        assertEq(controller.hasRole(FREEZER, ctx.freezer), false);
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), false, "InitTest/relayer-incorrectly-preset");
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), false, "InitTest/freezer-incorrectly-preset");
 
         executeAllPayloadsAndBridges();
 
-        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), false);
-        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), true);
+        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), false, "InitTest/old-controller-not-revoked");
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), true, "InitTest/new-controller-not-granted");
 
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), false);
-        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), true);
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), false, "InitTest/old-controller-not-revoked");
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), true, "InitTest/new-controller-not-granted");
 
-        assertEq(controller.hasRole(RELAYER, ctx.relayer), true);
-        assertEq(controller.hasRole(FREEZER, ctx.freezer), true);
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), true, "InitTest/relayer-not-granted");
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), true, "InitTest/freezer-not-granted");
     }
 
 }
