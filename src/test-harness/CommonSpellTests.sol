@@ -82,7 +82,6 @@ abstract contract CommonSpellTests is CommonTestBase {
     }
 
     function test_BASE_ForeignRecipientsSet() public {
-        vm.skip(true); // NOTE Base not initialized yet
         _testMainnetDomainRecipientsSetting(
             ChainIdUtils.Base(),
             BridgeTypesToTest({
@@ -191,13 +190,25 @@ abstract contract CommonSpellTests is CommonTestBase {
         /**********************************************************************************************/
 
         // CCTP
-        // NOTE Base not initialized yet
+        assertEq(
+            controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
+            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY),
+            "CommonTest/Base/incorrect-cctp-recipient"
+        );
 
         // Centrifuge
-        // NOTE Base not initialized yet
+        assertEq(
+            controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
+            CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY),
+            "CommonTest/Base/incorrect-centrifuge-recipient"
+        );
 
         // LayerZero
-        // NOTE Base not initialized yet
+        assertEq(
+            controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_BASE),
+            CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY),
+            "CommonTest/Base/incorrect-layerzero-recipient"
+        );
 
         /**********************************************************************************************/
         /*** Plume                                                                                  ***/
