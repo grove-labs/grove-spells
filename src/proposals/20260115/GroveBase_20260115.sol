@@ -81,7 +81,7 @@ contract GroveBase_20260115 is GrovePayloadBase {
         ForeignControllerInit.initAlmSystem(
             ControllerInstance({
                 almProxy   : Base.ALM_PROXY,
-                controller : Base.ALM_CONTROLLER,
+                controller : Base.ALM_CONTROLLER, // TODO make sure it's redeployed to post-audit version
                 rateLimits : Base.ALM_RATE_LIMITS
             }),
             ForeignControllerInit.ConfigAddressParams({
