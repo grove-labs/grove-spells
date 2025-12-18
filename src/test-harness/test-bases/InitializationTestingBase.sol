@@ -1,0 +1,49 @@
+// SPDX-License-Identifier: AGPL-3.0
+pragma solidity ^0.8.0;
+
+import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
+
+import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+
+abstract contract InitializationTestingBase is CommonTestBase {
+
+    function _testControllerInitialization(address newController) internal {
+        _testControllerUpgrade(address(0), newController);
+    }
+
+    function _testControllerUpgrade(address oldController, address newController) internal {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        // Note the functions used are interchangeable with mainnet and foreign controllers
+        MainnetController controller = MainnetController(newController);
+
+        bytes32 CONTROLLER = ctx.proxy.CONTROLLER();
+        bytes32 RELAYER    = controller.RELAYER();
+        bytes32 FREEZER    = controller.FREEZER();
+
+        if (oldController != address(0)) {
+            assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), true, "InitTest/incorrect-old-controller-proxy");
+        }
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), false, "InitTest/incorrect-new-controller-proxy");
+
+        if (oldController != address(0)) {
+            assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), true, "InitTest/incorrect-old-controller-rate-limits");
+        }
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), false, "InitTest/incorrect-new-controller-rate-limits");
+
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), false, "InitTest/relayer-incorrectly-pre-granted");
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), false, "InitTest/freezer-incorrectly-pre-granted");
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(ctx.proxy.hasRole(CONTROLLER, oldController), false, "InitTest/old-controller-not-revoked-proxy");
+        assertEq(ctx.proxy.hasRole(CONTROLLER, newController), true, "InitTest/new-controller-not-granted-proxy");
+
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, oldController), false, "InitTest/old-controller-not-revoked-rate-limits");
+        assertEq(ctx.rateLimits.hasRole(CONTROLLER, newController), true, "InitTest/new-controller-not-granted-rate-limits");
+
+        assertEq(controller.hasRole(RELAYER, ctx.relayer), true, "InitTest/relayer-not-granted");
+        assertEq(controller.hasRole(FREEZER, ctx.freezer), true, "InitTest/freezer-not-granted");
+    }
+
+}
