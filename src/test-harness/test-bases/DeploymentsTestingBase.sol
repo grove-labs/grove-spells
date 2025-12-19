@@ -38,9 +38,9 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
     }
 
     struct AlmSystemActors {
-        address deployer;
-        address freezer;
-        address relayer;
+        address   deployer;
+        address   freezer;
+        address[] relayers;
     }
 
     struct ForeignAlmSystemDependencies {
@@ -66,16 +66,22 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         // All contracts have admin as admin set in constructor
         assertEq(controller.hasRole(0x0, contracts.admin), true, "incorrect-admin-controller");
 
-        // No roles other than admin as admin are set before the initialization (checking for EOA and multisig wallets)
+        // No roles are assigned to the deployer address before the initialization
         assertEq(controller.hasRole(0x0,                  actors.deployer), false, "incorrect-admin-controller");
-        assertEq(controller.hasRole(0x0,                  actors.relayer),  false, "incorrect-admin-controller");
-        assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
         assertEq(controller.hasRole(controller.FREEZER(), actors.deployer), false, "incorrect-freezer-controller");
-        assertEq(controller.hasRole(controller.FREEZER(), actors.freezer),  false, "incorrect-freezer-controller");
-        assertEq(controller.hasRole(controller.FREEZER(), actors.relayer),  false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.deployer), false, "incorrect-relayer-controller");
+
+        // No roles are assigned to the freezer address before the initialization
+        assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
+        assertEq(controller.hasRole(controller.FREEZER(), actors.freezer),  false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.freezer),  false, "incorrect-relayer-controller");
-        assertEq(controller.hasRole(controller.RELAYER(), actors.relayer),  false, "incorrect-relayer-controller");
+
+        // No roles are assigned to the any of the relayers addresses before the initialization
+        for (uint256 i = 0; i < actors.relayers.length; i++) {
+            assertEq(controller.hasRole(0x0,                  actors.relayers[i]),  false, "incorrect-admin-controller");
+            assertEq(controller.hasRole(controller.FREEZER(), actors.relayers[i]),  false, "incorrect-freezer-controller");
+            assertEq(controller.hasRole(controller.RELAYER(), actors.relayers[i]),  false, "incorrect-relayer-controller");
+        }
 
         // Controller has correct proxy, rate limits, psm, usdc, and cctp messenger
         assertEq(address(controller.proxy()),      contracts.proxy,      "incorrect-almProxy");
@@ -96,16 +102,22 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         // All contracts have admin as admin set in constructor
         assertEq(controller.hasRole(0x0, contracts.admin), true, "incorrect-admin-controller");
 
-        // No roles other than admin as admin are set before the initialization (checking for EOA and multisig wallets)
+        // No roles are assigned to the deployer address before the initialization
         assertEq(controller.hasRole(0x0,                  actors.deployer), false, "incorrect-admin-controller");
-        assertEq(controller.hasRole(0x0,                  actors.relayer),  false, "incorrect-admin-controller");
-        assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
         assertEq(controller.hasRole(controller.FREEZER(), actors.deployer), false, "incorrect-freezer-controller");
-        assertEq(controller.hasRole(controller.FREEZER(), actors.freezer),  false, "incorrect-freezer-controller");
-        assertEq(controller.hasRole(controller.FREEZER(), actors.relayer),  false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.deployer), false, "incorrect-relayer-controller");
+
+        // No roles are assigned to the freezer address before the initialization
+        assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
+        assertEq(controller.hasRole(controller.FREEZER(), actors.freezer),  false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.freezer),  false, "incorrect-relayer-controller");
-        assertEq(controller.hasRole(controller.RELAYER(), actors.relayer),  false, "incorrect-relayer-controller");
+
+        // No roles are assigned to the any of the relayers addresses before the initialization
+        for (uint256 i = 0; i < actors.relayers.length; i++) {
+            assertEq(controller.hasRole(0x0,                  actors.relayers[i]),  false, "incorrect-admin-controller");
+            assertEq(controller.hasRole(controller.FREEZER(), actors.relayers[i]),  false, "incorrect-freezer-controller");
+            assertEq(controller.hasRole(controller.RELAYER(), actors.relayers[i]),  false, "incorrect-relayer-controller");
+        }
 
         // Controller has correct proxy, rate limits, psm, usdc, and cctp messenger
         assertEq(address(controller.proxy()),      contracts.proxy,      "incorrect-almProxy");
