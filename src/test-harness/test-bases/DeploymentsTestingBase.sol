@@ -66,17 +66,17 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         // All contracts have admin as admin set in constructor
         assertEq(controller.hasRole(0x0, contracts.admin), true, "incorrect-admin-controller");
 
-        // No roles other are assigned to the deployer before the initialization
+        // No roles are assigned to the deployer address before the initialization
         assertEq(controller.hasRole(0x0,                  actors.deployer), false, "incorrect-admin-controller");
         assertEq(controller.hasRole(controller.FREEZER(), actors.deployer), false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.deployer), false, "incorrect-relayer-controller");
 
-        // No roles other are assigned to the freezer before the initialization
+        // No roles are assigned to the freezer address before the initialization
         assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
         assertEq(controller.hasRole(controller.FREEZER(), actors.freezer),  false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.freezer),  false, "incorrect-relayer-controller");
 
-        // No roles other are assigned to the any of the relayers before the initialization
+        // No roles are assigned to the any of the relayers addresses before the initialization
         for (uint256 i = 0; i < actors.relayers.length; i++) {
             assertEq(controller.hasRole(0x0,                  actors.relayers[i]),  false, "incorrect-admin-controller");
             assertEq(controller.hasRole(controller.FREEZER(), actors.relayers[i]),  false, "incorrect-freezer-controller");
@@ -102,17 +102,17 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         // All contracts have admin as admin set in constructor
         assertEq(controller.hasRole(0x0, contracts.admin), true, "incorrect-admin-controller");
 
-        // No roles other are assigned to the deployer before the initialization
+        // No roles are assigned to the deployer address before the initialization
         assertEq(controller.hasRole(0x0,                  actors.deployer), false, "incorrect-admin-controller");
         assertEq(controller.hasRole(controller.FREEZER(), actors.deployer), false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.deployer), false, "incorrect-relayer-controller");
 
-        // No roles other are assigned to the freezer before the initialization
+        // No roles are assigned to the freezer address before the initialization
         assertEq(controller.hasRole(0x0,                  actors.freezer),  false, "incorrect-admin-controller");
         assertEq(controller.hasRole(controller.FREEZER(), actors.freezer),  false, "incorrect-freezer-controller");
         assertEq(controller.hasRole(controller.RELAYER(), actors.freezer),  false, "incorrect-relayer-controller");
 
-        // No roles other are assigned to the any of the relayers before the initialization
+        // No roles are assigned to the any of the relayers addresses before the initialization
         for (uint256 i = 0; i < actors.relayers.length; i++) {
             assertEq(controller.hasRole(0x0,                  actors.relayers[i]),  false, "incorrect-admin-controller");
             assertEq(controller.hasRole(controller.FREEZER(), actors.relayers[i]),  false, "incorrect-freezer-controller");
