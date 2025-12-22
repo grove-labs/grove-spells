@@ -48,6 +48,10 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         // TODO Item title
         //   Forum : TODO forum link
         _onboardCctpTransfersToBase();
+
+        // TODO Item title
+        //   Forum : TODO forum link
+        _offboardAgoraAusd();
     }
 
     function _upgradeController() internal {
@@ -150,6 +154,10 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             CCTPForwarder.DOMAIN_ID_CIRCLE_BASE // TODO Use CCTPv2 Forwarder
         );
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
+    }
+
+    function _offboardAgoraAusd() internal {
+        // TODO Implement or remove this item if not needed
     }
 
 }

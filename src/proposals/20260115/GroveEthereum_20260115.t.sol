@@ -107,6 +107,10 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         );
     }
 
+    function test_ETHEREUM_offboardAgoraAusd() public onChain(ChainIdUtils.Ethereum()) {
+        vm.skip(true); // TODO Implement or remove this item if not needed
+    }
+
     function test_BASE_governanceDeployment() public onChain(ChainIdUtils.Base()) {
         _verifyForeignDomainExecutorDeployment({
             _executor : Base.GROVE_EXECUTOR,
