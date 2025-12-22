@@ -20,6 +20,7 @@ import { OptimismBridgeTesting } from "xchain-helpers/testing/bridges/OptimismBr
 import { AMBBridgeTesting }      from "xchain-helpers/testing/bridges/AMBBridgeTesting.sol";
 import { ArbitrumBridgeTesting } from "xchain-helpers/testing/bridges/ArbitrumBridgeTesting.sol";
 import { CCTPBridgeTesting }     from "xchain-helpers/testing/bridges/CCTPBridgeTesting.sol";
+import { CCTPv2BridgeTesting }   from "xchain-helpers/testing/bridges/CCTPv2BridgeTesting.sol";
 import { LZBridgeTesting }       from "xchain-helpers/testing/bridges/LZBridgeTesting.sol";
 
 import { ChainIdUtils, ChainId } from "../libraries/helpers/ChainId.sol";
@@ -200,6 +201,12 @@ abstract contract SpellRunner is Test {
                 chainData[ChainIdUtils.Avalanche()].domain
             )
         );
+        chainData[ChainIdUtils.Avalanche()].bridges.push(
+            CCTPv2BridgeTesting.createCircleBridge(
+                chainData[ChainIdUtils.Ethereum()].domain,
+                chainData[ChainIdUtils.Avalanche()].domain
+            )
+        );
 
         // Base
         chainData[ChainIdUtils.Base()].bridges.push(
@@ -214,10 +221,22 @@ abstract contract SpellRunner is Test {
                 chainData[ChainIdUtils.Base()].domain
             )
         );
+        chainData[ChainIdUtils.Base()].bridges.push(
+            CCTPv2BridgeTesting.createCircleBridge(
+                chainData[ChainIdUtils.Ethereum()].domain,
+                chainData[ChainIdUtils.Base()].domain
+            )
+        );
 
         // Plume
         chainData[ChainIdUtils.Plume()].bridges.push(
             ArbitrumBridgeTesting.createNativeBridge(
+                chainData[ChainIdUtils.Ethereum()].domain,
+                chainData[ChainIdUtils.Plume()].domain
+            )
+        );
+        chainData[ChainIdUtils.Plume()].bridges.push(
+            CCTPv2BridgeTesting.createCircleBridge(
                 chainData[ChainIdUtils.Ethereum()].domain,
                 chainData[ChainIdUtils.Plume()].domain
             )
@@ -281,6 +300,9 @@ abstract contract SpellRunner is Test {
         } else if (bridge.bridgeType == BridgeType.CCTP) {
             CCTPBridgeTesting.relayMessagesToDestination(bridge, false);
             CCTPBridgeTesting.relayMessagesToSource(bridge, false);
+        } else if (bridge.bridgeType == BridgeType.CCTP_V2) {
+            CCTPv2BridgeTesting.relayMessagesToDestination(bridge, false);
+            CCTPv2BridgeTesting.relayMessagesToSource(bridge, false);
         } else if (bridge.bridgeType == BridgeType.AMB) {
             AMBBridgeTesting.relayMessagesToDestination(bridge, false);
         } else if (bridge.bridgeType == BridgeType.ARBITRUM) {
