@@ -30,7 +30,11 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
+    address internal constant MAINNET_NEW_CONTROLLER    = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual new mainnet controller address
+    address internal constant MAINNET_SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
+
     address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
+    address internal constant BASE_SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
 
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
@@ -51,9 +55,33 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
         deployPayloads();
 
+
+        // TODO: Uncomment when the controller upgrade is properlyimplemented
+        // Prepare testing setup for the controller upgrade
+        // chainData[ChainIdUtils.Ethereum()].newController  = NEW_MAINNET_CONTROLLER;
+        // chainData[ChainIdUtils.Avalanche()].newController = NEW_AVALANCHE_CONTROLLER;
+
         // Warp to ensure all rate limits and autoline cooldown are reset
         vm.warp(block.timestamp + 1 days);
         AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
+    }
+
+    function test_ETHEREUM_upgradeController() public onChain(ChainIdUtils.Ethereum()) {
+        vm.skip(true); // TODO: Implement controller upgrade
+
+        address[] memory relayers = new address[](2);
+        relayers[0] = Ethereum.ALM_RELAYER;
+        relayers[1] = MAINNET_SECONDARY_RELAYER;
+
+        _testControllerUpgrade(
+            Ethereum.ALM_CONTROLLER,
+            MAINNET_NEW_CONTROLLER,
+            ControllerConfigParams({
+                freezer  : Ethereum.ALM_FREEZER,
+                relayers : relayers
+            })
+        );
+
     }
 
     function test_ETHEREUM_onboardCctpTransfersToBase() public onChain(ChainIdUtils.Ethereum()) {
@@ -92,6 +120,10 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function test_BASE_almSystemDeployment() public onChain(ChainIdUtils.Base()) {
+        address[] memory relayers = new address[](2);
+        relayers[0] = Base.ALM_RELAYER;
+        relayers[1] = BASE_SECONDARY_RELAYER;
+
         _verifyForeignAlmSystemDeployment(
             AlmSystemContracts({
                 admin      : Base.GROVE_EXECUTOR,
@@ -102,7 +134,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
             AlmSystemActors({
                 deployer : DEPLOYER,
                 freezer  : Base.ALM_FREEZER,
-                relayer  : Base.ALM_RELAYER
+                relayers : relayers
             }),
             ForeignAlmSystemDependencies({
                 cctp : Base.CCTP_TOKEN_MESSENGER, // TODO: Replace with CCTPv2
@@ -113,7 +145,14 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function test_BASE_almSystemInitialization() public onChain(ChainIdUtils.Base()) {
-        _testControllerInitialization(Base.ALM_CONTROLLER); // TODO Make sure it tests multiple relayers onboarding
+        address[] memory relayers = new address[](2);
+        relayers[0] = Base.ALM_RELAYER;
+        relayers[1] = BASE_SECONDARY_RELAYER;
+
+        _testControllerInitialization(Base.ALM_CONTROLLER, ControllerConfigParams({
+            freezer  : Base.ALM_FREEZER,
+            relayers : relayers
+        }));
     }
 
     function test_BASE_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Base()) {

@@ -1,16 +1,20 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
+import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol"; // TODO Use CCTPv2 Forwarder
 import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
-import { Base }     from "lib/grove-address-registry/src/Base.sol";
+import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
+import { Base }      from "lib/grove-address-registry/src/Base.sol";
+import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
-import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
-import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/MainnetControllerInit.sol";
 
-import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
+import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
+
+import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
@@ -23,12 +27,19 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
  */
 contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
+    address internal constant NEW_CONTROLLER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual new mainnet controller address
+    address internal constant SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
+
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function _execute() internal override {
+
+        // TODO Item title
+        //   Forum : TODO forum link
+        // _upgradeController();
 
         // TODO Item title
         //   Forum : TODO forum link
@@ -39,9 +50,82 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         _onboardCctpTransfersToBase();
     }
 
+    function _upgradeController() internal {
+        address[] memory relayers = new address[](2);
+        relayers[0] = Ethereum.ALM_RELAYER;
+        relayers[1] = SECONDARY_RELAYER;
+
+        // MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](3);
+        // mintRecipients[0] = MainnetControllerInit.MintRecipient({
+        //     domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
+        //     mintRecipient : CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
+        // });
+        // mintRecipients[1] = MainnetControllerInit.MintRecipient({
+        //     domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_BASE,
+        //     mintRecipient : CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
+        // });
+        // mintRecipients[2] = MainnetControllerInit.MintRecipient({
+        //     domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_PLUME,
+        //     mintRecipient : CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
+        // });
+
+        // MainnetControllerInit.LayerZeroRecipient[] memory layerZeroRecipients = new MainnetControllerInit.LayerZeroRecipient[](3);
+        // layerZeroRecipients[0] = MainnetControllerInit.LayerZeroRecipient({
+        //     destinationEndpointId : LZForwarder.ENDPOINT_ID_AVALANCHE,
+        //     recipient             : CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY)
+        // });
+        // layerZeroRecipients[1] = MainnetControllerInit.LayerZeroRecipient({
+        //     destinationEndpointId : LZForwarder.ENDPOINT_ID_BASE,
+        //     recipient             : CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY)
+        // });
+        // layerZeroRecipients[2] = MainnetControllerInit.LayerZeroRecipient({
+        //     destinationEndpointId : LZForwarder.ENDPOINT_ID_PLUME,
+        //     recipient             : CastingHelpers.addressToLayerZeroRecipient(Plume.ALM_PROXY)
+        // });
+
+        // MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](3);
+        // centrifugeRecipients[0] = MainnetControllerInit.CentrifugeRecipient({
+        //     destinationCentrifugeId : GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+        //     recipient               : CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
+        // });
+        // centrifugeRecipients[1] = MainnetControllerInit.CentrifugeRecipient({
+        //     destinationCentrifugeId : GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID,
+        //     recipient               : CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
+        // });
+        // centrifugeRecipients[2] = MainnetControllerInit.CentrifugeRecipient({
+        //     destinationCentrifugeId : GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID,
+        //     recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
+        // });
+
+        MainnetControllerInit.upgradeController(
+            ControllerInstance({
+                almProxy   : Ethereum.ALM_PROXY,
+                controller : NEW_CONTROLLER, // TODO Make sure to use the post-audit version
+                rateLimits : Ethereum.ALM_RATE_LIMITS
+            }),
+            MainnetControllerInit.ConfigAddressParams({
+                freezer       : Ethereum.ALM_FREEZER,
+                relayers      : relayers,
+                oldController : Ethereum.ALM_CONTROLLER
+            }),
+            MainnetControllerInit.CheckAddressParams({
+                admin      : Ethereum.GROVE_PROXY,
+                proxy      : Ethereum.ALM_PROXY,
+                rateLimits : Ethereum.ALM_RATE_LIMITS,
+                vault      : Ethereum.ALLOCATOR_VAULT,
+                psm        : Ethereum.PSM,
+                daiUsds    : Ethereum.DAI_USDS,
+                cctp       : Ethereum.CCTP_TOKEN_MESSENGER // TODO Use CCTPv2
+            }),
+            new MainnetControllerInit.MintRecipient[](0), // TODO Add mint recipients
+            new MainnetControllerInit.LayerZeroRecipient[](0), // TODO Add layer zero recipients
+            new MainnetControllerInit.CentrifugeRecipient[](0) // TODO Add centrifuge recipients
+        );
+    }
+
     function _initializeBaseLiquidityLayer() internal {
         MainnetController(Ethereum.ALM_CONTROLLER).setMintRecipient(
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE,
+            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE, // TODO Use CCTPv2 Forwarder
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         );
 
@@ -63,7 +147,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
         bytes32 domainKey = RateLimitHelpers.makeDomainKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE
+            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE // TODO Use CCTPv2 Forwarder
         );
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
     }
