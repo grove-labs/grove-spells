@@ -2,18 +2,17 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { CCTPForwarder } from "xchain-helpers/forwarders/CCTPForwarder.sol";
-
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Base }     from "lib/grove-address-registry/src/Base.sol";
 
-import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
-import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
-import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
+import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { ForeignController } from "lib/grove-alm-controller/src/ForeignController.sol";
+import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
+import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
 
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
+import { ChainIdUtils, ChainId }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
@@ -88,13 +87,13 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         bytes32 generalCctpKey  = MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
         bytes32 baseCctpKey = RateLimitHelpers.makeDomainKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE
+            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE
         );
 
         _assertUnlimitedRateLimit(generalCctpKey); // Set in the GroveEthereum_20250807 proposal
         _assertRateLimit(baseCctpKey, 0, 0);
 
-        assertEq(MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE), bytes32(0));
+        assertEq(MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE), bytes32(0));
 
         executeAllPayloadsAndBridges();
 
@@ -102,7 +101,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         _assertRateLimit(baseCctpKey, MAINNET_CCTP_RATE_LIMIT_MAX, MAINNET_CCTP_RATE_LIMIT_SLOPE);
 
         assertEq(
-            MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
+            MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         );
     }
@@ -141,7 +140,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
                 relayers : relayers
             }),
             ForeignAlmSystemDependencies({
-                cctp : Base.CCTP_TOKEN_MESSENGER, // TODO: Replace with CCTPv2
+                cctp : Base.CCTP_TOKEN_MESSENGER, // TODO: Replace with CCTP_TOKEN_MESSENGER_V2
                 psm  : Base.PSM3,
                 usdc : Base.USDC
             })
@@ -172,13 +171,13 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         bytes32 generalCctpKey  = ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
         bytes32 ethereumCctpKey = RateLimitHelpers.makeDomainKey(
             ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM
+            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM
         );
 
         _assertRateLimit(generalCctpKey,  0, 0);
         _assertRateLimit(ethereumCctpKey, 0, 0);
 
-        assertEq(ForeignController(Base.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM), bytes32(0));
+        assertEq(ForeignController(Base.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM), bytes32(0));
 
         executeAllPayloadsAndBridges();
 
@@ -186,7 +185,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         _assertRateLimit(ethereumCctpKey, BASE_CCTP_RATE_LIMIT_MAX, BASE_CCTP_RATE_LIMIT_SLOPE);
 
         assertEq(
-            ForeignController(Base.ALM_CONTROLLER).mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+            ForeignController(Base.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
             CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
         );
     }
@@ -211,7 +210,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         vm.startPrank(Ethereum.ALM_RELAYER);
         mainnetController.mintUSDS(usdcAmount * 1e12);
         mainnetController.swapUSDSToUSDC(usdcAmount);
-        mainnetController.transferUSDCToCCTP(usdcAmount, CCTPForwarder.DOMAIN_ID_CIRCLE_BASE);
+        mainnetController.transferUSDCToCCTP(usdcAmount, CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE);
         vm.stopPrank();
 
         selectChain(ChainIdUtils.Base());
@@ -225,7 +224,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         // --- Step 2: Bridge USDC back to mainnet and burn USDS
 
         vm.startPrank(Base.ALM_RELAYER);
-        baseController.transferUSDCToCCTP(usdcAmount, CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM);
+        baseController.transferUSDCToCCTP(usdcAmount, CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM);
         vm.stopPrank();
 
         assertEq(baseUsdc.balanceOf(Base.ALM_PROXY), 0, "Base ALM proxy should have no USDC after transfer");

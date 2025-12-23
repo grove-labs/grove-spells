@@ -1,16 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Ethereum }  from "grove-address-registry/Ethereum.sol";
-import { Avalanche } from "grove-address-registry/Avalanche.sol";
-import { Base }      from "grove-address-registry/Base.sol";
-import { Plume }     from "grove-address-registry/Plume.sol";
+import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
+import { Base }      from "lib/grove-address-registry/src/Base.sol";
+import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
-import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
-import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
+import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { ForeignController } from "lib/grove-alm-controller/src/ForeignController.sol";
 
-import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
-import { ForeignController } from "grove-alm-controller/src/ForeignController.sol";
+import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
+import { LZForwarder }     from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { ChainIdUtils, ChainId }      from "src/libraries/helpers/ChainId.sol";
@@ -100,7 +100,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         _testMainnetDomainRecipientsSetting(
             ChainIdUtils.Plume(),
             BridgeTypesToTest({
-                cctp       : false, // CCTPv1 not deployed to Plume
+                cctp       : false, // CCTPv2 crosschain transfers are not onboarded on Plume yet
                 centrifuge : true,
                 layerZero  : false  // LayerZero crosschain transfers are not onboarded on Plume yet
             })
@@ -174,7 +174,7 @@ abstract contract CommonSpellTests is CommonTestBase {
 
         // CCTP
         assertEq(
-            controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
             CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY),
             "CommonTest/Avalanche/incorrect-cctp-recipient"
         );
@@ -191,7 +191,7 @@ abstract contract CommonSpellTests is CommonTestBase {
 
         // CCTP
         assertEq(
-            controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_BASE),
+            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY),
             "CommonTest/Base/incorrect-cctp-recipient"
         );
@@ -237,7 +237,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         // CCTP
         if (bridgeTypesToTest.cctp) {
             assertEq(
-                controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
+                controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
                 CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY),
                 "CommonTest/Mainnet/incorrect-cctp-recipient"
             );

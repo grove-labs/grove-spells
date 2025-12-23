@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol"; // TODO Use CCTPv2 Forwarder
-import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
+import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
+import { LZForwarder }     from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
@@ -61,15 +61,15 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
         // MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](3);
         // mintRecipients[0] = MainnetControllerInit.MintRecipient({
-        //     domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
+        //     domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
         //     mintRecipient : CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
         // });
         // mintRecipients[1] = MainnetControllerInit.MintRecipient({
-        //     domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_BASE,
+        //     domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
         //     mintRecipient : CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         // });
         // mintRecipients[2] = MainnetControllerInit.MintRecipient({
-        //     domain        : CCTPForwarder.DOMAIN_ID_CIRCLE_PLUME,
+        //     domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_PLUME,
         //     mintRecipient : CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
         // });
 
@@ -119,7 +119,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
                 vault      : Ethereum.ALLOCATOR_VAULT,
                 psm        : Ethereum.PSM,
                 daiUsds    : Ethereum.DAI_USDS,
-                cctp       : Ethereum.CCTP_TOKEN_MESSENGER // TODO Use CCTPv2
+                cctp       : Ethereum.CCTP_TOKEN_MESSENGER // TODO: Replace with CCTP_TOKEN_MESSENGER_V2
             }),
             new MainnetControllerInit.MintRecipient[](0), // TODO Add mint recipients
             new MainnetControllerInit.LayerZeroRecipient[](0), // TODO Add layer zero recipients
@@ -129,7 +129,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
     function _initializeBaseLiquidityLayer() internal {
         MainnetController(Ethereum.ALM_CONTROLLER).setMintRecipient(
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE, // TODO Use CCTPv2 Forwarder
+            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         );
 
@@ -151,7 +151,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
         bytes32 domainKey = RateLimitHelpers.makeDomainKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE // TODO Use CCTPv2 Forwarder
+            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE
         );
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
     }
