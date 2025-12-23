@@ -27,7 +27,7 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
  */
 contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
-    address internal constant NEW_CONTROLLER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual new mainnet controller address
+    address internal constant NEW_CONTROLLER    = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual new mainnet controller address
     address internal constant SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
 
     // BEFORE :          0 max ;          0/day slope
@@ -39,7 +39,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
         // TODO Item title
         //   Forum : TODO forum link
-        // _upgradeController();
+        // _upgradeController(); // TODO Uncomment when the controller upgrade is properly implemented
 
         // TODO Item title
         //   Forum : TODO forum link
@@ -59,47 +59,47 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         relayers[0] = Ethereum.ALM_RELAYER;
         relayers[1] = SECONDARY_RELAYER;
 
-        // MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](3);
-        // mintRecipients[0] = MainnetControllerInit.MintRecipient({
-        //     domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
-        //     mintRecipient : CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
-        // });
-        // mintRecipients[1] = MainnetControllerInit.MintRecipient({
-        //     domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
-        //     mintRecipient : CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
-        // });
-        // mintRecipients[2] = MainnetControllerInit.MintRecipient({
-        //     domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_PLUME,
-        //     mintRecipient : CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
-        // });
+        MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](3);
+        mintRecipients[0] = MainnetControllerInit.MintRecipient({
+            domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
+            mintRecipient : CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
+        });
+        mintRecipients[1] = MainnetControllerInit.MintRecipient({
+            domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
+            mintRecipient : CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
+        });
+        mintRecipients[2] = MainnetControllerInit.MintRecipient({
+            domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_PLUME,
+            mintRecipient : CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
+        });
 
-        // MainnetControllerInit.LayerZeroRecipient[] memory layerZeroRecipients = new MainnetControllerInit.LayerZeroRecipient[](3);
-        // layerZeroRecipients[0] = MainnetControllerInit.LayerZeroRecipient({
-        //     destinationEndpointId : LZForwarder.ENDPOINT_ID_AVALANCHE,
-        //     recipient             : CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY)
-        // });
-        // layerZeroRecipients[1] = MainnetControllerInit.LayerZeroRecipient({
-        //     destinationEndpointId : LZForwarder.ENDPOINT_ID_BASE,
-        //     recipient             : CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY)
-        // });
-        // layerZeroRecipients[2] = MainnetControllerInit.LayerZeroRecipient({
-        //     destinationEndpointId : LZForwarder.ENDPOINT_ID_PLUME,
-        //     recipient             : CastingHelpers.addressToLayerZeroRecipient(Plume.ALM_PROXY)
-        // });
+        MainnetControllerInit.LayerZeroRecipient[] memory layerZeroRecipients = new MainnetControllerInit.LayerZeroRecipient[](3);
+        layerZeroRecipients[0] = MainnetControllerInit.LayerZeroRecipient({
+            destinationEndpointId : LZForwarder.ENDPOINT_ID_AVALANCHE,
+            recipient             : CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY)
+        });
+        layerZeroRecipients[1] = MainnetControllerInit.LayerZeroRecipient({
+            destinationEndpointId : LZForwarder.ENDPOINT_ID_BASE,
+            recipient             : CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY)
+        });
+        layerZeroRecipients[2] = MainnetControllerInit.LayerZeroRecipient({
+            destinationEndpointId : 30318, // Plume endpoint ID
+            recipient             : CastingHelpers.addressToLayerZeroRecipient(Plume.ALM_PROXY)
+        });
 
-        // MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](3);
-        // centrifugeRecipients[0] = MainnetControllerInit.CentrifugeRecipient({
-        //     destinationCentrifugeId : GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID,
-        //     recipient               : CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
-        // });
-        // centrifugeRecipients[1] = MainnetControllerInit.CentrifugeRecipient({
-        //     destinationCentrifugeId : GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID,
-        //     recipient               : CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
-        // });
-        // centrifugeRecipients[2] = MainnetControllerInit.CentrifugeRecipient({
-        //     destinationCentrifugeId : GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID,
-        //     recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
-        // });
+        MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](3);
+        centrifugeRecipients[0] = MainnetControllerInit.CentrifugeRecipient({
+            destinationCentrifugeId : GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID,
+            recipient               : CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
+        });
+        centrifugeRecipients[1] = MainnetControllerInit.CentrifugeRecipient({
+            destinationCentrifugeId : GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID,
+            recipient               : CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
+        });
+        centrifugeRecipients[2] = MainnetControllerInit.CentrifugeRecipient({
+            destinationCentrifugeId : GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID,
+            recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
+        });
 
         MainnetControllerInit.upgradeController(
             ControllerInstance({
@@ -121,9 +121,9 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
                 daiUsds    : Ethereum.DAI_USDS,
                 cctp       : Ethereum.CCTP_TOKEN_MESSENGER // TODO: Replace with CCTP_TOKEN_MESSENGER_V2
             }),
-            new MainnetControllerInit.MintRecipient[](0), // TODO Add mint recipients
-            new MainnetControllerInit.LayerZeroRecipient[](0), // TODO Add layer zero recipients
-            new MainnetControllerInit.CentrifugeRecipient[](0) // TODO Add centrifuge recipients
+            mintRecipients,
+            layerZeroRecipients,
+            centrifugeRecipients
         );
     }
 
@@ -133,13 +133,11 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         );
 
-        // NOTE In case of complexity comp score going over the limit, remove this item and flip the testing flag to false in CommonSpellTests.sol
         MainnetController(Ethereum.ALM_CONTROLLER).setCentrifugeRecipient(
             GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID,
             CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
         );
 
-        // NOTE In case of complexity comp score going over the limit, remove this item and flip the testing flag to false in CommonSpellTests.sol
         MainnetController(Ethereum.ALM_CONTROLLER).setLayerZeroRecipient(
             LZForwarder.ENDPOINT_ID_BASE,
             CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY)

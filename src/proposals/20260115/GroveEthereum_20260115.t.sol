@@ -33,7 +33,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     address internal constant MAINNET_SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
 
     address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
-    address internal constant BASE_SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
+    address internal constant BASE_SECONDARY_RELAYER                    = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
 
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
@@ -55,8 +55,8 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         deployPayloads();
 
 
-        // TODO: Uncomment when the controller upgrade is properlyimplemented
         // Prepare testing setup for the controller upgrade
+        // TODO: Uncomment when the controller upgrade is properly implemented
         // chainData[ChainIdUtils.Ethereum()].newController  = NEW_MAINNET_CONTROLLER;
         // chainData[ChainIdUtils.Avalanche()].newController = NEW_AVALANCHE_CONTROLLER;
 
