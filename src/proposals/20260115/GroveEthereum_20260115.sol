@@ -43,10 +43,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
         // TODO Item title
         //   Forum : TODO forum link
-        _initializeBaseLiquidityLayer();
-
-        // TODO Item title
-        //   Forum : TODO forum link
         _onboardCctpTransfersToBase();
 
         // TODO Item title
@@ -124,23 +120,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             mintRecipients,
             layerZeroRecipients,
             centrifugeRecipients
-        );
-    }
-
-    function _initializeBaseLiquidityLayer() internal {
-        MainnetController(Ethereum.ALM_CONTROLLER).setMintRecipient(
-            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
-            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
-        );
-
-        MainnetController(Ethereum.ALM_CONTROLLER).setCentrifugeRecipient(
-            GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID,
-            CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
-        );
-
-        MainnetController(Ethereum.ALM_CONTROLLER).setLayerZeroRecipient(
-            LZForwarder.ENDPOINT_ID_BASE,
-            CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY)
         );
     }
 
