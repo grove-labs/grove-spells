@@ -30,12 +30,13 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
-    address internal constant MAINNET_NEW_CONTROLLER    = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual new mainnet controller address
-    address internal constant MAINNET_SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
+    address internal constant MAINNET_NEW_CONTROLLER    = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
+    address internal constant MAINNET_BACKSTOP_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
     address internal constant MAINNET_AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
 
     address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
-    address internal constant BASE_SECONDARY_RELAYER                    = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
+    address internal constant BASE_PLANNER_RELAYER                      = 0x9187807e07112359C481870feB58f0c117a29179;
+    address internal constant BASE_BACKSTOP_RELAYER                     = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
 
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
@@ -52,15 +53,12 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-12-18T12:00:00Z");
+        setupDomains("2025-12-26T20:30:00Z");
 
         deployPayloads();
 
-
         // Prepare testing setup for the controller upgrade
-        // TODO: Uncomment when the controller upgrade is properly implemented
-        // chainData[ChainIdUtils.Ethereum()].newController  = NEW_MAINNET_CONTROLLER;
-        // chainData[ChainIdUtils.Avalanche()].newController = NEW_AVALANCHE_CONTROLLER;
+        chainData[ChainIdUtils.Ethereum()].newController  = MAINNET_NEW_CONTROLLER;
 
         // Warp to ensure all rate limits and autoline cooldown are reset
         vm.warp(block.timestamp + 1 days);
@@ -68,11 +66,9 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_upgradeController() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true); // TODO: Implement controller upgrade
-
         address[] memory relayers = new address[](2);
         relayers[0] = Ethereum.ALM_RELAYER;
-        relayers[1] = MAINNET_SECONDARY_RELAYER;
+        relayers[1] = MAINNET_BACKSTOP_RELAYER;
 
         _testControllerUpgrade(
             Ethereum.ALM_CONTROLLER,
@@ -86,32 +82,31 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardCctpTransfersToBase() public onChain(ChainIdUtils.Ethereum()) {
-        bytes32 generalCctpKey  = MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
+        bytes32 generalCctpKey  = MainnetController(MAINNET_NEW_CONTROLLER).LIMIT_USDC_TO_CCTP();
         bytes32 baseCctpKey = RateLimitHelpers.makeDomainKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            MainnetController(MAINNET_NEW_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
             CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE
         );
 
         _assertUnlimitedRateLimit(generalCctpKey); // Set in the GroveEthereum_20250807 proposal
         _assertRateLimit(baseCctpKey, 0, 0);
 
-        assertEq(MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE), bytes32(0));
+        assertEq(MainnetController(MAINNET_NEW_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE), bytes32(0));
 
         executeAllPayloadsAndBridges();
 
         _assertUnlimitedRateLimit(generalCctpKey);
         _assertRateLimit(baseCctpKey, MAINNET_CCTP_RATE_LIMIT_MAX, MAINNET_CCTP_RATE_LIMIT_SLOPE);
 
-        // TODO: Uncomment when the controller upgrade is properly implemented
-        // assertEq(
-        //     MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
-        //     CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
-        // );
+        assertEq(
+            MainnetController(MAINNET_NEW_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
+            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
+        );
     }
 
     function test_ETHEREUM_offboardAgoraAusd() public onChain(ChainIdUtils.Ethereum()) {
         bytes32 mintKey = RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            MainnetController(MAINNET_NEW_CONTROLLER).LIMIT_ASSET_TRANSFER(),
             Ethereum.USDC,
             MAINNET_AGORA_AUSD_USDC_MINT_WALLET
         );
@@ -146,7 +141,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     function test_BASE_almSystemDeployment() public onChain(ChainIdUtils.Base()) {
         address[] memory relayers = new address[](2);
         relayers[0] = Base.ALM_RELAYER;
-        relayers[1] = BASE_SECONDARY_RELAYER;
+        relayers[1] = BASE_BACKSTOP_RELAYER;
 
         _verifyForeignAlmSystemDeployment(
             AlmSystemContracts({
@@ -161,7 +156,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
                 relayers : relayers
             }),
             ForeignAlmSystemDependencies({
-                cctp : Base.CCTP_TOKEN_MESSENGER, // TODO: Replace with CCTP_TOKEN_MESSENGER_V2
+                cctp : Base.CCTP_TOKEN_MESSENGER_V2,
                 psm  : Base.PSM3,
                 usdc : Base.USDC
             })
@@ -169,9 +164,10 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function test_BASE_almSystemInitialization() public onChain(ChainIdUtils.Base()) {
-        address[] memory relayers = new address[](2);
+        address[] memory relayers = new address[](3);
         relayers[0] = Base.ALM_RELAYER;
-        relayers[1] = BASE_SECONDARY_RELAYER;
+        relayers[1] = BASE_PLANNER_RELAYER;
+        relayers[2] = BASE_BACKSTOP_RELAYER;
 
         _testControllerInitialization(Base.ALM_CONTROLLER, ControllerConfigParams({
             freezer  : Base.ALM_FREEZER,
@@ -211,9 +207,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         );
     }
 
-    // TODO make sure that CCTPv2 is used to transit USDC between Ethereum and Base
     function test_ETHEREUM_BASE_cctpTransferE2E() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true); // TODO: Uncomment when the controller upgrade is properly implemented
         executeAllPayloadsAndBridges();
 
         ChainId[] memory chains = new ChainId[](1);
@@ -222,12 +216,12 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         IERC20Like baseUsdc     = IERC20Like(Base.USDC);
         IERC20Like ethereumUsdc = IERC20Like(Ethereum.USDC);
 
-        MainnetController mainnetController = MainnetController(Ethereum.ALM_CONTROLLER);
+        MainnetController mainnetController = MainnetController(MAINNET_NEW_CONTROLLER);
         ForeignController baseController    = ForeignController(Base.ALM_CONTROLLER);
 
         // --- Step 1: Mint and bridge 10m USDC to Base ---
 
-        uint256 usdcAmount = 50_000_000e6;
+        uint256 usdcAmount = 10_000_000e6;
 
         vm.startPrank(Ethereum.ALM_RELAYER);
         mainnetController.mintUSDS(usdcAmount * 1e12);

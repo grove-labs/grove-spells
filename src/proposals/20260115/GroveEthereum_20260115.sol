@@ -27,8 +27,8 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
  */
 contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
-    address internal constant NEW_CONTROLLER              = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual new mainnet controller address
-    address internal constant SECONDARY_RELAYER           = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
+    address internal constant NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
+    address internal constant BACKSTOP_RELAYER            = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual backstop relayer address
     address internal constant AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
 
     // BEFORE :          0 max ;          0/day slope
@@ -45,7 +45,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
         // TODO Item title
         //   Forum : TODO forum link
-        // _upgradeController(); // TODO Uncomment when the controller upgrade is properly implemented
+        _upgradeController();
 
         // TODO Item title
         //   Forum : TODO forum link
@@ -59,7 +59,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
     function _upgradeController() internal {
         address[] memory relayers = new address[](2);
         relayers[0] = Ethereum.ALM_RELAYER;
-        relayers[1] = SECONDARY_RELAYER;
+        relayers[1] = BACKSTOP_RELAYER;
 
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](3);
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
@@ -103,10 +103,13 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
         });
 
+        // TODO set maxSlippages that were already set (Curve pool slippage from GroveEthereum_20251030)
+        // TODO make sure no other state items need to be set in the controller
+
         MainnetControllerInit.upgradeController(
             ControllerInstance({
                 almProxy   : Ethereum.ALM_PROXY,
-                controller : NEW_CONTROLLER, // TODO Make sure to use the post-audit version
+                controller : NEW_CONTROLLER,
                 rateLimits : Ethereum.ALM_RATE_LIMITS
             }),
             MainnetControllerInit.ConfigAddressParams({
@@ -115,13 +118,15 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
                 oldController : Ethereum.ALM_CONTROLLER
             }),
             MainnetControllerInit.CheckAddressParams({
-                admin      : Ethereum.GROVE_PROXY,
-                proxy      : Ethereum.ALM_PROXY,
-                rateLimits : Ethereum.ALM_RATE_LIMITS,
-                vault      : Ethereum.ALLOCATOR_VAULT,
-                psm        : Ethereum.PSM,
-                daiUsds    : Ethereum.DAI_USDS,
-                cctp       : Ethereum.CCTP_TOKEN_MESSENGER // TODO: Replace with CCTP_TOKEN_MESSENGER_V2
+                admin                    : Ethereum.GROVE_PROXY,
+                proxy                    : Ethereum.ALM_PROXY,
+                rateLimits               : Ethereum.ALM_RATE_LIMITS,
+                vault                    : Ethereum.ALLOCATOR_VAULT,
+                psm                      : Ethereum.PSM,
+                daiUsds                  : Ethereum.DAI_USDS,
+                cctp                     : Ethereum.CCTP_TOKEN_MESSENGER_V2,
+                uniswapV3Router          : Ethereum.UNISWAP_V3_SWAP_ROUTER_02,
+                uniswapV3PositionManager : Ethereum.UNISWAP_V3_POSITION_MANAGER
             }),
             mintRecipients,
             layerZeroRecipients,

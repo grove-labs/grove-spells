@@ -180,60 +180,54 @@ abstract contract CommonSpellTests is CommonTestBase {
         );
 
         // Centrifuge
-        // TODO: Uncomment when controller upgrade is properly implemented
-        // assertEq(
-        //     controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
-        //     CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY),
-        //     "CommonTest/Avalanche/incorrect-centrifuge-recipient"
-        // );
+        assertEq(
+            controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+            CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY),
+            "CommonTest/Avalanche/incorrect-centrifuge-recipient"
+        );
 
         // LayerZero
-        // TODO: Uncomment when controller upgrade is properly implemented
-        // assertEq(
-        //     controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_AVALANCHE),
-        //     CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY),
-        //     "CommonTest/Avalanche/incorrect-layerzero-recipient"
-        // );
+        assertEq(
+            controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_AVALANCHE),
+            CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY),
+            "CommonTest/Avalanche/incorrect-layerzero-recipient"
+        );
 
         /**********************************************************************************************/
         /*** Base                                                                                  ***/
         /**********************************************************************************************/
 
         // CCTP
-        // TODO: Uncomment when controller upgrade is properly implemented
-        // assertEq(
-        //     controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
-        //     CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY),
-        //     "CommonTest/Base/incorrect-cctp-recipient"
-        // );
+        assertEq(
+            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
+            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY),
+            "CommonTest/Base/incorrect-cctp-recipient"
+        );
 
         // Centrifuge
-        // TODO: Uncomment when controller upgrade is properly implemented
-        // assertEq(
-        //     controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
-        //     CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY),
-        //     "CommonTest/Base/incorrect-centrifuge-recipient"
-        // );
+        assertEq(
+            controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
+            CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY),
+            "CommonTest/Base/incorrect-centrifuge-recipient"
+        );
 
         // LayerZero
-        // TODO: Uncomment when controller upgrade is properly implemented
-        // assertEq(
-        //     controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_BASE),
-        //     CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY),
-        //     "CommonTest/Base/incorrect-layerzero-recipient"
-        // );
+        assertEq(
+            controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_BASE),
+            CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY),
+            "CommonTest/Base/incorrect-layerzero-recipient"
+        );
 
         /**********************************************************************************************/
         /*** Plume                                                                                  ***/
         /**********************************************************************************************/
 
         // CCTP
-        // TODO: Uncomment when controller upgrade is properly implemented
-        // assertEq(
-        //     controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_PLUME),
-        //     CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY),
-        //     "CommonTest/Plume/incorrect-cctp-recipient"
-        // );
+        assertEq(
+            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_PLUME),
+            CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY),
+            "CommonTest/Plume/incorrect-cctp-recipient"
+        );
 
         // Centrifuge
         assertEq(
@@ -243,12 +237,11 @@ abstract contract CommonSpellTests is CommonTestBase {
         );
 
         // LayerZero
-        // TODO: Uncomment when controller upgrade is properly implemented
-        // assertEq(
-        //     controller.layerZeroRecipients(30318), // Plume endpoint ID
-        //     CastingHelpers.addressToLayerZeroRecipient(Plume.ALM_PROXY),
-        //     "CommonTest/Plume/incorrect-layerzero-recipient"
-        // );
+        assertEq(
+            controller.layerZeroRecipients(30318), // Plume endpoint ID
+            CastingHelpers.addressToLayerZeroRecipient(Plume.ALM_PROXY),
+            "CommonTest/Plume/incorrect-layerzero-recipient"
+        );
     }
 
     function _testMainnetDomainRecipientsSetting(ChainId chainId, BridgeTypesToTest memory bridgeTypesToTest) private onChain(chainId) {

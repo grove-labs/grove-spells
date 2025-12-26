@@ -25,7 +25,8 @@ import { GrovePayloadBase } from "src/libraries/payloads/GrovePayloadBase.sol";
  */
 contract GroveBase_20260115 is GrovePayloadBase {
 
-    address internal constant SECONDARY_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual secondary relayer address
+    address internal constant PLANNER_RELAYER  = 0x9187807e07112359C481870feB58f0c117a29179;
+    address internal constant BACKSTOP_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual backstop relayer address
 
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
@@ -55,9 +56,10 @@ contract GroveBase_20260115 is GrovePayloadBase {
 
     function _initializeLiquidityLayer() internal {
         // Define Base relayers
-        address[] memory relayers = new address[](2);
+        address[] memory relayers = new address[](3);
         relayers[0] = Base.ALM_RELAYER;
-        relayers[1] = SECONDARY_RELAYER;
+        relayers[1] = PLANNER_RELAYER;
+        relayers[2] = BACKSTOP_RELAYER;
 
 
         ForeignControllerInit.MintRecipient[] memory mintRecipients = new ForeignControllerInit.MintRecipient[](1);
@@ -81,7 +83,7 @@ contract GroveBase_20260115 is GrovePayloadBase {
         ForeignControllerInit.initAlmSystem(
             ControllerInstance({
                 almProxy   : Base.ALM_PROXY,
-                controller : Base.ALM_CONTROLLER, // TODO make sure it's redeployed to post-audit version
+                controller : Base.ALM_CONTROLLER,
                 rateLimits : Base.ALM_RATE_LIMITS
             }),
             ForeignControllerInit.ConfigAddressParams({
@@ -90,10 +92,13 @@ contract GroveBase_20260115 is GrovePayloadBase {
                 oldController : address(0)
             }),
             ForeignControllerInit.CheckAddressParams({
-                admin : Base.GROVE_EXECUTOR,
-                cctp  : Base.CCTP_TOKEN_MESSENGER, // TODO: Replace with CCTP_TOKEN_MESSENGER_V2
-                psm   : Base.PSM3,
-                usdc  : Base.USDC
+                admin                    : Base.GROVE_EXECUTOR,
+                cctp                     : Base.CCTP_TOKEN_MESSENGER_V2,
+                psm                      : Base.PSM3,
+                usdc                     : Base.USDC,
+                pendleRouter             : Base.PENDLE_ROUTER,
+                uniswapV3Router          : Base.UNISWAP_V3_SWAP_ROUTER_02,
+                uniswapV3PositionManager : Base.UNISWAP_V3_POSITION_MANAGER
             }),
             mintRecipients,
             layerZeroRecipients,
@@ -102,6 +107,7 @@ contract GroveBase_20260115 is GrovePayloadBase {
     }
 
     function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
+        // TODO add setting maxExchangeRate for the vault
         _onboardERC4626Vault({
             vault        : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
             depositMax   : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
