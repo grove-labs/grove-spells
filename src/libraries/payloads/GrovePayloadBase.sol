@@ -11,12 +11,15 @@ import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelper
  */
 abstract contract GrovePayloadBase {
 
-    function _onboardERC4626Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
+    function _onboardERC4626Vault(address vault, uint256 depositMax, uint256 depositSlope, uint256 shareUnit, uint256 maxAssetsPerShare) internal {
         GroveLiquidityLayerHelpers.onboardERC4626Vault(
+            Base.ALM_CONTROLLER,
             Base.ALM_RATE_LIMITS,
             vault,
             depositMax,
-            depositSlope
+            depositSlope,
+            shareUnit,
+            maxAssetsPerShare
         );
     }
 

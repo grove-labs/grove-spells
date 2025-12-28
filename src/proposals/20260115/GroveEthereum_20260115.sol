@@ -28,7 +28,6 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
 contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
     address internal constant NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
-    address internal constant BACKSTOP_RELAYER            = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual backstop relayer address
     address internal constant AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
 
     // BEFORE :          0 max ;          0/day slope
@@ -57,9 +56,8 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
     }
 
     function _upgradeController() internal {
-        address[] memory relayers = new address[](2);
+        address[] memory relayers = new address[](1);
         relayers[0] = Ethereum.ALM_RELAYER;
-        relayers[1] = BACKSTOP_RELAYER;
 
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](3);
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
@@ -103,8 +101,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
         });
 
-        // TODO set maxSlippages that were already set (Curve pool slippage from GroveEthereum_20251030)
-        // TODO make sure no other state items need to be set in the controller
 
         MainnetControllerInit.upgradeController(
             ControllerInstance({
@@ -131,6 +127,50 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             mintRecipients,
             layerZeroRecipients,
             centrifugeRecipients
+        );
+
+        // Set to make GroveEthereum_20250807 Ethena deposit onboarding backwards compatible
+        MainnetController(NEW_CONTROLLER).setMaxExchangeRate(
+            Ethereum.SUSDE,
+            1e18,
+            1.3e18
+        );
+
+        // Re-setting the Curve RLUSD/USDC pool slippage set in GroveEthereum_20251030
+        MainnetController(NEW_CONTROLLER).setMaxSlippage(
+            Ethereum.CURVE_RLUSD_USDC,
+            0.9990e18
+        );
+
+        // Set to make GroveEthereum_20251030 Aave Core RLUSD onboarding backwards compatible
+        MainnetController(NEW_CONTROLLER).setMaxSlippage(
+            Ethereum.AAVE_CORE_RLUSD,
+            0.9990e18
+        );
+
+        // Set to make GroveEthereum_20251030 Aave Core USDC onboarding backwards compatible
+        MainnetController(NEW_CONTROLLER).setMaxSlippage(
+            Ethereum.AAVE_CORE_USDC,
+            0.9990e18
+        );
+
+        // Set to make GroveEthereum_20251030 Aave Horizon RLUSD onboarding backwards compatible
+        MainnetController(NEW_CONTROLLER).setMaxSlippage(
+            Ethereum.AAVE_HORIZON_RLUSD,
+            0.9990e18
+        );
+
+        // Set to make GroveEthereum_20251030 Aave Horizon USDC onboarding backwards compatible
+        MainnetController(NEW_CONTROLLER).setMaxSlippage(
+            Ethereum.AAVE_HORIZON_USDC,
+            0.9990e18
+        );
+
+        // Set to make GroveEthereum_20251211 Morpho vault onboarding backwards compatible
+        MainnetController(NEW_CONTROLLER).setMaxExchangeRate(
+            Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            1e18,
+            1.15e6
         );
     }
 

@@ -25,9 +25,6 @@ import { GrovePayloadBase } from "src/libraries/payloads/GrovePayloadBase.sol";
  */
 contract GroveBase_20260115 is GrovePayloadBase {
 
-    address internal constant PLANNER_RELAYER  = 0x9187807e07112359C481870feB58f0c117a29179;
-    address internal constant BACKSTOP_RELAYER = 0x0000000000000000000000000000000000000000; // TODO: Replace with actual backstop relayer address
-
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
     // BEFORE :          0 max ;          0/day slope
@@ -56,10 +53,9 @@ contract GroveBase_20260115 is GrovePayloadBase {
 
     function _initializeLiquidityLayer() internal {
         // Define Base relayers
-        address[] memory relayers = new address[](3);
+        address[] memory relayers = new address[](2);
         relayers[0] = Base.ALM_RELAYER;
-        relayers[1] = PLANNER_RELAYER;
-        relayers[2] = BACKSTOP_RELAYER;
+        relayers[1] = Base.ALM_RELAYER_2;
 
 
         ForeignControllerInit.MintRecipient[] memory mintRecipients = new ForeignControllerInit.MintRecipient[](1);
@@ -107,11 +103,12 @@ contract GroveBase_20260115 is GrovePayloadBase {
     }
 
     function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
-        // TODO add setting maxExchangeRate for the vault
         _onboardERC4626Vault({
-            vault        : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            depositMax   : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
-            depositSlope : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
+            vault              : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            depositMax         : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope       : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE,
+            shareUnit          : 1e18,
+            maxAssetsPerShare  : 1.15e6
         });
     }
 
