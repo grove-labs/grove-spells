@@ -38,16 +38,16 @@ contract GroveBase_20260115 is GrovePayloadBase {
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     function execute() external {
-        // TODO Item title
-        //   Forum : TODO forum link
+        // [Base] Onboard Grove Liquidity Layer and CCTP for Base
+        //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-1-base-onboard-grove-liquidity-layer-and-cctp-for-base-2
         _initializeLiquidityLayer();
 
-        // TODO Item title
-        //   Forum : TODO forum link
+        // [Base] Onboard Morpho Grove x Steakhouse High Yield Vault USDC
+        //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-2-base-onboard-morpho-grove-x-steakhouse-high-yield-vault-usdc-8
         _onboardGroveXSteakhouseUsdcMorphoVault();
 
-        // TODO Item title
-        //   Forum : TODO forum link
+        // [Base] Onboard Grove Liquidity Layer and CCTP for Base
+        //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-1-base-onboard-grove-liquidity-layer-and-cctp-for-base-2
         _onboardCctpTransfersToEthereum();
     }
 
