@@ -28,9 +28,9 @@ contract GroveBase_20260115 is GrovePayloadBase {
     address internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
 
     // BEFORE :          0 max ;          0/day slope
-    // AFTER  : 50,000,000 max ; 50,000,000/day slope
-    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 50_000_000e6;
-    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 50_000_000e6 / uint256(1 days);
+    // AFTER  : 20,000,000 max ; 20,000,000/day slope
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE = 20_000_000e6 / uint256(1 days);
 
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
@@ -104,11 +104,11 @@ contract GroveBase_20260115 is GrovePayloadBase {
 
     function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
         _onboardERC4626Vault({
-            vault              : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            depositMax         : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
-            depositSlope       : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE,
-            shareUnit          : 1e18,
-            maxAssetsPerShare  : 1.15e6
+            vault             : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            depositMax        : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope      : GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE,
+            shareUnit         : 1e18,
+            maxAssetsPerShare : 1.15e6
         });
     }
 
