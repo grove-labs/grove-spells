@@ -41,7 +41,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
     uint256 internal constant AGORA_AUSD_USDC_MINT_SLOPE = 0;
 
     function _execute() internal override {
-
         // TODO Item title
         //   Forum : TODO forum link
         _upgradeController();
