@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Avalanche } from "grove-address-registry/Avalanche.sol";
-import { Ethereum }  from "grove-address-registry/Ethereum.sol";
+import { Ethereum } from "grove-address-registry/Ethereum.sol";
 
 import { LZForwarder } from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 

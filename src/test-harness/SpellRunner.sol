@@ -21,7 +21,6 @@ import { AMBBridgeTesting }      from "xchain-helpers/testing/bridges/AMBBridgeT
 import { ArbitrumBridgeTesting } from "xchain-helpers/testing/bridges/ArbitrumBridgeTesting.sol";
 import { CCTPBridgeTesting }     from "xchain-helpers/testing/bridges/CCTPBridgeTesting.sol";
 import { CCTPv2BridgeTesting }   from "xchain-helpers/testing/bridges/CCTPv2BridgeTesting.sol";
-import { LZBridgeTesting }       from "xchain-helpers/testing/bridges/LZBridgeTesting.sol";
 
 import { ChainIdUtils, ChainId } from "../libraries/helpers/ChainId.sol";
 
