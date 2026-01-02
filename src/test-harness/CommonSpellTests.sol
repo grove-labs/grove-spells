@@ -9,6 +9,7 @@ import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { ForeignController } from "lib/grove-alm-controller/src/ForeignController.sol";
 
+import { CCTPForwarder }   from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
 import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
 import { LZForwarder }     from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
@@ -164,70 +165,44 @@ abstract contract CommonSpellTests is CommonTestBase {
 
     function _testForeignDomainsRecipientsSetting() private {
         executeAllPayloadsAndBridges();
-
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
         MainnetController controller = MainnetController(ctx.controller);
-
         /**********************************************************************************************/
         /*** Avalanche                                                                              ***/
         /**********************************************************************************************/
 
         // CCTP
         assertEq(
-            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+            controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
             CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY),
             "CommonTest/Avalanche/incorrect-cctp-recipient"
         );
 
         // Centrifuge
-        assertEq(
-            controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
-            CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY),
-            "CommonTest/Avalanche/incorrect-centrifuge-recipient"
-        );
+        // NOTE Centrifuge crosschain transfers to Avalanche are not onboarded yet
 
         // LayerZero
-        assertEq(
-            controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_AVALANCHE),
-            CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY),
-            "CommonTest/Avalanche/incorrect-layerzero-recipient"
-        );
+        // NOTE LayerZero crosschain transfers to Avalanche are not onboarded yet
 
         /**********************************************************************************************/
         /*** Base                                                                                  ***/
         /**********************************************************************************************/
 
         // CCTP
-        assertEq(
-            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
-            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY),
-            "CommonTest/Base/incorrect-cctp-recipient"
-        );
+        // NOTE Base not initialized yet
 
         // Centrifuge
-        assertEq(
-            controller.centrifugeRecipients(GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID),
-            CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY),
-            "CommonTest/Base/incorrect-centrifuge-recipient"
-        );
+        // NOTE Base not initialized yet
 
         // LayerZero
-        assertEq(
-            controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_BASE),
-            CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY),
-            "CommonTest/Base/incorrect-layerzero-recipient"
-        );
+        // NOTE Base not initialized yet
 
         /**********************************************************************************************/
         /*** Plume                                                                                  ***/
         /**********************************************************************************************/
 
         // CCTP
-        assertEq(
-            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_PLUME),
-            CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY),
-            "CommonTest/Plume/incorrect-cctp-recipient"
-        );
+        // NOTE CCTPv1 not deployed on Plume; CCTPv2 transfers to Plume are not onboarded yet
 
         // Centrifuge
         assertEq(
@@ -237,11 +212,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         );
 
         // LayerZero
-        assertEq(
-            controller.layerZeroRecipients(30318), // Plume endpoint ID
-            CastingHelpers.addressToLayerZeroRecipient(Plume.ALM_PROXY),
-            "CommonTest/Plume/incorrect-layerzero-recipient"
-        );
+        // NOTE LayerZero crosschain transfers to Plume are not onboarded yet
     }
 
     function _testMainnetDomainRecipientsSetting(ChainId chainId, BridgeTypesToTest memory bridgeTypesToTest) private onChain(chainId) {
