@@ -24,8 +24,6 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
-    address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
-
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
@@ -75,7 +73,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
             _receiver : Base.GROVE_RECEIVER,
             _deployer : DEPLOYER
         });
-        _verifyArbitrumReceiverDeployment({
+        _verifyOptimismReceiverDeployment({
             _executor : Base.GROVE_EXECUTOR,
             _receiver : Base.GROVE_RECEIVER
         });
@@ -119,7 +117,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
     function test_BASE_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Base()) {
         _testERC4626Onboarding({
-            vault                 : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            vault                 : Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
             expectedDepositAmount : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT,
             depositMax            : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
             depositSlope          : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE
