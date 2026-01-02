@@ -1,17 +1,23 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
+import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
+import { LZForwarder }     from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
+import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
+
+import { MainnetControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/MainnetControllerInit.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
-import { CastingHelpers } from "src/libraries/helpers/CastingHelpers.sol";
+import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
+import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereum.sol";
 
@@ -21,12 +27,24 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
  */
 contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
+    address internal constant NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
+    address internal constant AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
+
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
+    // BEFORE : 50,000,000 max ; 50,000,000/day slope
+    // AFTER  :          0 max ;          0/day slope
+    uint256 internal constant AGORA_AUSD_USDC_MINT_MAX   = 0;
+    uint256 internal constant AGORA_AUSD_USDC_MINT_SLOPE = 0;
+
     function _execute() internal override {
+        // [Mainnet] Upgrade MainnetController to v1.8.0
+        //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-3-mainnet-upgrade-mainnetcontroller-to-v180-14
+        _upgradeController();
+
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
         //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-1-base-onboard-grove-liquidity-layer-and-cctp-for-base-2
         _onboardCctpTransfersToBase();
@@ -158,16 +176,25 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
     function _onboardCctpTransfersToBase() internal {
         // General key rate limit for all CCTP transfers was set in the GroveEthereum_20250807 proposal
 
-        MainnetController(Ethereum.ALM_CONTROLLER).setMintRecipient(
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE,
-            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
-        );
-
         bytes32 domainKey = RateLimitHelpers.makeDomainKey(
             MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
-            CCTPForwarder.DOMAIN_ID_CIRCLE_BASE
+            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE
         );
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
+    }
+
+    function _offboardAgoraAusd() internal {
+        bytes32 mintKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.USDC,
+            AGORA_AUSD_USDC_MINT_WALLET
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
+            mintKey,
+            AGORA_AUSD_USDC_MINT_MAX,
+            AGORA_AUSD_USDC_MINT_SLOPE
+        );
     }
 
 }

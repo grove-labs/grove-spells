@@ -14,7 +14,12 @@ import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forward
 import { CastingHelpers }        from "src/libraries/helpers/CastingHelpers.sol";
 import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 
-import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
+import { GroveLiquidityLayerContext } from "src/test-harness/CommonTestBase.sol";
+import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
+
+interface AutoLineLike {
+    function exec(bytes32) external;
+}
 
 interface IERC20Like {
     function balanceOf(address account) external view returns (uint256);
@@ -48,19 +53,58 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         setupDomains("2025-12-26T20:30:00Z");
 
         deployPayloads();
+
+        // Prepare testing setup for the controller upgrade
+        chainData[ChainIdUtils.Ethereum()].newController  = MAINNET_NEW_CONTROLLER;
+
+        // Warp to ensure all rate limits and autoline cooldown are reset
+        vm.warp(block.timestamp + 1 days);
+        AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
+    }
+
+    function test_ETHEREUM_upgradeController() public onChain(ChainIdUtils.Ethereum()) {
+        address[] memory relayers = new address[](1);
+        relayers[0] = Ethereum.ALM_RELAYER;
+
+        _testControllerUpgrade(
+            Ethereum.ALM_CONTROLLER,
+            MAINNET_NEW_CONTROLLER,
+            ControllerConfigParams({
+                freezer  : Ethereum.ALM_FREEZER,
+                relayers : relayers
+            })
+        );
+    }
+
+    function test_ETHEREUM_upgradedControllerState() public onChain(ChainIdUtils.Ethereum()) {
+        executeAllPayloadsAndBridges();
+
+        MainnetController controller = MainnetController(MAINNET_NEW_CONTROLLER);
+
+        // 1e18 shares, 1.3e18 max expected assets
+        assertEq(controller.maxExchangeRates(Ethereum.SUSDE), 1.3e36);
+
+        // 1e18 shares, 1.15e6 max expected assets
+        assertEq(controller.maxExchangeRates(Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT), 1.15e24);
+
+        assertEq(controller.maxSlippages(Ethereum.CURVE_RLUSD_USDC),   0.9990e18);
+        assertEq(controller.maxSlippages(Ethereum.AAVE_CORE_RLUSD),    0.9990e18);
+        assertEq(controller.maxSlippages(Ethereum.AAVE_CORE_USDC),     0.9990e18);
+        assertEq(controller.maxSlippages(Ethereum.AAVE_HORIZON_RLUSD), 0.9990e18);
+        assertEq(controller.maxSlippages(Ethereum.AAVE_HORIZON_USDC),  0.9990e18);
     }
 
     function test_ETHEREUM_onboardCctpTransfersToBase() public onChain(ChainIdUtils.Ethereum()) {
-        bytes32 generalCctpKey  = MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_CCTP();
+        bytes32 generalCctpKey  = MainnetController(MAINNET_NEW_CONTROLLER).LIMIT_USDC_TO_CCTP();
         bytes32 baseCctpKey = RateLimitHelpers.makeDomainKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
+            MainnetController(MAINNET_NEW_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
             CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE
         );
 
         _assertUnlimitedRateLimit(generalCctpKey); // Set in the GroveEthereum_20250807 proposal
         _assertRateLimit(baseCctpKey, 0, 0);
 
-        assertEq(MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE), bytes32(0));
+        assertEq(MainnetController(MAINNET_NEW_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE), bytes32(0));
 
         executeAllPayloadsAndBridges();
 
@@ -68,7 +112,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         _assertRateLimit(baseCctpKey, MAINNET_CCTP_RATE_LIMIT_MAX, MAINNET_CCTP_RATE_LIMIT_SLOPE);
 
         assertEq(
-            MainnetController(Ethereum.ALM_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
+            MainnetController(MAINNET_NEW_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         );
     }
@@ -186,7 +230,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
         IERC20Like baseUsdc     = IERC20Like(Base.USDC);
         IERC20Like ethereumUsdc = IERC20Like(Ethereum.USDC);
 
-        MainnetController mainnetController = MainnetController(Ethereum.ALM_CONTROLLER);
+        MainnetController mainnetController = MainnetController(MAINNET_NEW_CONTROLLER);
         ForeignController baseController    = ForeignController(Base.ALM_CONTROLLER);
 
         // --- Step 1: Mint and bridge 10m USDC to Base ---
