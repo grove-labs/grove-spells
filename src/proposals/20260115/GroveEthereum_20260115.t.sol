@@ -17,10 +17,6 @@ import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerContext } from "src/test-harness/CommonTestBase.sol";
 import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
 
-interface AutoLineLike {
-    function exec(bytes32) external;
-}
-
 interface IERC20Like {
     function balanceOf(address account) external view returns (uint256);
 }
@@ -56,10 +52,6 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
         // Prepare testing setup for the controller upgrade
         chainData[ChainIdUtils.Ethereum()].newController  = MAINNET_NEW_CONTROLLER;
-
-        // Warp to ensure all rate limits and autoline cooldown are reset
-        vm.warp(block.timestamp + 1 days);
-        AutoLineLike(Ethereum.AUTO_LINE).exec(GROVE_ALLOCATOR_ILK);
     }
 
     function test_ETHEREUM_upgradeController() public onChain(ChainIdUtils.Ethereum()) {
