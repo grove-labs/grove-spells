@@ -165,8 +165,10 @@ abstract contract CommonSpellTests is CommonTestBase {
 
     function _testForeignDomainsRecipientsSetting() private {
         executeAllPayloadsAndBridges();
+
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
         MainnetController controller = MainnetController(ctx.controller);
+
         /**********************************************************************************************/
         /*** Avalanche                                                                              ***/
         /**********************************************************************************************/
