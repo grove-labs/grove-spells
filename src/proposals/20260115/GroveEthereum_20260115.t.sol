@@ -11,9 +11,8 @@ import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers
 
 import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
 
-import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
-import { ChainIdUtils, ChainId }      from "src/libraries/helpers/ChainId.sol";
-import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
+import { CastingHelpers }        from "src/libraries/helpers/CastingHelpers.sol";
+import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 
 import { GroveLiquidityLayerContext } from "src/test-harness/CommonTestBase.sol";
 import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
@@ -33,10 +32,11 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     address internal constant MAINNET_NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
     address internal constant MAINNET_AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
 
-    address internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT = 0xBeEf2d50B428675a1921bC6bBF4bfb9D8cF1461A;
-
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
+
+    uint256 internal constant MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_MAX   = 50_000_000e6;
+    uint256 internal constant MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
@@ -124,6 +124,8 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
             MAINNET_AGORA_AUSD_USDC_MINT_WALLET
         );
 
+        _assertRateLimit(mintKey, MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_MAX, MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_SLOPE);
+
         executeAllPayloadsAndBridges();
 
         _assertZeroRateLimit(mintKey);
@@ -145,7 +147,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
             _receiver : Base.GROVE_RECEIVER,
             _deployer : DEPLOYER
         });
-        _verifyArbitrumReceiverDeployment({
+        _verifyOptimismReceiverDeployment({
             _executor : Base.GROVE_EXECUTOR,
             _receiver : Base.GROVE_RECEIVER
         });
@@ -189,7 +191,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
     function test_BASE_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Base()) {
         _testERC4626Onboarding({
-            vault                 : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            vault                 : Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
             expectedDepositAmount : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT,
             depositMax            : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX,
             depositSlope          : BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_SLOPE

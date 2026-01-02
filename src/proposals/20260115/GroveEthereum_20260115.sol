@@ -135,6 +135,13 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             1.3e18
         );
 
+        // Set to make GroveEthereum_20251211 Morpho vault onboarding backwards compatible
+        MainnetController(NEW_CONTROLLER).setMaxExchangeRate(
+            Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
+            1e18,
+            1.15e6
+        );
+
         // Re-setting the Curve RLUSD/USDC pool slippage set in GroveEthereum_20251030
         MainnetController(NEW_CONTROLLER).setMaxSlippage(
             Ethereum.CURVE_RLUSD_USDC,
@@ -163,13 +170,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         MainnetController(NEW_CONTROLLER).setMaxSlippage(
             Ethereum.AAVE_HORIZON_USDC,
             0.9990e18
-        );
-
-        // Set to make GroveEthereum_20251211 Morpho vault onboarding backwards compatible
-        MainnetController(NEW_CONTROLLER).setMaxExchangeRate(
-            Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            1e18,
-            1.15e6
         );
     }
 
