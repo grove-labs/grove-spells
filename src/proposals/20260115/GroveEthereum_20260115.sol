@@ -28,17 +28,11 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
 contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
     address internal constant NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
-    address internal constant AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
 
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
-    // BEFORE : 50,000,000 max ; 50,000,000/day slope
-    // AFTER  :          0 max ;          0/day slope
-    uint256 internal constant AGORA_AUSD_USDC_MINT_MAX   = 0;
-    uint256 internal constant AGORA_AUSD_USDC_MINT_SLOPE = 0;
 
     function _execute() internal override {
         // [Mainnet] Upgrade MainnetController to v1.8.0
@@ -48,10 +42,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
         //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-1-base-onboard-grove-liquidity-layer-and-cctp-for-base-2
         _onboardCctpTransfersToBase();
-
-        // [Mainnet] Offboard Agora Mint Deposit Address
-        //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-4-mainnet-offboard-agora-mint-deposit-address-20
-        _offboardAgoraAusd();
     }
 
     function _upgradeController() internal {
@@ -181,20 +171,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE
         );
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(domainKey, CCTP_RATE_LIMIT_MAX, CCTP_RATE_LIMIT_SLOPE);
-    }
-
-    function _offboardAgoraAusd() internal {
-        bytes32 mintKey = RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            Ethereum.USDC,
-            AGORA_AUSD_USDC_MINT_WALLET
-        );
-
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
-            mintKey,
-            AGORA_AUSD_USDC_MINT_MAX,
-            AGORA_AUSD_USDC_MINT_SLOPE
-        );
     }
 
 }

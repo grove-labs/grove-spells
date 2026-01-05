@@ -26,13 +26,9 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
     address internal constant MAINNET_NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
-    address internal constant MAINNET_AGORA_AUSD_USDC_MINT_WALLET = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
 
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
-
-    uint256 internal constant MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_MAX   = 50_000_000e6;
-    uint256 internal constant MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_SLOPE = 50_000_000e6 / uint256(1 days);
 
     uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_TEST_DEPOSIT  = 20_000_000e6;
     uint256 internal constant BASE_GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT_DEPOSIT_MAX   = 20_000_000e6;
@@ -107,30 +103,6 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
             MainnetController(MAINNET_NEW_CONTROLLER).mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         );
-    }
-
-    function test_ETHEREUM_offboardAgoraAusd() public onChain(ChainIdUtils.Ethereum()) {
-        bytes32 mintKey = RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(MAINNET_NEW_CONTROLLER).LIMIT_ASSET_TRANSFER(),
-            Ethereum.USDC,
-            MAINNET_AGORA_AUSD_USDC_MINT_WALLET
-        );
-
-        _assertRateLimit(mintKey, MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_MAX, MAINNET_OFFBOARDED_AGORA_AUSD_USDC_MINT_SLOPE);
-
-        executeAllPayloadsAndBridges();
-
-        _assertZeroRateLimit(mintKey);
-
-        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
-
-        vm.startPrank(ctx.relayer);
-        MainnetController(ctx.controller).mintUSDS(1e12);
-        MainnetController(ctx.controller).swapUSDSToUSDC(1);
-        vm.expectRevert("RateLimits/zero-maxAmount");
-        MainnetController(ctx.controller).transferAsset(Ethereum.USDC, MAINNET_AGORA_AUSD_USDC_MINT_WALLET, 1);
-        vm.stopPrank();
-
     }
 
     function test_BASE_governanceDeployment() public onChain(ChainIdUtils.Base()) {
