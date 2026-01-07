@@ -25,7 +25,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
 
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
-    address internal constant MAINNET_NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
+    address internal constant MAINNET_NEW_CONTROLLER = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
 
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant MAINNET_CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
