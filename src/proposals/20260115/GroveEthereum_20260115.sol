@@ -27,7 +27,7 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
  */
 contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
-    address internal constant NEW_CONTROLLER              = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
+    address internal constant NEW_CONTROLLER = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
 
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 50,000,000 max ; 50,000,000/day slope
