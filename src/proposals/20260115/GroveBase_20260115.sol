@@ -11,10 +11,8 @@ import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers
 import { ForeignControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/ForeignControllerInit.sol";
 
 import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
-import { LZForwarder }     from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
-import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
-import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
+import { CastingHelpers } from "src/libraries/helpers/CastingHelpers.sol";
 
 import { GrovePayloadBase } from "src/libraries/payloads/GrovePayloadBase.sol";
 
@@ -62,18 +60,6 @@ contract GroveBase_20260115 is GrovePayloadBase {
             mintRecipient : CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
         });
 
-        ForeignControllerInit.LayerZeroRecipient[] memory layerZeroRecipients = new ForeignControllerInit.LayerZeroRecipient[](1);
-        layerZeroRecipients[0] = ForeignControllerInit.LayerZeroRecipient({
-            destinationEndpointId : LZForwarder.ENDPOINT_ID_ETHEREUM,
-            recipient             : CastingHelpers.addressToLayerZeroRecipient(Ethereum.ALM_PROXY)
-        });
-
-        ForeignControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new ForeignControllerInit.CentrifugeRecipient[](1);
-        centrifugeRecipients[0] = ForeignControllerInit.CentrifugeRecipient({
-            destinationCentrifugeId : GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID,
-            recipient               : CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
-        });
-
         ForeignControllerInit.initAlmSystem(
             ControllerInstance({
                 almProxy   : Base.ALM_PROXY,
@@ -95,8 +81,8 @@ contract GroveBase_20260115 is GrovePayloadBase {
                 uniswapV3PositionManager : Base.UNISWAP_V3_POSITION_MANAGER
             }),
             mintRecipients,
-            layerZeroRecipients,
-            centrifugeRecipients
+            new ForeignControllerInit.LayerZeroRecipient[](0),
+            new ForeignControllerInit.CentrifugeRecipient[](0)
         );
     }
 

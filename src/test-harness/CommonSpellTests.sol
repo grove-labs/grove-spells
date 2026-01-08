@@ -87,8 +87,8 @@ abstract contract CommonSpellTests is CommonTestBase {
             ChainIdUtils.Base(),
             BridgeTypesToTest({
                 cctp       : true,
-                centrifuge : true,
-                layerZero  : true
+                centrifuge : false, // Centrifuge crosschain transfers are not onboarded on Base yet
+                layerZero  : false  // LayerZero  crosschain transfers are not onboarded on Base yet
             })
         );
     }
