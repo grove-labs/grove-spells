@@ -40,7 +40,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         _upgradeController();
 
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
-        //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-1-base-onboard-grove-liquidity-layer-and-cctp-for-base-2
+        //   Forum : https://forum.sky.money/t/january-15th-2026-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-1-base-onboard-grove-liquidity-layer-and-cctp-for-base-2
         _onboardCctpTransfersToBase();
     }
 
