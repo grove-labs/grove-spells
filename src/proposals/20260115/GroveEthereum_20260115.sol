@@ -66,7 +66,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
         });
 
-
         MainnetControllerInit.upgradeController(
             ControllerInstance({
                 almProxy   : Ethereum.ALM_PROXY,
@@ -146,7 +145,6 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         );
 
         // Note: General key rate limit for all CCTP transfers was set in the GroveEthereum_20250807 proposal
-
         bytes32 domainKey = RateLimitHelpers.makeDomainKey(
             MainnetController(NEW_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
             CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE
