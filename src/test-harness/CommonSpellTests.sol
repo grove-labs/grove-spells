@@ -9,7 +9,6 @@ import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { ForeignController } from "lib/grove-alm-controller/src/ForeignController.sol";
 
-import { CCTPForwarder }   from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
 import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
 import { LZForwarder }     from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
@@ -175,13 +174,17 @@ abstract contract CommonSpellTests is CommonTestBase {
 
         // CCTP
         assertEq(
-            controller.mintRecipients(CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
+            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
             CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY),
             "CommonTest/Avalanche/incorrect-cctp-recipient"
         );
 
         // Centrifuge
-        // NOTE Centrifuge crosschain transfers to Avalanche are not onboarded yet
+        assertEq(
+            controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
+            CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY),
+            "CommonTest/Avalanche/incorrect-centrifuge-recipient"
+        );
 
         // LayerZero
         // NOTE LayerZero crosschain transfers to Avalanche are not onboarded yet
@@ -191,20 +194,24 @@ abstract contract CommonSpellTests is CommonTestBase {
         /**********************************************************************************************/
 
         // CCTP
-        // NOTE Base not initialized yet
+        assertEq(
+            controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
+            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY),
+            "CommonTest/Base/incorrect-cctp-recipient"
+        );
 
         // Centrifuge
-        // NOTE Base not initialized yet
+        // NOTE Centrifuge crosschain transfers to Base are not onboarded yet
 
         // LayerZero
-        // NOTE Base not initialized yet
+        // NOTE LayerZero crosschain transfers to Base are not onboarded yet
 
         /**********************************************************************************************/
         /*** Plume                                                                                  ***/
         /**********************************************************************************************/
 
         // CCTP
-        // NOTE CCTPv1 not deployed on Plume; CCTPv2 transfers to Plume are not onboarded yet
+        // NOTE CCTPv2 crosschain transfers to Plume are not onboarded yet
 
         // Centrifuge
         assertEq(
