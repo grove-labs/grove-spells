@@ -35,7 +35,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Mainnet] Upgrade MainnetController to v1.8.0
-        //   Forum : https://forum.sky.money/t/january-15th-2025-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-3-mainnet-upgrade-mainnetcontroller-to-v180-14
+        //   Forum : https://forum.sky.money/t/january-15th-2026-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-3-mainnet-upgrade-mainnetcontroller-to-v180-14
         _upgradeController();
 
         // [Base] Onboard Grove Liquidity Layer and CCTP for Base
