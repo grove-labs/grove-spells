@@ -53,13 +53,6 @@ contract GroveBase_20260115 is GrovePayloadBase {
         relayers[0] = Base.ALM_RELAYER;
         relayers[1] = Base.ALM_RELAYER_2;
 
-
-        ForeignControllerInit.MintRecipient[] memory mintRecipients = new ForeignControllerInit.MintRecipient[](1);
-        mintRecipients[0] = ForeignControllerInit.MintRecipient({
-            domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
-            mintRecipient : CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
-        });
-
         ForeignControllerInit.initAlmSystem(
             ControllerInstance({
                 almProxy   : Base.ALM_PROXY,
@@ -80,7 +73,7 @@ contract GroveBase_20260115 is GrovePayloadBase {
                 uniswapV3Router          : Base.UNISWAP_V3_SWAP_ROUTER_02,
                 uniswapV3PositionManager : Base.UNISWAP_V3_POSITION_MANAGER
             }),
-            mintRecipients,
+            new ForeignControllerInit.MintRecipient[](0),
             new ForeignControllerInit.LayerZeroRecipient[](0),
             new ForeignControllerInit.CentrifugeRecipient[](0)
         );
@@ -97,6 +90,11 @@ contract GroveBase_20260115 is GrovePayloadBase {
     }
 
     function _onboardCctpTransfersToEthereum() internal {
+        ForeignController(Base.ALM_CONTROLLER).setMintRecipient(
+            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM,
+            CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY)
+        );
+
         bytes32 domainKey = RateLimitHelpers.makeDomainKey(
             ForeignController(Base.ALM_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
             CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM
