@@ -2,7 +2,6 @@
 pragma solidity 0.8.25;
 
 import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
-import { LZForwarder }     from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
@@ -48,7 +47,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         address[] memory relayers = new address[](1);
         relayers[0] = Ethereum.ALM_RELAYER;
 
-        MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](3);
+        MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](2);
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
             domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
             mintRecipient : CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
@@ -57,35 +56,13 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
             mintRecipient : CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         });
-        mintRecipients[2] = MainnetControllerInit.MintRecipient({
-            domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_PLUME,
-            mintRecipient : CastingHelpers.addressToCctpRecipient(Plume.ALM_PROXY)
-        });
 
-        MainnetControllerInit.LayerZeroRecipient[] memory layerZeroRecipients = new MainnetControllerInit.LayerZeroRecipient[](3);
-        layerZeroRecipients[0] = MainnetControllerInit.LayerZeroRecipient({
-            destinationEndpointId : LZForwarder.ENDPOINT_ID_AVALANCHE,
-            recipient             : CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY)
-        });
-        layerZeroRecipients[1] = MainnetControllerInit.LayerZeroRecipient({
-            destinationEndpointId : LZForwarder.ENDPOINT_ID_BASE,
-            recipient             : CastingHelpers.addressToLayerZeroRecipient(Base.ALM_PROXY)
-        });
-        layerZeroRecipients[2] = MainnetControllerInit.LayerZeroRecipient({
-            destinationEndpointId : 30318, // Plume endpoint ID
-            recipient             : CastingHelpers.addressToLayerZeroRecipient(Plume.ALM_PROXY)
-        });
-
-        MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](3);
+        MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](2);
         centrifugeRecipients[0] = MainnetControllerInit.CentrifugeRecipient({
             destinationCentrifugeId : GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID,
             recipient               : CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
         });
         centrifugeRecipients[1] = MainnetControllerInit.CentrifugeRecipient({
-            destinationCentrifugeId : GroveLiquidityLayerHelpers.BASE_DESTINATION_CENTRIFUGE_ID,
-            recipient               : CastingHelpers.addressToCentrifugeRecipient(Base.ALM_PROXY)
-        });
-        centrifugeRecipients[2] = MainnetControllerInit.CentrifugeRecipient({
             destinationCentrifugeId : GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID,
             recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
         });
@@ -114,7 +91,7 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
                 uniswapV3PositionManager : Ethereum.UNISWAP_V3_POSITION_MANAGER
             }),
             mintRecipients,
-            layerZeroRecipients,
+            new MainnetControllerInit.LayerZeroRecipient[](0),
             centrifugeRecipients
         );
 
