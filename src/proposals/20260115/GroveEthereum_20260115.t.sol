@@ -97,9 +97,12 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
                 relayers : relayers
             }),
             ForeignAlmSystemDependencies({
-                cctp : Base.CCTP_TOKEN_MESSENGER_V2,
-                psm  : Base.PSM3,
-                usdc : Base.USDC
+                cctp                     : Base.CCTP_TOKEN_MESSENGER_V2,
+                psm                      : Base.PSM3,
+                usdc                     : Base.USDC,
+                pendleRouter             : Base.PENDLE_ROUTER,
+                uniswapV3Router          : Base.UNISWAP_V3_SWAP_ROUTER_02,
+                uniswapV3PositionManager : Base.UNISWAP_V3_POSITION_MANAGER
             })
         );
     }
