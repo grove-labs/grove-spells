@@ -48,16 +48,19 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         relayers[0] = Ethereum.ALM_RELAYER;
 
         MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](1);
+        // Note: Re-setting the Avalanche CCTP mint recipient set in the GroveEthereum_20250821 proposal
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
             domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
             mintRecipient : CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
         });
 
         MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](2);
+        // Note: Re-setting the Avalanche Centrifuge recipient set in the GroveEthereum_20250821 proposal
         centrifugeRecipients[0] = MainnetControllerInit.CentrifugeRecipient({
             destinationCentrifugeId : GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID,
             recipient               : CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY)
         });
+        // Note: Re-setting the Plume Centrifuge recipient set in the GroveEthereum_20251002 proposal
         centrifugeRecipients[1] = MainnetControllerInit.CentrifugeRecipient({
             destinationCentrifugeId : GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID,
             recipient               : CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY)
