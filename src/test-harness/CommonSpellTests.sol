@@ -211,7 +211,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         /**********************************************************************************************/
 
         // CCTP
-        // NOTE CCTPv2 crosschain transfers are not onboarded on Plume yet
+        // NOTE CCTPv2 crosschain transfers to Plume are not onboarded yet
 
         // Centrifuge
         assertEq(
