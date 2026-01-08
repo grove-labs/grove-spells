@@ -47,14 +47,10 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
         address[] memory relayers = new address[](1);
         relayers[0] = Ethereum.ALM_RELAYER;
 
-        MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](2);
+        MainnetControllerInit.MintRecipient[] memory mintRecipients = new MainnetControllerInit.MintRecipient[](1);
         mintRecipients[0] = MainnetControllerInit.MintRecipient({
             domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
             mintRecipient : CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY)
-        });
-        mintRecipients[1] = MainnetControllerInit.MintRecipient({
-            domain        : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
-            mintRecipient : CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
         });
 
         MainnetControllerInit.CentrifugeRecipient[] memory centrifugeRecipients = new MainnetControllerInit.CentrifugeRecipient[](2);
@@ -95,45 +91,45 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
             centrifugeRecipients
         );
 
-        // Set to make GroveEthereum_20250807 Ethena deposit onboarding backwards compatible
+        // Note: Set to make GroveEthereum_20250807 Ethena deposit onboarding backwards compatible
         MainnetController(NEW_CONTROLLER).setMaxExchangeRate(
             Ethereum.SUSDE,
             1e18,
             1.3e18
         );
 
-        // Set to make GroveEthereum_20251211 Morpho vault onboarding backwards compatible
+        // Note: Set to make GroveEthereum_20251211 Morpho vault onboarding backwards compatible
         MainnetController(NEW_CONTROLLER).setMaxExchangeRate(
             Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
             1e18,
             1.15e6
         );
 
-        // Re-setting the Curve RLUSD/USDC pool slippage set in GroveEthereum_20251030
+        // Note: Re-setting the Curve RLUSD/USDC pool slippage set in GroveEthereum_20251030
         MainnetController(NEW_CONTROLLER).setMaxSlippage(
             Ethereum.CURVE_RLUSD_USDC,
             0.9990e18
         );
 
-        // Set to make GroveEthereum_20251030 Aave Core RLUSD onboarding backwards compatible
+        // Note: Set to make GroveEthereum_20251030 Aave Core RLUSD onboarding backwards compatible
         MainnetController(NEW_CONTROLLER).setMaxSlippage(
             Ethereum.AAVE_CORE_RLUSD,
             0.9990e18
         );
 
-        // Set to make GroveEthereum_20251030 Aave Core USDC onboarding backwards compatible
+        // Note: Set to make GroveEthereum_20251030 Aave Core USDC onboarding backwards compatible
         MainnetController(NEW_CONTROLLER).setMaxSlippage(
             Ethereum.AAVE_CORE_USDC,
             0.9990e18
         );
 
-        // Set to make GroveEthereum_20251030 Aave Horizon RLUSD onboarding backwards compatible
+        // Note: Set to make GroveEthereum_20251030 Aave Horizon RLUSD onboarding backwards compatible
         MainnetController(NEW_CONTROLLER).setMaxSlippage(
             Ethereum.AAVE_HORIZON_RLUSD,
             0.9990e18
         );
 
-        // Set to make GroveEthereum_20251030 Aave Horizon USDC onboarding backwards compatible
+        // Note: Set to make GroveEthereum_20251030 Aave Horizon USDC onboarding backwards compatible
         MainnetController(NEW_CONTROLLER).setMaxSlippage(
             Ethereum.AAVE_HORIZON_USDC,
             0.9990e18
@@ -141,7 +137,12 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
     }
 
     function _onboardCctpTransfersToBase() internal {
-        // General key rate limit for all CCTP transfers was set in the GroveEthereum_20250807 proposal
+        MainnetController(NEW_CONTROLLER).setMintRecipient(
+            CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE,
+            CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY)
+        );
+
+        // Note: General key rate limit for all CCTP transfers was set in the GroveEthereum_20250807 proposal
 
         bytes32 domainKey = RateLimitHelpers.makeDomainKey(
             MainnetController(NEW_CONTROLLER).LIMIT_USDC_TO_DOMAIN(),
