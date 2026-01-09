@@ -33,6 +33,10 @@ contract GroveEthereum_20260115 is GrovePayloadEthereum {
     uint256 internal constant CCTP_RATE_LIMIT_MAX   = 50_000_000e6;
     uint256 internal constant CCTP_RATE_LIMIT_SLOPE = 50_000_000e6 / uint256(1 days);
 
+    constructor() {
+        PAYLOAD_BASE = 0xAe9EAd94B00d137f01159A7F279c0b78dd04c860;
+    }
+
     function _execute() internal override {
         // [Mainnet] Upgrade MainnetController to v1.8.0
         //   Forum : https://forum.sky.money/t/january-15th-2026-proposed-changes-to-grove-for-upcoming-spell/27570#p-105288-h-3-mainnet-upgrade-mainnetcontroller-to-v180-14

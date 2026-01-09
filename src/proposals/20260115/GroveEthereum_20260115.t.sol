@@ -23,6 +23,9 @@ interface IERC20Like {
 
 contract GroveEthereum_20260115_Test is GroveTestBase {
 
+    address internal constant ETHEREUM_PAYLOAD = 0x90230A17dcA6c0b126521BB55B98f8C6Cf2bA748;
+    address internal constant BASE_PAYLOAD     = 0xAe9EAd94B00d137f01159A7F279c0b78dd04c860;
+
     address internal constant DEPLOYER = 0xB51e492569BAf6C495fDa00F94d4a23ac6c48F12;
 
     address internal constant MAINNET_NEW_CONTROLLER = 0xfd9dEA9a8D5B955649579Af482DB7198A392A9F5;
@@ -42,9 +45,10 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2025-12-26T20:30:00Z");
+        setupDomains("2026-01-09T13:46:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
+        chainData[ChainIdUtils.Base()].payload     = BASE_PAYLOAD;
 
         // Prepare testing setup for the controller upgrade
         chainData[ChainIdUtils.Ethereum()].newController  = MAINNET_NEW_CONTROLLER;
