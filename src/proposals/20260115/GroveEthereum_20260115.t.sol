@@ -45,7 +45,7 @@ contract GroveEthereum_20260115_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-01-09T13:46:00Z");
+        setupDomains("2026-01-09T16:05:00Z");
 
         chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
         chainData[ChainIdUtils.Base()].payload     = BASE_PAYLOAD;

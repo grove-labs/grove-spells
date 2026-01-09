@@ -116,7 +116,7 @@ abstract contract SpellRunner is Test {
             "if date --version >/dev/null 2>&1; then ",
                 "date -d \"$ISO\" +%s; ",
             "else ",
-                "date -j -f '%Y-%m-%dT%H:%M:%SZ' \"$ISO\" +%s; ",
+                "TZ=UTC date -j -f '%Y-%m-%dT%H:%M:%SZ' \"$ISO\" +%s; ",
             "fi"
         );
 

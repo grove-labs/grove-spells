@@ -1,5 +1,6 @@
 [profile.default]
 src = "src"
+test = "src"
 out = "out"
 libs = ["lib"]
 fs_permissions = [
