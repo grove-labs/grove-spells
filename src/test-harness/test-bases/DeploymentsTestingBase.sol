@@ -1,8 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { Avalanche } from "grove-address-registry/Avalanche.sol";
-import { Ethereum }  from "grove-address-registry/Ethereum.sol";
+import { Ethereum } from "grove-address-registry/Ethereum.sol";
 
 import { LZForwarder } from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
@@ -47,6 +46,9 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         address psm;
         address usdc;
         address cctp;
+        address pendleRouter;
+        address uniswapV3Router;
+        address uniswapV3PositionManager;
     }
 
     struct MainnetAlmSystemDependencies {
@@ -120,11 +122,14 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         }
 
         // Controller has correct proxy, rate limits, psm, usdc, and cctp messenger
-        assertEq(address(controller.proxy()),      contracts.proxy,      "incorrect-almProxy");
-        assertEq(address(controller.rateLimits()), contracts.rateLimits, "incorrect-rateLimits");
-        assertEq(address(controller.psm()),        dependencies.psm,     "incorrect-psm");
-        assertEq(address(controller.usdc()),       dependencies.usdc,    "incorrect-usdc");
-        assertEq(address(controller.cctp()),       dependencies.cctp,    "incorrect-cctp");
+        assertEq(address(controller.proxy()),                    contracts.proxy,                       "incorrect-almProxy");
+        assertEq(address(controller.rateLimits()),               contracts.rateLimits,                  "incorrect-rateLimits");
+        assertEq(address(controller.psm()),                      dependencies.psm,                      "incorrect-psm");
+        assertEq(address(controller.usdc()),                     dependencies.usdc,                     "incorrect-usdc");
+        assertEq(address(controller.cctp()),                     dependencies.cctp,                     "incorrect-cctp");
+        assertEq(address(controller.pendleRouter()),             dependencies.pendleRouter,             "incorrect-pendleRouter");
+        assertEq(address(controller.uniswapV3Router()),          dependencies.uniswapV3Router,          "incorrect-uniswapV3Router");
+        assertEq(address(controller.uniswapV3PositionManager()), dependencies.uniswapV3PositionManager, "incorrect-uniswapV3PositionManager");
     }
 
     function _verifyForeignAlmSystemDeployment(
