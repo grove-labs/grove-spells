@@ -1,21 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-// import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
+import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 
-// import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
-// import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
-// import { Base }      from "lib/grove-address-registry/src/Base.sol";
-// import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
-
-// import { MainnetControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/MainnetControllerInit.sol";
-
-// import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 // import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 // import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
-// import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 // import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereum.sol";
@@ -25,6 +17,9 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
  * @author Grove Labs
  */
 contract GroveEthereum_20260129 is GrovePayloadEthereum {
+
+    address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
+    address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
     function _execute() internal override {
         // [Mainnet] Re-Onboard Agora AUSD Mint Redeem
@@ -81,7 +76,9 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _onboardRelayers() internal {
-        // TODO: Implement
+        MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
+        controller.grantRole(controller.RELAYER(), GROVE_CORE_RELAYER_OPERATOR);
+        controller.grantRole(controller.RELAYER(), GROVE_SECONDARY_RELAYER_OPERATOR);
     }
 
 }
