@@ -28,31 +28,31 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Mainnet] Re-Onboard Agora AUSD Mint Redeem
-        // Forum : TODO
+        // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-1-mainnet-re-onboard-agora-ausd-mint-redeem-2
         _reOnboardAgoraAusdMintRedeem();
 
         // [Mainnet] Onboard Curve AUSD/USDC Swaps & LP
-        // Forum : TODO
+        // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-2-mainnet-onboard-curve-ausdusdc-swaps-lp-8
         _onboardCurveAusdUsdcSwapsAndLp();
 
         // [Mainnet] Onboard Uniswap v3 AUSD/USDC Swaps & LP
-        // Forum : TODO
+        // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-3-mainnet-onboard-uniswap-v3-ausdusdc-swaps-lp-14
         _onboardUniswapV3AusdUsdcSwapsAndLp();
 
         // [Mainnet] Onboard Curve PYUSD/USDS Swaps
-        // Forum : TODO
+        // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-4-mainnet-onboard-curve-pyusdusds-swaps-20
         _onboardCurvePyusdUsdsSwaps();
 
         // [Mainnet] Onboard Grove x Steakhouse USDC Morpho Vault
-        // Forum : TODO
+        // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-5-mainnet-grove-x-steakhouse-usdc-morpho-vault-v2-26
         _onboardGroveXSteakhouseUsdcMorphoVault();
 
         // [Mainnet] Onboard Steakhouse PYUSD Morpho Vault
-        // Forum : TODO
+        // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-6-mainnet-onboard-steakhouse-pyusd-morpho-vault-32
         _onboardSteakhousePyusdMorphoVault();
 
         // [Mainnet] Onboard Relayers for Grove Liquidity Layer
-        // Forum : TODO
+        // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-7-mainnet-onboard-relayers-for-grove-liquidity-layer-38
         _onboardRelayers();
     }
 
