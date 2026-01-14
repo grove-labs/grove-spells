@@ -19,22 +19,13 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     address internal constant AUSD  = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
     address internal constant PYUSD = 0x6c3ea9036406852006290770BEdFcAbA0e23A0e8;
 
+    /******************************************************************************************************************/
+    /*** [Mainnet] Re-Onboard Agora AUSD Mint Redeem                                                                ***/
+    /******************************************************************************************************************/
+
     address internal constant OLD_AGORA_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
     address internal constant NEW_AGORA_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
     address internal constant NEW_AGORA_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
-
-    address internal constant CURVE_AUSD_USDC_POOL = 0xE79C1C7E24755574438A26D5e062Ad2626C04662;
-
-    address internal constant UNISWAP_V3_AUSD_USDC_POOL = 0xbAFeAd7c60Ea473758ED6c6021505E8BBd7e8E5d;
-
-    address internal constant CURVE_PYUSD_USDS_POOL = 0xA632D59b9B804a956BfaA9b48Af3A1b74808FC1f;
-
-    address internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT = 0xBeefF08dF54897e7544aB01d0e86f013DA354111;
-
-    address internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT = 0xd8A6511979D9C5D387c819E9F8ED9F3a5C6c5379;
-
-    address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
-    address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
     // BEFORE : 50,000,000 max ; 50,000,000/day slope
     // AFTER  :          0 max ;          0/day slope
@@ -50,6 +41,12 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     // AFTER  : 10,000,000 max ; 100,000,000/day slope
     uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_MAX   = 10_000_000e6;
     uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    /******************************************************************************************************************/
+    /*** [Mainnet] Onboard Curve AUSD/USDC Swaps & LP                                                               ***/
+    /******************************************************************************************************************/
+
+    address internal constant CURVE_AUSD_USDC_POOL = 0xE79C1C7E24755574438A26D5e062Ad2626C04662;
 
     // BEFORE :          0 max ;           0/day slope ; 0     max slippage
     // AFTER  : 5,000,000 max  ; 100,000,000/day slope ; 0.999 max slippage (allowing 0.1% slippage)
@@ -67,13 +64,31 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_MAX   = type(uint256).max;
     uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_SLOPE = 0;
 
+    /******************************************************************************************************************/
+    /*** [Mainnet] Onboard Uniswap v3 AUSD/USDC Swaps & LP                                                          ***/
+    /******************************************************************************************************************/
+
+    address internal constant UNISWAP_V3_AUSD_USDC_POOL = 0xbAFeAd7c60Ea473758ED6c6021505E8BBd7e8E5d;
+
     // TODO UNISWAP V3 AUSD/USDC RATE LIMITS
+
+    /******************************************************************************************************************/
+    /*** [Mainnet] Onboard Curve PYUSD/USDS Swaps                                                                   ***/
+    /******************************************************************************************************************/
+
+    address internal constant CURVE_PYUSD_USDS_POOL = 0xA632D59b9B804a956BfaA9b48Af3A1b74808FC1f;
 
     // BEFORE :          0 max ;           0/day slope ; 0     max slippage
     // AFTER  : 5,000,000 max  ; 100,000,000/day slope ; 0.999 max slippage (allowing 0.1% slippage)
     uint256 internal constant CURVE_PYUSD_USDS_MAX_SLIPPAGE = 0.999e18;
     uint256 internal constant CURVE_PYUSD_USDS_SWAP_MAX     = 5_000_000e18;
     uint256 internal constant CURVE_PYUSD_USDS_SWAP_SLOPE   = 100_000_000e18 / uint256(1 days);
+
+    /******************************************************************************************************************/
+    /*** [Mainnet] Onboard Grove x Steakhouse USDC Morpho Vault                                                     ***/
+    /******************************************************************************************************************/
+
+    address internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT = 0xBeefF08dF54897e7544aB01d0e86f013DA354111;
 
     // BEFORE :          0 max ;          0/day slope ;    0 max exchange rate
     // AFTER  : 20,000,000 max ; 20,000,000/day slope ; 2e24 max exchange rate ( 2e6 assets / 1e18 share unit * 1e36 exchange rate precision )
@@ -82,12 +97,25 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_SHARE_UNIT           = 1e18;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 2e6;
 
+    /******************************************************************************************************************/
+    /*** [Mainnet] Onboard Steakhouse PYUSD Morpho Vault                                                            ***/
+    /******************************************************************************************************************/
+
+    address internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT = 0xd8A6511979D9C5D387c819E9F8ED9F3a5C6c5379;
+
     // BEFORE :          0 max ;          0/day slope ;    0 max exchange rate
     // AFTER  : 20,000,000 max ; 20,000,000/day slope ; 4e24 max exchange rate ( 4e6 assets / 1e18 share unit * 1e36 exchange rate precision )
     uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_MAX          = 20_000_000e6;
     uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_SLOPE        = 20_000_000e6 / uint256(1 days);
     uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_SHARE_UNIT           = 1e18;
-    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 4.2e6;
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 4e6;
+
+    /******************************************************************************************************************/
+    /*** [Mainnet] Onboard Relayers for Grove Liquidity Layer                                                       ***/
+    /******************************************************************************************************************/
+
+    address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
+    address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
     function _execute() internal override {
         // [Mainnet] Re-Onboard Agora AUSD Mint Redeem
