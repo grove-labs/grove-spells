@@ -72,9 +72,13 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_MAX        = type(uint256).max;
     uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_SLOPE      = 0;
 
-    // UNISWAP V3 AUSD/USDC RATE LIMITS
+    // TODO UNISWAP V3 AUSD/USDC RATE LIMITS
 
-    // CURVE PYUSD/USDS RATE LIMITS
+    uint256 internal constant CURVE_PYUSD_USDS_TEST_SWAP_TOKEN0 = 2_000_000e6;
+    uint256 internal constant CURVE_PYUSD_USDS_MAX_SLIPPAGE     = 0.999e18;
+    uint256 internal constant CURVE_PYUSD_USDS_SWAP_MAX         = 5_000_000e18;
+    uint256 internal constant CURVE_PYUSD_USDS_SWAP_SLOPE       = 100_000_000e18 / uint256(1 days);
+
 
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_TEST_DEPOSIT         = 20_000_000e6;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_MAX          = 20_000_000e6;
@@ -198,8 +202,18 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardCurvePyusdUsdsSwaps() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
+        _testCurveOnboarding({
+            pool                        : CURVE_PYUSD_USDS_POOL,
+            expectedDepositAmountToken0 : 0,
+            expectedSwapAmountToken0    : CURVE_PYUSD_USDS_TEST_SWAP_TOKEN0,
+            maxSlippage                 : CURVE_PYUSD_USDS_MAX_SLIPPAGE,
+            swapMax                     : CURVE_PYUSD_USDS_SWAP_MAX,
+            swapSlope                   : CURVE_PYUSD_USDS_SWAP_SLOPE,
+            depositMax                  : 0,
+            depositSlope                : 0,
+            withdrawMax                 : 0,
+            withdrawSlope               : 0
+        });
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {

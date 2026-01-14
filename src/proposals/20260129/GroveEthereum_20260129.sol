@@ -8,8 +8,6 @@ import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers
 
 import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
-// import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
-
 import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereum.sol";
 
 /**
@@ -69,9 +67,13 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_MAX   = type(uint256).max;
     uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_SLOPE = 0;
 
-    // UNISWAP V3 AUSD/USDC RATE LIMITS
+    // TODO UNISWAP V3 AUSD/USDC RATE LIMITS
 
-    // CURVE PYUSD/USDS RATE LIMITS
+    // BEFORE :          0 max ;           0/day slope ; 0     max slippage
+    // AFTER  : 5,000,000 max  ; 100,000,000/day slope ; 0.999 max slippage (allowing 0.1% slippage)
+    uint256 internal constant CURVE_PYUSD_USDS_MAX_SLIPPAGE = 0.999e18;
+    uint256 internal constant CURVE_PYUSD_USDS_SWAP_MAX     = 5_000_000e18;
+    uint256 internal constant CURVE_PYUSD_USDS_SWAP_SLOPE   = 100_000_000e18 / uint256(1 days);
 
     // BEFORE :          0 max ;          0/day slope ;    0 max exchange rate
     // AFTER  : 20,000,000 max ; 20,000,000/day slope ; 2e24 max exchange rate ( 2e6 assets / 1e18 share unit * 1e36 exchange rate precision )
@@ -174,7 +176,17 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _onboardCurvePyusdUsdsSwaps() internal {
-        // TODO: Implement
+        _onboardCurvePool({
+            controller    : Ethereum.ALM_CONTROLLER,
+            pool          : CURVE_PYUSD_USDS_POOL,
+            maxSlippage   : CURVE_PYUSD_USDS_MAX_SLIPPAGE,
+            swapMax       : CURVE_PYUSD_USDS_SWAP_MAX,
+            swapSlope     : CURVE_PYUSD_USDS_SWAP_SLOPE,
+            depositMax    : 0,
+            depositSlope  : 0,
+            withdrawMax   : 0,
+            withdrawSlope : 0
+        });
     }
 
     function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
