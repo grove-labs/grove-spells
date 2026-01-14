@@ -129,7 +129,7 @@ abstract contract CurveTestingBase is CommonTestBase {
             // Withdraw should also be enabled if deposit is enabled
             assertGt(withdrawMax, 0);
 
-            uint256 snapshot = vm.snapshot();
+            uint256 snapshot = vm.snapshotState();
 
             // Go slightly above maxSlippage due to rounding
             vars.withdrawAmounts = new uint256[](2);
@@ -153,7 +153,7 @@ abstract contract CurveTestingBase is CommonTestBase {
                 (vars.depositAmounts[0] * vars.rates[0] + vars.depositAmounts[1] * vars.rates[1]) * maxSlippage / 1e36
             );
 
-            vm.revertTo(snapshot);  // To allow swapping through higher liquidity below
+            vm.revertToState(snapshot);  // To allow swapping through higher liquidity below
         } else {
             // Deposit is disabled
             assertEq(vars.depositAmounts[0], 0);
