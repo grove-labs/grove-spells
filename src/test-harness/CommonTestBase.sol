@@ -52,6 +52,7 @@ contract CommonTestBase is SpellRunner {
 
   bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
+  address public constant AUSD_MAINNET  = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
   address public constant BUIDL_MAINNET = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
   address public constant USDC_MAINNET  = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
   address public constant STAC_MAINNET  = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
@@ -87,6 +88,12 @@ contract CommonTestBase is SpellRunner {
       if (asset == STAC_MAINNET) {
         vm.prank(0x22F53B51E4272F954f25BC377B1b759c6C5A528B);
         ISecuritizeAssetLike(asset).issueTokens(user, amount);
+        return true;
+      }
+      // Agora AUSD
+      if (asset == AUSD_MAINNET) {
+        vm.prank(0xe488A30Af596135A5c5313b3d4e7aABF985A0C0D);
+        IERC20(asset).transfer(user, amount);
         return true;
       }
     } else if (block.chainid == ChainIds.GNOSIS) {
@@ -226,8 +233,8 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, maxAmount);
-        assertEq(rateLimit.slope,     slope);
+        assertEq(rateLimit.maxAmount, maxAmount, "max-amount-not-correct");
+        assertEq(rateLimit.slope,     slope,     "slope-not-correct");
     }
 
     function _assertUnlimitedRateLimit(
@@ -244,8 +251,8 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, 0);
-        assertEq(rateLimit.slope,     0);
+        assertEq(rateLimit.maxAmount, 0, "max-amount-not-zero");
+        assertEq(rateLimit.slope,     0, "slope-not-zero");
     }
 
     function _assertRateLimit(

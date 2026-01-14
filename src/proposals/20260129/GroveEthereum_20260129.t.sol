@@ -8,6 +8,7 @@ import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { Base }     from "lib/grove-address-registry/src/Base.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
+import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
@@ -50,7 +51,16 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
     bytes32 internal constant ETHEREUM_20260115_CODEHASH = 0x9317fd876201f5a1b08658b47a47c8980b8c8aa7538e059408668b502acfa5fb;
 
-    // AUSD RATE LIMITS
+    uint256 internal constant PREV_OLD_AGORA_AUSD_USDC_MINT_MAX   = 50_000_000e6;
+    uint256 internal constant PREV_OLD_AGORA_AUSD_USDC_MINT_SLOPE = 50_000_000e6 / uint256(1 days);
+    uint256 internal constant OLD_AGORA_AUSD_USDC_MINT_MAX        = 0;
+    uint256 internal constant OLD_AGORA_AUSD_USDC_MINT_SLOPE      = 0;
+
+    uint256 internal constant NEW_AGORA_AUSD_USDC_MINT_MAX   = 10_000_000e6;
+    uint256 internal constant NEW_AGORA_AUSD_USDC_MINT_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_MAX   = 10_000_000e6;
+    uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_SLOPE = 100_000_000e6 / uint256(1 days);
 
     // CURVE AUSD/USDC RATE LIMITS
 
@@ -75,7 +85,7 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-01-13T12:00:00Z");
+        setupDomains("2026-01-14T13:00:00Z");
 
         _executePreviousMainnetSpell();
         _executePreviousBaseSpell();
@@ -102,10 +112,57 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
         );
     }
 
-    function test_ETHEREUM_reOnboardAgoraAusdMintRedeem() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
+    function test_ETHEREUM_offboardOldAgoraAusdMint() public onChain(ChainIdUtils.Ethereum()) {
+        bytes32 mintKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.USDC,
+            OLD_AGORA_AUSD_MINT_WALLET
+        );
+
+        _assertRateLimit({
+            key       : mintKey,
+            maxAmount : PREV_OLD_AGORA_AUSD_USDC_MINT_MAX,
+            slope     : PREV_OLD_AGORA_AUSD_USDC_MINT_SLOPE
+        });
+
+        executeAllPayloadsAndBridges();
+
+        _assertRateLimit({
+            key       : mintKey,
+            maxAmount : OLD_AGORA_AUSD_USDC_MINT_MAX,  // 0
+            slope     : OLD_AGORA_AUSD_USDC_MINT_SLOPE // 0
+        });
+
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        vm.startPrank(ctx.relayer);
+        MainnetController(ctx.controller).mintUSDS(1e12);
+        MainnetController(ctx.controller).swapUSDSToUSDC(1);
+        vm.expectRevert("RateLimits/zero-maxAmount");
+        MainnetController(ctx.controller).transferAsset(Ethereum.USDC, OLD_AGORA_AUSD_MINT_WALLET, 1);
+        vm.stopPrank();
     }
+
+    function test_ETHEREUM_onboardNewAgoraAusdMint() public onChain(ChainIdUtils.Ethereum()) {
+        _testDirectUsdcTransferOnboarding({
+            usdc                  : Ethereum.USDC,
+            destination           : NEW_AGORA_AUSD_MINT_WALLET,
+            expectedDepositAmount : NEW_AGORA_AUSD_USDC_MINT_MAX,
+            depositMax            : NEW_AGORA_AUSD_USDC_MINT_MAX,
+            depositSlope          : NEW_AGORA_AUSD_USDC_MINT_SLOPE
+        });
+    }
+
+    function test_ETHEREUM_onboardNewAgoraAusdRedeem() public onChain(ChainIdUtils.Ethereum()) {
+        _testDirectTokenTransferOnboarding({
+            token                 : AUSD,
+            destination           : NEW_AGORA_AUSD_REDEEM_WALLET,
+            expectedDepositAmount : NEW_AGORA_AUSD_USDC_REDEEM_MAX,
+            depositMax            : NEW_AGORA_AUSD_USDC_REDEEM_MAX,
+            depositSlope          : NEW_AGORA_AUSD_USDC_REDEEM_SLOPE
+        });
+    }
+
 
     function test_ETHEREUM_onboardCurveAusdUsdcSwaps() public onChain(ChainIdUtils.Ethereum()) {
         vm.skip(true);

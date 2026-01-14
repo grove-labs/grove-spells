@@ -96,20 +96,24 @@ abstract contract ERC20TestingBase is CommonTestBase {
             MainnetController(ctx.controller).transferAsset(token, destination, depositMax + 1);
         }
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax, "current-rate-limit-not-correct");
 
         uint256 initialDestinationBalance = IERC20(token).balanceOf(destination);
 
-        assertEq(IERC20(token).balanceOf(address(ctx.proxy)), expectedDepositAmount);
-        assertEq(IERC20(token).balanceOf(destination), initialDestinationBalance);
+        assertEq(IERC20(token).balanceOf(address(ctx.proxy)), expectedDepositAmount,     "proxy-balance-not-correct");
+        assertEq(IERC20(token).balanceOf(destination),        initialDestinationBalance, "destination-balance-not-correct");
 
         vm.prank(ctx.relayer);
         MainnetController(ctx.controller).transferAsset(token, destination, expectedDepositAmount);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), unlimitedDeposit ? type(uint256).max : depositMax - expectedDepositAmount);
+        assertEq(
+            ctx.rateLimits.getCurrentRateLimit(depositKey),
+            unlimitedDeposit ? type(uint256).max : depositMax - expectedDepositAmount,
+            "current-rate-limit-not-correct"
+        );
 
-        assertEq(IERC20(token).balanceOf(address(ctx.proxy)), 0);
-        assertEq(IERC20(token).balanceOf(destination), initialDestinationBalance + expectedDepositAmount);
+        assertEq(IERC20(token).balanceOf(address(ctx.proxy)), 0,                                                 "proxy-balance-not-correct");
+        assertEq(IERC20(token).balanceOf(destination),        initialDestinationBalance + expectedDepositAmount, "destination-balance-not-correct");
 
         if (!unlimitedDeposit) {
             vm.warp(block.timestamp + 1 days + 1 seconds);

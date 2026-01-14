@@ -4,9 +4,9 @@ pragma solidity 0.8.25;
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
-// import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
+import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
-// import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
+import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
 // import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
@@ -38,7 +38,20 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
-    // AUSD RATE LIMITS
+    // BEFORE : 50,000,000 max ; 50,000,000/day slope
+    // AFTER  :          0 max ;          0/day slope
+    uint256 internal constant OLD_AGORA_AUSD_USDC_MINT_MAX   = 0;
+    uint256 internal constant OLD_AGORA_AUSD_USDC_MINT_SLOPE = 0;
+
+    // AFTER  :          0 max ;           0/day slope
+    // BEFORE : 10,000,000 max ; 100,000,000/day slope
+    uint256 internal constant NEW_AGORA_AUSD_USDC_MINT_MAX   = 10_000_000e6;
+    uint256 internal constant NEW_AGORA_AUSD_USDC_MINT_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    // AFTER  :          0 max ;           0/day slope
+    // BEFORE : 10,000,000 max ; 100,000,000/day slope
+    uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_MAX   = 10_000_000e6;
+    uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_SLOPE = 100_000_000e6 / uint256(1 days);
 
     // CURVE AUSD/USDC RATE LIMITS
 
@@ -91,7 +104,41 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _reOnboardAgoraAusdMintRedeem() internal {
-        // TODO: Implement
+        bytes32 oldMintKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.USDC,
+            OLD_AGORA_AUSD_MINT_WALLET
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
+            key       : oldMintKey,
+            maxAmount : OLD_AGORA_AUSD_USDC_MINT_MAX,
+            slope     : OLD_AGORA_AUSD_USDC_MINT_SLOPE
+        });
+
+        bytes32 newMintKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            Ethereum.USDC,
+            NEW_AGORA_AUSD_MINT_WALLET
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
+            key       : newMintKey,
+            maxAmount : NEW_AGORA_AUSD_USDC_MINT_MAX,
+            slope     : NEW_AGORA_AUSD_USDC_MINT_SLOPE
+        });
+
+        bytes32 newRedeemKey = RateLimitHelpers.makeAssetDestinationKey(
+            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            AUSD,
+            NEW_AGORA_AUSD_REDEEM_WALLET
+        );
+
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
+            key       : newRedeemKey,
+            maxAmount : NEW_AGORA_AUSD_USDC_REDEEM_MAX,
+            slope     : NEW_AGORA_AUSD_USDC_REDEEM_SLOPE
+        });
     }
 
     function _onboardCurveAusdUsdcSwapsAndLp() internal {
