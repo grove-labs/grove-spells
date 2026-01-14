@@ -64,7 +64,11 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_SHARE_UNIT           = 1e18;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 2e6;
 
-    // STEAKHOUSE PYUSD MORPHO VAULT RATE LIMITS
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_TEST_DEPOSIT         = 20_000_000e6;
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_MAX          = 20_000_000e6;
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_SLOPE        = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_SHARE_UNIT           = 1e18;
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 4.2e6;
 
     constructor() {
         id = "20260129";
@@ -140,8 +144,14 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardSteakhousePyusdMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
+        _testERC4626Onboarding({
+            vault                 : STEAKHOUSE_PYUSD_MORPHO_VAULT,
+            expectedDepositAmount : STEAKHOUSE_PYUSD_MORPHO_VAULT_TEST_DEPOSIT,
+            depositMax            : STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope          : STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_SLOPE,
+            shareUnit             : STEAKHOUSE_PYUSD_MORPHO_VAULT_SHARE_UNIT,
+            maxAssetsPerShare     : STEAKHOUSE_PYUSD_MORPHO_VAULT_MAX_ASSETS_PER_SHARE
+        });
     }
 
     function test_ETHEREUM_onboardRelayers() public onChain(ChainIdUtils.Ethereum()) {

@@ -53,7 +53,12 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_SHARE_UNIT           = 1e18;
     uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 2e6;
 
-    // STEAKHOUSE PYUSD MORPHO VAULT RATE LIMITS
+    // BEFORE :          0 max ;          0/day slope ;    0 max exchange rate
+    // AFTER  : 20,000,000 max ; 20,000,000/day slope ; 4e24 max exchange rate ( 4e6 assets / 1e18 share unit * 1e36 exchange rate precision )
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_MAX          = 20_000_000e6;
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_SLOPE        = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_SHARE_UNIT           = 1e18;
+    uint256 internal constant STEAKHOUSE_PYUSD_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 4.2e6;
 
     function _execute() internal override {
         // [Mainnet] Re-Onboard Agora AUSD Mint Redeem
@@ -112,7 +117,13 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _onboardSteakhousePyusdMorphoVault() internal {
-        // TODO: Implement
+        _onboardERC4626Vault({
+            vault             : STEAKHOUSE_PYUSD_MORPHO_VAULT,
+            depositMax        : STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope      : STEAKHOUSE_PYUSD_MORPHO_VAULT_DEPOSIT_SLOPE,
+            shareUnit         : STEAKHOUSE_PYUSD_MORPHO_VAULT_SHARE_UNIT,
+            maxAssetsPerShare : STEAKHOUSE_PYUSD_MORPHO_VAULT_MAX_ASSETS_PER_SHARE
+        });
     }
 
     function _onboardRelayers() internal {
