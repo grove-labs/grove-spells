@@ -107,8 +107,8 @@ abstract contract CurveTestingBase is CommonTestBase {
             assertGt(vars.depositAmounts[0], 0);
             assertGt(vars.depositAmounts[1], 0);
 
-            deal(vars.pool.coins(0), address(vars.ctx.proxy), vars.depositAmounts[0]);
-            deal(vars.pool.coins(1), address(vars.ctx.proxy), vars.depositAmounts[1]);
+            deal2(vars.pool.coins(0), address(vars.ctx.proxy), vars.depositAmounts[0]);
+            deal2(vars.pool.coins(1), address(vars.ctx.proxy), vars.depositAmounts[1]);
 
             assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), vars.depositAmounts[0]);
             assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), vars.depositAmounts[1]);
@@ -164,7 +164,7 @@ abstract contract CurveTestingBase is CommonTestBase {
         }
 
         if (swapMax != 0) {
-            deal(vars.pool.coins(0), address(vars.ctx.proxy), expectedSwapAmountToken0);
+            deal2(vars.pool.coins(0), address(vars.ctx.proxy), expectedSwapAmountToken0);
             vars.minAmountOut = expectedSwapAmountToken0 * vars.rates[0] * maxSlippage / vars.rates[1] / 1e18;
 
             assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), expectedSwapAmountToken0);

@@ -80,7 +80,7 @@ contract CommonTestBase is SpellRunner {
       }
       // USDC
       if (asset == USDC_MAINNET) {
-        vm.prank(0x28C6c06298d514Db089934071355E5743bf21d60);
+        vm.prank(0xaD354CfBAa4A8572DD6Df021514a3931A8329Ef5);
         IERC20(asset).transfer(user, amount);
         return true;
       }

@@ -43,17 +43,31 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     uint256 internal constant OLD_AGORA_AUSD_USDC_MINT_MAX   = 0;
     uint256 internal constant OLD_AGORA_AUSD_USDC_MINT_SLOPE = 0;
 
-    // AFTER  :          0 max ;           0/day slope
-    // BEFORE : 10,000,000 max ; 100,000,000/day slope
+    // BEFORE :          0 max ;           0/day slope
+    // AFTER  : 10,000,000 max ; 100,000,000/day slope
     uint256 internal constant NEW_AGORA_AUSD_USDC_MINT_MAX   = 10_000_000e6;
     uint256 internal constant NEW_AGORA_AUSD_USDC_MINT_SLOPE = 100_000_000e6 / uint256(1 days);
 
-    // AFTER  :          0 max ;           0/day slope
-    // BEFORE : 10,000,000 max ; 100,000,000/day slope
+    // BEFORE :          0 max ;           0/day slope
+    // AFTER  : 10,000,000 max ; 100,000,000/day slope
     uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_MAX   = 10_000_000e6;
     uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_SLOPE = 100_000_000e6 / uint256(1 days);
 
-    // CURVE AUSD/USDC RATE LIMITS
+    // BEFORE :          0 max ;           0/day slope ; 0     max slippage
+    // AFTER  : 5,000,000 max  ; 100,000,000/day slope ; 0.999 max slippage (allowing 0.1% slippage)
+    uint256 internal constant CURVE_AUSD_USDC_MAX_SLIPPAGE = 0.999e18;
+    uint256 internal constant CURVE_AUSD_USDC_SWAP_MAX     = 5_000_000e18;
+    uint256 internal constant CURVE_AUSD_USDC_SWAP_SLOPE   = 100_000_000e18 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 25,000,000 max ; 25,000,000/day slope
+    uint256 internal constant CURVE_AUSD_USDC_DEPOSIT_MAX   = 25_000_000e18;
+    uint256 internal constant CURVE_AUSD_USDC_DEPOSIT_SLOPE = 25_000_000e18 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  :  unlimited max ;          0/day slope
+    uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_MAX   = type(uint256).max;
+    uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_SLOPE = 0;
 
     // UNISWAP V3 AUSD/USDC RATE LIMITS
 
@@ -142,7 +156,17 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _onboardCurveAusdUsdcSwapsAndLp() internal {
-        // TODO: Implement
+        _onboardCurvePool({
+            controller    : Ethereum.ALM_CONTROLLER,
+            pool          : CURVE_AUSD_USDC_POOL,
+            maxSlippage   : CURVE_AUSD_USDC_MAX_SLIPPAGE,
+            swapMax       : CURVE_AUSD_USDC_SWAP_MAX,
+            swapSlope     : CURVE_AUSD_USDC_SWAP_SLOPE,
+            depositMax    : CURVE_AUSD_USDC_DEPOSIT_MAX,
+            depositSlope  : CURVE_AUSD_USDC_DEPOSIT_SLOPE,
+            withdrawMax   : CURVE_AUSD_USDC_WITHDRAW_MAX,
+            withdrawSlope : CURVE_AUSD_USDC_WITHDRAW_SLOPE
+        });
     }
 
     function _onboardUniswapV3AusdUsdcSwapsAndLp() internal {

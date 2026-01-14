@@ -62,7 +62,15 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_MAX   = 10_000_000e6;
     uint256 internal constant NEW_AGORA_AUSD_USDC_REDEEM_SLOPE = 100_000_000e6 / uint256(1 days);
 
-    // CURVE AUSD/USDC RATE LIMITS
+    uint256 internal constant CURVE_AUSD_USDC_TEST_DEPOSIT_TOKEN0 = 10_000_000e6;
+    uint256 internal constant CURVE_AUSD_USDC_TEST_SWAP_TOKEN0    = 2_500_000e6;
+    uint256 internal constant CURVE_AUSD_USDC_MAX_SLIPPAGE        = 0.999e18;
+    uint256 internal constant CURVE_AUSD_USDC_SWAP_MAX            = 5_000_000e18;
+    uint256 internal constant CURVE_AUSD_USDC_SWAP_SLOPE          = 100_000_000e18 / uint256(1 days);
+    uint256 internal constant CURVE_AUSD_USDC_DEPOSIT_MAX         = 25_000_000e18;
+    uint256 internal constant CURVE_AUSD_USDC_DEPOSIT_SLOPE       = 25_000_000e18 / uint256(1 days);
+    uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_MAX        = type(uint256).max;
+    uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_SLOPE      = 0;
 
     // UNISWAP V3 AUSD/USDC RATE LIMITS
 
@@ -164,14 +172,19 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
 
-    function test_ETHEREUM_onboardCurveAusdUsdcSwaps() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
-    }
-
-    function test_ETHEREUM_onboardCurveAusdUsdcLp() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
+    function test_ETHEREUM_onboardCurveAusdUsdcSwapsAndLp() public onChain(ChainIdUtils.Ethereum()) {
+        _testCurveOnboarding({
+            pool                        : CURVE_AUSD_USDC_POOL,
+            expectedDepositAmountToken0 : CURVE_AUSD_USDC_TEST_DEPOSIT_TOKEN0,
+            expectedSwapAmountToken0    : CURVE_AUSD_USDC_TEST_SWAP_TOKEN0,
+            maxSlippage                 : CURVE_AUSD_USDC_MAX_SLIPPAGE,
+            swapMax                     : CURVE_AUSD_USDC_SWAP_MAX,
+            swapSlope                   : CURVE_AUSD_USDC_SWAP_SLOPE,
+            depositMax                  : CURVE_AUSD_USDC_DEPOSIT_MAX,
+            depositSlope                : CURVE_AUSD_USDC_DEPOSIT_SLOPE,
+            withdrawMax                 : CURVE_AUSD_USDC_WITHDRAW_MAX,
+            withdrawSlope               : CURVE_AUSD_USDC_WITHDRAW_SLOPE
+        });
     }
 
     function test_ETHEREUM_onboardUniswapV3AusdUsdcSwaps() public onChain(ChainIdUtils.Ethereum()) {
