@@ -31,13 +31,11 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
     bytes32 internal constant ETHEREUM_20260115_CODEHASH = 0x9317fd876201f5a1b08658b47a47c8980b8c8aa7538e059408668b502acfa5fb;
 
-    address internal constant AUSD  = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
-    address internal constant PYUSD = 0x6c3ea9036406852006290770BEdFcAbA0e23A0e8;
-
     /******************************************************************************************************************/
     /*** [Mainnet] Re-Onboard Agora AUSD Mint Redeem                                                                ***/
     /******************************************************************************************************************/
 
+    address internal constant AUSD                         = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
     address internal constant OLD_AGORA_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
     address internal constant NEW_AGORA_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
     address internal constant NEW_AGORA_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
