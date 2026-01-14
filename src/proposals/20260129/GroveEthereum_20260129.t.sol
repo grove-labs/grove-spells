@@ -31,9 +31,9 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     address internal constant AUSD  = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
     address internal constant PYUSD = 0x6c3ea9036406852006290770BEdFcAbA0e23A0e8;
 
-    address internal constant OLD_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
-    address internal constant NEW_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
-    address internal constant NEW_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
+    address internal constant OLD_AGORA_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
+    address internal constant NEW_AGORA_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
+    address internal constant NEW_AGORA_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
 
     address internal constant CURVE_AUSD_USDC_POOL = 0xE79C1C7E24755574438A26D5e062Ad2626C04662;
 
@@ -50,12 +50,28 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
     bytes32 internal constant ETHEREUM_20260115_CODEHASH = 0x9317fd876201f5a1b08658b47a47c8980b8c8aa7538e059408668b502acfa5fb;
 
+    // AUSD RATE LIMITS
+
+    // CURVE AUSD/USDC RATE LIMITS
+
+    // UNISWAP V3 AUSD/USDC RATE LIMITS
+
+    // CURVE PYUSD/USDS RATE LIMITS
+
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_TEST_DEPOSIT         = 20_000_000e6;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_MAX          = 20_000_000e6;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_SLOPE        = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_SHARE_UNIT           = 1e18;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 2e6;
+
+    // STEAKHOUSE PYUSD MORPHO VAULT RATE LIMITS
+
     constructor() {
         id = "20260129";
     }
 
     function setUp() public {
-        setupDomains("2026-01-09T16:05:00Z");
+        setupDomains("2026-01-13T12:00:00Z");
 
         _executePreviousMainnetSpell();
         _executePreviousBaseSpell();
@@ -113,8 +129,14 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseUsdcMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
+        _testERC4626Onboarding({
+            vault                 : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT,
+            expectedDepositAmount : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_TEST_DEPOSIT,
+            depositMax            : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope          : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_SLOPE,
+            shareUnit             : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_SHARE_UNIT,
+            maxAssetsPerShare     : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_MAX_ASSETS_PER_SHARE
+        });
     }
 
     function test_ETHEREUM_onboardSteakhousePyusdMorphoVault() public onChain(ChainIdUtils.Ethereum()) {

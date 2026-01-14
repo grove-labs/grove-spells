@@ -21,9 +21,9 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     address internal constant AUSD  = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
     address internal constant PYUSD = 0x6c3ea9036406852006290770BEdFcAbA0e23A0e8;
 
-    address internal constant OLD_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
-    address internal constant NEW_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
-    address internal constant NEW_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
+    address internal constant OLD_AGORA_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
+    address internal constant NEW_AGORA_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
+    address internal constant NEW_AGORA_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
 
     address internal constant CURVE_AUSD_USDC_POOL = 0xE79C1C7E24755574438A26D5e062Ad2626C04662;
 
@@ -37,6 +37,23 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
 
     address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
+
+    // AUSD RATE LIMITS
+
+    // CURVE AUSD/USDC RATE LIMITS
+
+    // UNISWAP V3 AUSD/USDC RATE LIMITS
+
+    // CURVE PYUSD/USDS RATE LIMITS
+
+    // BEFORE :          0 max ;          0/day slope ;    0 max exchange rate
+    // AFTER  : 20,000,000 max ; 20,000,000/day slope ; 2e24 max exchange rate ( 2e6 assets / 1e18 share unit * 1e36 exchange rate precision )
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_MAX          = 20_000_000e6;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_SLOPE        = 20_000_000e6 / uint256(1 days);
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_SHARE_UNIT           = 1e18;
+    uint256 internal constant GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_MAX_ASSETS_PER_SHARE = 2e6;
+
+    // STEAKHOUSE PYUSD MORPHO VAULT RATE LIMITS
 
     function _execute() internal override {
         // [Mainnet] Re-Onboard Agora AUSD Mint Redeem
@@ -85,7 +102,13 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _onboardGroveXSteakhouseUsdcMorphoVault() internal {
-        // TODO: Implement
+        _onboardERC4626Vault({
+            vault             : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT,
+            depositMax        : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_MAX,
+            depositSlope      : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_DEPOSIT_SLOPE,
+            shareUnit         : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_SHARE_UNIT,
+            maxAssetsPerShare : GROVE_X_STEAKHOUSE_USDC_HY_V2_MORPHO_VAULT_MAX_ASSETS_PER_SHARE
+        });
     }
 
     function _onboardSteakhousePyusdMorphoVault() internal {

@@ -16,7 +16,9 @@ abstract contract ERC4626TestingBase is CommonTestBase {
         address vault,
         uint256 expectedDepositAmount,
         uint256 depositMax,
-        uint256 depositSlope
+        uint256 depositSlope,
+        uint256 shareUnit,
+        uint256 maxAssetsPerShare
     ) internal {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
         bool unlimitedDeposit = depositMax == type(uint256).max;
@@ -49,6 +51,11 @@ abstract contract ERC4626TestingBase is CommonTestBase {
 
         // Reload the context after spell execution to get the new controller after potential controller upgrade
         ctx = _getGroveLiquidityLayerContext();
+
+        uint256 setExchangeRate  = MainnetController(ctx.controller).maxExchangeRates(vault);
+        uint256 expectedExchangeRate = MainnetController(ctx.controller).EXCHANGE_RATE_PRECISION() * maxAssetsPerShare / shareUnit;
+
+        assertEq(setExchangeRate, expectedExchangeRate);
 
         _assertRateLimit(depositKey, depositMax, depositSlope);
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
