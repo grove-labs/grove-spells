@@ -7,6 +7,7 @@ import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers
 import { UniswapV3Lib } from "lib/grove-alm-controller/src/libraries/UniswapV3Lib.sol";
 
 import { IUniswapV3PoolLike, UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
+import { GroveLiquidityLayerHelpers }           from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
 
@@ -36,58 +37,81 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
 
     function _testUniswapV3Onboarding(
         UniswapV3TestingContext               memory context,
-        UniswapV3TestingParams                memory params,
+        UniswapV3TestingParams                memory testingParams,
         UniswapV3Helpers.UniswapV3PoolParams  memory poolParams,
         UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
         UniswapV3Helpers.UniswapV3TokenParams memory token1Params
     ) internal {
-        uint24 controllerPoolSwapMaxTickDelta;
-        UniswapV3Lib.Tick memory controllerPoolTickBounds;
-        uint32 controllerPoolTwapSecondsAgo;
-
-        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
-
-        MainnetController controller = MainnetController(ctx.controller);
-
         UniswapV3Keys memory keys;
         keys.swapKey0 = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_UNISWAP_V3_SWAP(),
+            GroveLiquidityLayerHelpers.LIMIT_UNISWAP_V3_SWAP,
             context.token0,
             context.pool
         );
         keys.depositKey0 = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_UNISWAP_V3_DEPOSIT(),
+            GroveLiquidityLayerHelpers.LIMIT_UNISWAP_V3_DEPOSIT,
             context.token0,
             context.pool
         );
         keys.withdrawKey0 = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_UNISWAP_V3_WITHDRAW(),
+            GroveLiquidityLayerHelpers.LIMIT_UNISWAP_V3_WITHDRAW,
             context.token0,
             context.pool
         );
         keys.swapKey1 = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_UNISWAP_V3_SWAP(),
+            GroveLiquidityLayerHelpers.LIMIT_UNISWAP_V3_SWAP,
             context.token1,
             context.pool
         );
         keys.depositKey1 = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_UNISWAP_V3_DEPOSIT(),
+            GroveLiquidityLayerHelpers.LIMIT_UNISWAP_V3_DEPOSIT,
             context.token1,
             context.pool
         );
         keys.withdrawKey1 = RateLimitHelpers.makeAssetDestinationKey(
-            controller.LIMIT_UNISWAP_V3_WITHDRAW(),
+            GroveLiquidityLayerHelpers.LIMIT_UNISWAP_V3_WITHDRAW,
             context.token1,
             context.pool
         );
+
+        __assertClearedUniswapV3ConfigState(
+            context,
+            keys
+        );
+
+        executeAllPayloadsAndBridges();
+
+        __assertSetUniswapV3ConfigState(
+            context,
+            keys,
+            poolParams,
+            token0Params,
+            token1Params
+        );
+
+        __assertOnboardedUniswapV3OnboardingIsOperational(
+            context,
+            testingParams,
+            poolParams,
+            token0Params,
+            token1Params
+        );
+    }
+
+    function __assertClearedUniswapV3ConfigState(
+        UniswapV3TestingContext memory context,
+        UniswapV3Keys           memory keys
+    ) private view {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+        MainnetController controller = MainnetController(ctx.controller);
 
         assertEq(IUniswapV3PoolLike(context.pool).token0(), context.token0, "incorrect-token0");
         assertEq(IUniswapV3PoolLike(context.pool).token1(), context.token1, "incorrect-token1");
 
         (
-            controllerPoolSwapMaxTickDelta,
-            controllerPoolTickBounds,
-            controllerPoolTwapSecondsAgo
+            uint24 controllerPoolSwapMaxTickDelta,
+            UniswapV3Lib.Tick memory controllerPoolTickBounds,
+            uint32 controllerPoolTwapSecondsAgo
         ) = controller.uniswapV3PoolParams(context.pool);
 
         assertEq(controllerPoolTickBounds.lower,        0, "non-zero-lowerTickBound");
@@ -102,13 +126,22 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
         _assertZeroRateLimit(keys.swapKey1);
         _assertZeroRateLimit(keys.depositKey1);
         _assertZeroRateLimit(keys.withdrawKey1);
+    }
 
-        executeAllPayloadsAndBridges();
+    function __assertSetUniswapV3ConfigState(
+        UniswapV3TestingContext               memory context,
+        UniswapV3Keys                         memory keys,
+        UniswapV3Helpers.UniswapV3PoolParams  memory poolParams,
+        UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
+        UniswapV3Helpers.UniswapV3TokenParams memory token1Params
+    ) private view {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+        MainnetController controller = MainnetController(ctx.controller);
 
         (
-            controllerPoolSwapMaxTickDelta,
-            controllerPoolTickBounds,
-            controllerPoolTwapSecondsAgo
+            uint24 controllerPoolSwapMaxTickDelta,
+            UniswapV3Lib.Tick memory controllerPoolTickBounds,
+            uint32 controllerPoolTwapSecondsAgo
         ) = controller.uniswapV3PoolParams(context.pool);
 
         assertEq(controllerPoolTickBounds.lower,        poolParams.lowerTickBound, "incorrect-lowerTickBound");
@@ -123,8 +156,16 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
         _assertRateLimit(keys.swapKey1,     token1Params.swapMax,     token1Params.swapSlope);
         _assertRateLimit(keys.depositKey1,  token1Params.depositMax,  token1Params.depositSlope);
         _assertRateLimit(keys.withdrawKey1, token1Params.withdrawMax, token1Params.withdrawSlope);
+    }
 
-        // TODO Test flow of swapping, depositing, and withdrawing
+    function __assertOnboardedUniswapV3OnboardingIsOperational(
+        UniswapV3TestingContext               memory context,
+        UniswapV3TestingParams                memory testingParams,
+        UniswapV3Helpers.UniswapV3PoolParams  memory poolParams,
+        UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
+        UniswapV3Helpers.UniswapV3TokenParams memory token1Params
+    ) private view {
+        // TODO Test flow of swapping, adding liquidity, and removing liquidity
     }
 
 }

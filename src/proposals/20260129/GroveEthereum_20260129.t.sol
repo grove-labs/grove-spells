@@ -256,7 +256,7 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
                 token0 : AUSD,
                 token1 : Ethereum.USDC
             }),
-            params : UniswapV3TestingParams({
+            testingParams : UniswapV3TestingParams({
                 expectedDepositAmountToken0 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN0,
                 expectedSwapAmountToken0    : UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN0,
                 expectedDepositAmountToken1 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN1,
