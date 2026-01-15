@@ -6,7 +6,7 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 
-import { UniswapV3Helpers } from "./UniswapV3Helpers.sol";
+import { IUniswapV3PoolLike, UniswapV3Helpers } from "./UniswapV3Helpers.sol";
 
 /**
  * @notice Helper functions for Grove Liquidity Layer
@@ -31,6 +31,9 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CURVE_DEPOSIT       = keccak256("LIMIT_CURVE_DEPOSIT");
     bytes32 public constant LIMIT_CURVE_SWAP          = keccak256("LIMIT_CURVE_SWAP");
     bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
+    bytes32 public constant LIMIT_UNISWAP_V3_SWAP     = keccak256("LIMIT_UNISWAP_V3_SWAP");
+    bytes32 public constant LIMIT_UNISWAP_V3_DEPOSIT  = keccak256("LIMIT_UNISWAP_V3_DEPOSIT");
+    bytes32 public constant LIMIT_UNISWAP_V3_WITHDRAW = keccak256("LIMIT_UNISWAP_V3_WITHDRAW");
 
     uint16 public constant        ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
     uint16 public constant            BASE_DESTINATION_CENTRIFUGE_ID = 2;
@@ -211,7 +214,71 @@ library GroveLiquidityLayerHelpers {
         UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
         UniswapV3Helpers.UniswapV3TokenParams memory token1Params
     ) internal {
-        // TODO Implement
+        MainnetController(controller).setMaxSlippage(pool, poolParams.maxSlippage);
+
+        MainnetController(controller).setUniswapV3PoolMaxTickDelta(pool, poolParams.maxTickDelta);
+
+        MainnetController(controller).setUniswapV3TwapSecondsAgo(pool, poolParams.twapSecondsAgo);
+
+        MainnetController(controller).setUniswapV3AddLiquidityLowerTickBound(pool, poolParams.lowerTickBound);
+        MainnetController(controller).setUniswapV3AddLiquidityUpperTickBound(pool, poolParams.upperTickBound);
+
+        address token0 = IUniswapV3PoolLike(pool).token0();
+        address token1 = IUniswapV3PoolLike(pool).token1();
+
+        if (token0Params.swapMax != 0) {
+            bytes32 swapKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_SWAP,
+                token0,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(swapKey, token0Params.swapMax, token0Params.swapSlope);
+        }
+
+        if (token0Params.depositMax != 0) {
+            bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_DEPOSIT,
+                token0,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(depositKey, token0Params.depositMax, token0Params.depositSlope);
+        }
+
+        if (token0Params.withdrawMax != 0) {
+            bytes32 withdrawKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_WITHDRAW,
+                token0,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(withdrawKey, token0Params.withdrawMax, token0Params.withdrawSlope);
+        }
+
+        if (token1Params.swapMax != 0) {
+            bytes32 swapKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_SWAP,
+                token1,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(swapKey, token1Params.swapMax, token1Params.swapSlope);
+        }
+
+        if (token1Params.depositMax != 0) {
+            bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_DEPOSIT,
+                token1,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(depositKey, token1Params.depositMax, token1Params.depositSlope);
+        }
+
+        if (token1Params.withdrawMax != 0) {
+            bytes32 withdrawKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_WITHDRAW,
+                token1,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(withdrawKey, token1Params.withdrawMax, token1Params.withdrawSlope);
+        }
     }
 
     /**********************************************************************************************/

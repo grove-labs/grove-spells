@@ -1,13 +1,19 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+interface IUniswapV3PoolLike {
+    function token0() external view returns (address);
+    function token1() external view returns (address);
+}
+
 library UniswapV3Helpers {
 
     struct UniswapV3PoolParams {
-        uint24 swapMaxTickDelta;
-        uint32 twapSecondsAgo;
-        int24  lowerTickBound;
-        int24  upperTickBound;
+        uint256 maxSlippage;
+        uint24  maxTickDelta;
+        uint32  twapSecondsAgo;
+        int24   lowerTickBound;
+        int24   upperTickBound;
     }
 
     struct UniswapV3TokenParams {

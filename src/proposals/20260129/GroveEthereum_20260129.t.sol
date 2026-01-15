@@ -250,18 +250,24 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardUniswapV3AusdUsdcSwapsAndLp() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true); // TODO: Implement
         _testUniswapV3Onboarding({
-            pool                        : UNISWAP_V3_AUSD_USDC_POOL,
-            expectedDepositAmountToken0 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN0,
-            expectedSwapAmountToken0    : UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN0,
-            expectedDepositAmountToken1 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN1,
-            expectedSwapAmountToken1    : UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN1,
+            context : UniswapV3TestingContext({
+                pool   : UNISWAP_V3_AUSD_USDC_POOL,
+                token0 : AUSD,
+                token1 : Ethereum.USDC
+            }),
+            params : UniswapV3TestingParams({
+                expectedDepositAmountToken0 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN0,
+                expectedSwapAmountToken0    : UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN0,
+                expectedDepositAmountToken1 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN1,
+                expectedSwapAmountToken1    : UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN1
+            }),
             poolParams : UniswapV3Helpers.UniswapV3PoolParams({
-                swapMaxTickDelta : UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA,
-                twapSecondsAgo   : UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO,
-                lowerTickBound   : UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND,
-                upperTickBound   : UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND
+                maxSlippage    : UNISWAP_V3_AUSD_USDC_MAX_SLIPPAGE,
+                maxTickDelta   : UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA,
+                twapSecondsAgo : UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO,
+                lowerTickBound : UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND,
+                upperTickBound : UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND
             }),
             token0Params : UniswapV3Helpers.UniswapV3TokenParams({
                 swapMax       : UNISWAP_V3_AUSD_USDC_SWAP_AUSD_MAX,
@@ -331,5 +337,60 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_CORE_RELAYER_OPERATOR),      true);
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_SECONDARY_RELAYER_OPERATOR), true);
     }
+
+    function test_printUniswapKeys() public onChain(ChainIdUtils.Ethereum()) {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+        MainnetController mainnetController = MainnetController(ctx.controller);
+
+        bytes32 uniswapV3_AusdUsdcPool_UsdcSwapKey = RateLimitHelpers.makeAssetDestinationKey(
+            mainnetController.LIMIT_UNISWAP_V3_SWAP(),
+            Ethereum.USDC,
+            UNISWAP_V3_AUSD_USDC_POOL
+        );
+        console.log("USDC Swap Key");
+        console.logBytes32(uniswapV3_AusdUsdcPool_UsdcSwapKey);
+
+        bytes32 uniswapV3_AusdUsdcPool_AusdSwapKey = RateLimitHelpers.makeAssetDestinationKey(
+            mainnetController.LIMIT_UNISWAP_V3_SWAP(),
+            AUSD,
+            UNISWAP_V3_AUSD_USDC_POOL
+        );
+        console.log("AUSD Swap Key");
+        console.logBytes32(uniswapV3_AusdUsdcPool_AusdSwapKey);
+
+        bytes32 uniswapV3_AusdUsdcPool_UsdcAddLiquidityKey = RateLimitHelpers.makeAssetDestinationKey(
+            mainnetController.LIMIT_UNISWAP_V3_DEPOSIT(),
+            Ethereum.USDC,
+            UNISWAP_V3_AUSD_USDC_POOL
+        );
+        console.log("USDC Add Liquidity Key");
+        console.logBytes32(uniswapV3_AusdUsdcPool_UsdcAddLiquidityKey);
+
+        bytes32 uniswapV3_AusdUsdcPool_AusdAddLiquidityKey = RateLimitHelpers.makeAssetDestinationKey(
+            mainnetController.LIMIT_UNISWAP_V3_DEPOSIT(),
+            AUSD,
+            UNISWAP_V3_AUSD_USDC_POOL
+        );
+        console.log("AUSD Add Liquidity Key");
+        console.logBytes32(uniswapV3_AusdUsdcPool_AusdAddLiquidityKey);
+
+        bytes32 uniswapV3_AusdUsdcPool_UsdcRemoveLiquidityKey = RateLimitHelpers.makeAssetDestinationKey(
+            mainnetController.LIMIT_UNISWAP_V3_WITHDRAW(),
+            Ethereum.USDC,
+            UNISWAP_V3_AUSD_USDC_POOL
+        );
+        console.log("USDC Remove Liquidity Key");
+        console.logBytes32(uniswapV3_AusdUsdcPool_UsdcRemoveLiquidityKey);
+
+        bytes32 uniswapV3_AusdUsdcPool_AusdRemoveLiquidityKe     = RateLimitHelpers.makeAssetDestinationKey(
+            mainnetController.LIMIT_UNISWAP_V3_WITHDRAW(),
+            AUSD,
+            UNISWAP_V3_AUSD_USDC_POOL
+        );
+        console.log("AUSD Remove Liquidity Key");
+        console.logBytes32(uniswapV3_AusdUsdcPool_AusdRemoveLiquidityKe);
+    }
+
+
 
 }

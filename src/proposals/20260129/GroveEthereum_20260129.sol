@@ -243,10 +243,11 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
             controller : Ethereum.ALM_CONTROLLER,
             pool       : UNISWAP_V3_AUSD_USDC_POOL,
             poolParams : UniswapV3Helpers.UniswapV3PoolParams({
-                swapMaxTickDelta : UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA,
-                twapSecondsAgo   : UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO,
-                lowerTickBound   : UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND,
-                upperTickBound   : UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND
+                maxSlippage    : UNISWAP_V3_AUSD_USDC_MAX_SLIPPAGE,
+                maxTickDelta   : UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA,
+                twapSecondsAgo : UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO,
+                lowerTickBound : UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND,
+                upperTickBound : UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND
             }),
             token0Params : UniswapV3Helpers.UniswapV3TokenParams({
                 swapMax       : UNISWAP_V3_AUSD_USDC_SWAP_AUSD_MAX,
