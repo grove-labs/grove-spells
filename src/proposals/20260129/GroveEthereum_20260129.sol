@@ -8,6 +8,8 @@ import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers
 
 import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits.sol";
 
+import { UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
+
 import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereum.sol";
 
 /**
@@ -68,7 +70,46 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
 
     address internal constant UNISWAP_V3_AUSD_USDC_POOL = 0xbAFeAd7c60Ea473758ED6c6021505E8BBd7e8E5d;
 
-    // TODO UNISWAP V3 AUSD/USDC RATE LIMITS
+    // BEFORE : 0     max slippage ; 0   twap seconds ago ; 0   max tick delta
+    // AFTER  : 0.999 max slippage ; 600 twap seconds ago ; 200 max tick delta
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_MAX_SLIPPAGE     = 0.999e18;
+    uint32  internal constant UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO = 600;
+    uint24  internal constant UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA   = 200;
+
+    // BEFORE :   0 lower tick bound ;   0 upper tick bound
+    // AFTER  : -10 lower tick bound ; +10 upper tick bound
+    int24 internal constant UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND = -10;
+    int24 internal constant UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND =  10;
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 5,000,000 max ; 100,000,000/day slope
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_AUSD_MAX   = 5_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_AUSD_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 5,000,000 max ; 100,000,000/day slope
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_USDC_MAX   = 5_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_USDC_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 25,000,000 max ; 25,000,000/day slope
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_MAX   = 25_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_SLOPE = 25_000_000e6 / uint256(1 days);
+
+    // BEFORE :          0 max ;          0/day slope
+    // AFTER  : 25,000,000 max ; 25,000,000/day slope
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_MAX   = 25_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_SLOPE = 25_000_000e6 / uint256(1 days);
+
+    // BEFORE :         0 max ;          0/day slope
+    // AFTER  : unlimited max ;          0/day slope
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_MAX   = type(uint256).max;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_SLOPE = 0;
+
+    // BEFORE :         0 max ;          0/day slope
+    // AFTER  : unlimited max ;          0/day slope
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_MAX   = type(uint256).max;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_SLOPE = 0;
 
     /******************************************************************************************************************/
     /*** [Mainnet] Onboard Curve PYUSD/USDS Swaps                                                                   ***/
@@ -198,7 +239,32 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _onboardUniswapV3AusdUsdcSwapsAndLp() internal {
-        // TODO: Implement
+        _onboardUniswapV3Pool({
+            controller : Ethereum.ALM_CONTROLLER,
+            pool       : UNISWAP_V3_AUSD_USDC_POOL,
+            poolParams : UniswapV3Helpers.UniswapV3PoolParams({
+                swapMaxTickDelta : UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA,
+                twapSecondsAgo   : UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO,
+                lowerTickBound   : UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND,
+                upperTickBound   : UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND
+            }),
+            token0Params : UniswapV3Helpers.UniswapV3TokenParams({
+                swapMax       : UNISWAP_V3_AUSD_USDC_SWAP_AUSD_MAX,
+                swapSlope     : UNISWAP_V3_AUSD_USDC_SWAP_AUSD_SLOPE,
+                depositMax    : UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_MAX,
+                depositSlope  : UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_SLOPE,
+                withdrawMax   : UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_MAX,
+                withdrawSlope : UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_SLOPE
+            }),
+            token1Params : UniswapV3Helpers.UniswapV3TokenParams({
+                swapMax       : UNISWAP_V3_AUSD_USDC_SWAP_USDC_MAX,
+                swapSlope     : UNISWAP_V3_AUSD_USDC_SWAP_USDC_SLOPE,
+                depositMax    : UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_MAX,
+                depositSlope  : UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_SLOPE,
+                withdrawMax   : UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_MAX,
+                withdrawSlope : UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_SLOPE
+            })
+        });
     }
 
     function _onboardCurvePyusdUsdsSwaps() internal {

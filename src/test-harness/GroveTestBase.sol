@@ -8,6 +8,7 @@ import { DeploymentsTestingBase }    from "./test-bases/DeploymentsTestingBase.s
 import { ERC20TestingBase }          from "./test-bases/ERC20TestingBase.sol";
 import { ERC4626TestingBase }        from "./test-bases/ERC4626TestingBase.sol";
 import { InitializationTestingBase } from "./test-bases/InitializationTestingBase.sol";
+import { UniswapV3TestingBase }      from "./test-bases/UniswapV3TestingBase.sol";
 
 import { CommonSpellTests } from "./CommonSpellTests.sol";
 
@@ -21,5 +22,6 @@ abstract contract GroveTestBase is
     DeploymentsTestingBase,
     ERC20TestingBase,
     ERC4626TestingBase,
-    InitializationTestingBase
+    InitializationTestingBase,
+    UniswapV3TestingBase
 {}

@@ -10,7 +10,8 @@ import { Base }     from "lib/grove-address-registry/src/Base.sol";
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
+import { ChainIdUtils }     from "src/libraries/helpers/ChainId.sol";
+import { UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 
 import { GroveLiquidityLayerContext } from "src/test-harness/CommonTestBase.sol";
 import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
@@ -74,7 +75,38 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
     address internal constant UNISWAP_V3_AUSD_USDC_POOL = 0xbAFeAd7c60Ea473758ED6c6021505E8BBd7e8E5d;
 
-    // TODO UNISWAP V3 AUSD/USDC RATE LIMITS
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_MAX_SLIPPAGE     = 0.999e18;
+    uint32  internal constant UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO = 600;
+    uint24  internal constant UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA   = 200;
+
+    int24 internal constant UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND = -10;
+    int24 internal constant UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND =  10;
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN0 = 5_000_000e6;
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_AUSD_MAX   = 5_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_AUSD_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN1 = 5_000_000e6;
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_USDC_MAX   = 5_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_SWAP_USDC_SLOPE = 100_000_000e6 / uint256(1 days);
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN0 = 25_000_000e6;
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_MAX   = 25_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_SLOPE = 25_000_000e6 / uint256(1 days);
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN1 = 25_000_000e6;
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_MAX   = 25_000_000e6;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_SLOPE = 25_000_000e6 / uint256(1 days);
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_MAX   = type(uint256).max;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_SLOPE = 0;
+
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_MAX   = type(uint256).max;
+    uint256 internal constant UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_SLOPE = 0;
 
     /******************************************************************************************************************/
     /*** [Mainnet] Onboard Curve PYUSD/USDS Swaps                                                                   ***/
@@ -217,14 +249,37 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
         });
     }
 
-    function test_ETHEREUM_onboardUniswapV3AusdUsdcSwaps() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
-    }
-
-    function test_ETHEREUM_onboardUniswapV3AusdUsdcLp() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement
+    function test_ETHEREUM_onboardUniswapV3AusdUsdcSwapsAndLp() public onChain(ChainIdUtils.Ethereum()) {
+        vm.skip(true); // TODO: Implement
+        _testUniswapV3Onboarding({
+            pool                        : UNISWAP_V3_AUSD_USDC_POOL,
+            expectedDepositAmountToken0 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN0,
+            expectedSwapAmountToken0    : UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN0,
+            expectedDepositAmountToken1 : UNISWAP_V3_AUSD_USDC_TEST_DEPOSIT_TOKEN1,
+            expectedSwapAmountToken1    : UNISWAP_V3_AUSD_USDC_TEST_SWAP_TOKEN1,
+            poolParams : UniswapV3Helpers.UniswapV3PoolParams({
+                swapMaxTickDelta : UNISWAP_V3_AUSD_USDC_MAX_TICK_DELTA,
+                twapSecondsAgo   : UNISWAP_V3_AUSD_USDC_TWAP_SECONDS_AGO,
+                lowerTickBound   : UNISWAP_V3_AUSD_USDC_LOWER_TICK_BOUND,
+                upperTickBound   : UNISWAP_V3_AUSD_USDC_UPPER_TICK_BOUND
+            }),
+            token0Params : UniswapV3Helpers.UniswapV3TokenParams({
+                swapMax       : UNISWAP_V3_AUSD_USDC_SWAP_AUSD_MAX,
+                swapSlope     : UNISWAP_V3_AUSD_USDC_SWAP_AUSD_SLOPE,
+                depositMax    : UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_MAX,
+                depositSlope  : UNISWAP_V3_AUSD_USDC_DEPOSIT_AUSD_SLOPE,
+                withdrawMax   : UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_MAX,
+                withdrawSlope : UNISWAP_V3_AUSD_USDC_WITHDRAW_AUSD_SLOPE
+            }),
+            token1Params : UniswapV3Helpers.UniswapV3TokenParams({
+                swapMax       : UNISWAP_V3_AUSD_USDC_SWAP_USDC_MAX,
+                swapSlope     : UNISWAP_V3_AUSD_USDC_SWAP_USDC_SLOPE,
+                depositMax    : UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_MAX,
+                depositSlope  : UNISWAP_V3_AUSD_USDC_DEPOSIT_USDC_SLOPE,
+                withdrawMax   : UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_MAX,
+                withdrawSlope : UNISWAP_V3_AUSD_USDC_WITHDRAW_USDC_SLOPE
+            })
+        });
     }
 
     function test_ETHEREUM_onboardCurvePyusdUsdsSwaps() public onChain(ChainIdUtils.Ethereum()) {

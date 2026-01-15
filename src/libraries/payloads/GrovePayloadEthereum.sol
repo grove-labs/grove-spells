@@ -15,6 +15,7 @@ import { OptimismForwarder }                 from "xchain-helpers/forwarders/Opt
 import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
+import { UniswapV3Helpers }           from "../helpers/UniswapV3Helpers.sol";
 
 interface IStarSpellLike {
 
@@ -192,6 +193,23 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
             depositSlope,
             withdrawMax,
             withdrawSlope
+        );
+    }
+
+    function _onboardUniswapV3Pool(
+        address controller,
+        address pool,
+        UniswapV3Helpers.UniswapV3PoolParams  memory poolParams,
+        UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
+        UniswapV3Helpers.UniswapV3TokenParams memory token1Params
+    ) internal {
+        GroveLiquidityLayerHelpers.onboardUniswapV3Pool(
+            controller,
+            Ethereum.ALM_RATE_LIMITS,
+            pool,
+            poolParams,
+            token0Params,
+            token1Params
         );
     }
 

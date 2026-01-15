@@ -6,6 +6,8 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 
+import { UniswapV3Helpers } from "./UniswapV3Helpers.sol";
+
 /**
  * @notice Helper functions for Grove Liquidity Layer
  */
@@ -190,6 +192,26 @@ library GroveLiquidityLayerHelpers {
             );
             IRateLimits(rateLimits).setRateLimitData(withdrawKey, withdrawMax, withdrawSlope);
         }
+    }
+
+    /**********************************************************************************************/
+    /*** Uniswap V3 functions                                                                   ***/
+    /**********************************************************************************************/
+
+    /**
+     * @notice Onboard a Uniswap V3 pool
+     * @dev This will set the rate limit for a Uniswap V3 pool
+     *      for the swap, deposit, and withdraw functions.
+     */
+    function onboardUniswapV3Pool(
+        address controller,
+        address rateLimits,
+        address pool,
+        UniswapV3Helpers.UniswapV3PoolParams  memory poolParams,
+        UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
+        UniswapV3Helpers.UniswapV3TokenParams memory token1Params
+    ) internal {
+        // TODO Implement
     }
 
     /**********************************************************************************************/
