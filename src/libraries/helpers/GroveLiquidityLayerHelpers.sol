@@ -47,11 +47,16 @@ library GroveLiquidityLayerHelpers {
      *      the withdraw limit set to unlimited.
      */
     function onboardERC4626Vault(
+        address controller,
         address rateLimits,
         address vault,
         uint256 depositMax,
-        uint256 depositSlope
+        uint256 depositSlope,
+        uint256 shareUnit,
+        uint256 maxAssetsPerShare
     ) internal {
+        MainnetController(controller).setMaxExchangeRate(vault, shareUnit, maxAssetsPerShare);
+
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             LIMIT_4626_DEPOSIT,
             vault
