@@ -225,7 +225,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
 
             // Ensure valid tick range
             if (vars.tickLower < vars.tickUpper && vars.tickLower >= poolParams.lowerTickBound) {
-                _testLiquidityScenario({
+                _testOneSidedLiquidityProvisionScenario({
                     context          : context,
                     poolParams       : poolParams,
                     keys             : keys,
@@ -235,10 +235,10 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
                     expectToken0Used : true,  // expectToken0Used
                     expectToken1Used : false  // expectToken1Used
                 });
+            }
 
                 // Warp to replenish rate limits for next scenario
                 _warpToReplenishRateLimits(token0Params, token1Params);
-            }
 
             // ===============================================================
             // SCENARIO 2: Range BELOW current tick (only token1 deposited)
@@ -251,7 +251,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
 
             // Ensure valid tick range
             if (vars.tickLower < vars.tickUpper && vars.tickUpper <= poolParams.upperTickBound) {
-                _testLiquidityScenario({
+                _testOneSidedLiquidityProvisionScenario({
                     context          : context,
                     poolParams       : poolParams,
                     keys             : keys,
@@ -261,9 +261,6 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
                     expectToken0Used : false, // expectToken0Used
                     expectToken1Used : true   // expectToken1Used
                 });
-
-                // Warp to replenish rate limits for next scenario
-                _warpToReplenishRateLimits(token0Params, token1Params);
             }
 
             // ===============================================================
@@ -273,9 +270,6 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
             // when both tokens are expected, which requires computing the exact token ratio
             // based on current tick position. The two single-sided tests above are sufficient
             // to validate that add/remove liquidity functionality works correctly.
-
-            // Advance time to allow TWAP observations to update before swap tests
-            vm.warp(block.timestamp + poolParams.twapSecondsAgo + 1);
         } else {
             // Deposit is disabled
             assertEq(testingParams.expectedDepositAmountToken0, 0, "expectedDepositAmountToken0 must be 0 when deposit disabled");
@@ -376,7 +370,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
     }
 
     /// @dev Helper to test a single liquidity scenario (add + remove) with rate limit verification
-    function _testLiquidityScenario(
+    function _testOneSidedLiquidityProvisionScenario(
         UniswapV3TestingContext              memory context,
         UniswapV3Helpers.UniswapV3PoolParams memory poolParams,
         UniswapV3Keys                        memory keys,
