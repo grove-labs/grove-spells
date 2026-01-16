@@ -196,7 +196,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
         vars.tickSpacing = IUniswapV3PoolLike(context.pool).tickSpacing();
         (, vars.currentTick,,,,,) = IUniswapV3PoolLike(context.pool).slot0();
 
-        // Test add/remove liquidity for all 3 tick position scenarios
+        // Test add/remove liquidity for 2 single-sided tick position scenarios
         if (token0Params.depositMax != 0 && token1Params.depositMax != 0) {
             assertGt(testingParams.expectedDepositAmountToken0, 0, "expectedDepositAmountToken0 must be > 0 when deposit enabled");
             assertGt(testingParams.expectedDepositAmountToken1, 0, "expectedDepositAmountToken1 must be > 0 when deposit enabled");
@@ -235,10 +235,10 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
                     expectToken0Used : true,  // expectToken0Used
                     expectToken1Used : false  // expectToken1Used
                 });
-            }
 
                 // Warp to replenish rate limits for next scenario
                 _warpToReplenishRateLimits(token0Params, token1Params);
+            }
 
             // ===============================================================
             // SCENARIO 2: Range BELOW current tick (only token1 deposited)
@@ -389,27 +389,10 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
         }
 
         // Calculate min amounts based on expected token usage
-        UniswapV3Lib.TokenAmounts memory minAmounts;
-        if (expectToken0Used && !expectToken1Used) {
-            // Only token0 will be used (range above current tick)
-            minAmounts = UniswapV3Lib.TokenAmounts({
-                amount0 : desiredAmount0 * poolParams.maxSlippage / 1e18,
-                amount1 : 0
-            });
-        } else if (!expectToken0Used && expectToken1Used) {
-            // Only token1 will be used (range below current tick)
-            minAmounts = UniswapV3Lib.TokenAmounts({
-                amount0 : 0,
-                amount1 : desiredAmount1 * poolParams.maxSlippage / 1e18
-            });
-        } else {
-            // Both tokens used (range contains current tick)
-            // Use zero min amounts since the ratio is unpredictable
-            minAmounts = UniswapV3Lib.TokenAmounts({
-                amount0 : 0,
-                amount1 : 0
-            });
-        }
+        UniswapV3Lib.TokenAmounts memory minAmounts = UniswapV3Lib.TokenAmounts({
+            amount0 : expectToken0Used ? desiredAmount0 * poolParams.maxSlippage / 1e18 : 0,
+            amount1 : expectToken1Used ? desiredAmount1 * poolParams.maxSlippage / 1e18 : 0
+        });
 
         // Record rate limits before add liquidity
         vars.depositRateLimit0Before = vars.ctx.rateLimits.getCurrentRateLimit(keys.depositKey0);
@@ -437,16 +420,15 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
         assertGt(vars.tokenId,   0, "tokenId should be > 0");
 
         // Verify expected tokens were used based on tick position
-        if (expectToken0Used && !expectToken1Used) {
-            assertGt(vars.amount0Used, 0, "Scenario above tick: token0 should be used");
-            assertEq(vars.amount1Used, 0, "Scenario above tick: token1 should NOT be used");
-        } else if (!expectToken0Used && expectToken1Used) {
-            assertEq(vars.amount0Used, 0, "Scenario below tick: token0 should NOT be used");
-            assertGt(vars.amount1Used, 0, "Scenario below tick: token1 should be used");
+        if (expectToken0Used) {
+            assertGt(vars.amount0Used, 0, "token0 should be used");
         } else {
-            // Both tokens should be used when tick is in range
-            // Note: Due to tick positioning, amounts may vary significantly
-            assertGt(vars.amount0Used + vars.amount1Used, 0, "Scenario in range: at least one token should be used");
+            assertEq(vars.amount0Used, 0, "token0 should NOT be used");
+        }
+        if (expectToken1Used) {
+            assertGt(vars.amount1Used, 0, "token1 should be used");
+        } else {
+            assertEq(vars.amount1Used, 0, "token1 should NOT be used");
         }
 
         // Verify deposit rate limits decreased correctly (skip for unlimited rate limits)
