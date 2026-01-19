@@ -12,6 +12,10 @@ import { UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 
 import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereum.sol";
 
+interface IERC20Like {
+    function transfer(address to, uint256 amount) external returns (bool);
+}
+
 /**
  * @title  January 29, 2026 Grove Ethereum Proposal
  * @author Grove Labs
@@ -156,6 +160,15 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
+    /******************************************************************************************************************/
+    /*** [Mainnet] Grove Token Transfer                                                                              ***/
+    /******************************************************************************************************************/
+
+    address internal constant GROVE_TOKEN                   = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
+    address internal constant GROVE_TOKEN_TRANSFER_RECEIVER = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
+
+    uint256 internal constant GROVE_TOKEN_TRANSFER_AMOUNT = 2_500_000_000e18;
+
     function _execute() internal override {
         // [Mainnet] Re-Onboard Agora AUSD Mint Redeem
         // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-1-mainnet-re-onboard-agora-ausd-mint-redeem-2
@@ -184,6 +197,9 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
         // [Mainnet] Onboard Relayers for Grove Liquidity Layer
         // Forum : https://forum.sky.money/t/january-29-2026-proposed-changes-to-grove-for-upcoming-spell/27608#p-105385-h-7-mainnet-onboard-relayers-for-grove-liquidity-layer-38
         _onboardRelayers();
+
+        // [Mainnet] Grove Token Transfer
+        _transferGroveToken();
     }
 
     function _reOnboardAgoraAusdMintRedeem() internal {
@@ -306,6 +322,10 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
         MainnetController controller = MainnetController(Ethereum.ALM_CONTROLLER);
         controller.grantRole(controller.RELAYER(), GROVE_CORE_RELAYER_OPERATOR);
         controller.grantRole(controller.RELAYER(), GROVE_SECONDARY_RELAYER_OPERATOR);
+    }
+
+    function _transferGroveToken() internal {
+        IERC20Like(GROVE_TOKEN).transfer(GROVE_TOKEN_TRANSFER_RECEIVER, GROVE_TOKEN_TRANSFER_AMOUNT);
     }
 
 }

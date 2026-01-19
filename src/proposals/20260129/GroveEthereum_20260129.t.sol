@@ -25,6 +25,14 @@ interface IExecutorLike {
     function executeDelegateCall(address target, bytes memory data) external;
 }
 
+interface IERC20Like {
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+}
+
 contract GroveEthereum_20260129_Test is GroveTestBase {
 
     address internal constant ETHEREUM_20260115_PAYLOAD = 0x90230A17dcA6c0b126521BB55B98f8C6Cf2bA748;
@@ -149,6 +157,15 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
     address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
+
+    /******************************************************************************************************************/
+    /*** [Mainnet] Grove Token Transfer                                                                              ***/
+    /******************************************************************************************************************/
+
+    address internal constant GROVE_TOKEN                   = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
+    address internal constant GROVE_TOKEN_TRANSFER_RECEIVER = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
+
+    uint256 internal constant GROVE_TOKEN_TRANSFER_AMOUNT = 2_500_000_000e18;
 
     constructor() {
         id = "20260129";
@@ -336,6 +353,20 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_CORE_RELAYER_OPERATOR),      true);
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_SECONDARY_RELAYER_OPERATOR), true);
+    }
+
+    function test_ETHEREUM_transferGroveToken() public onChain(ChainIdUtils.Ethereum()) {
+        assertEq(IERC20Like(GROVE_TOKEN).name(),     "Grove");
+        assertEq(IERC20Like(GROVE_TOKEN).symbol(),   "GROVE");
+        assertEq(IERC20Like(GROVE_TOKEN).decimals(), 18);
+
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), 10_000_000_000e18);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_TOKEN_TRANSFER_RECEIVER), 0);
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), 10_000_000_000e18);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_TOKEN_TRANSFER_RECEIVER), GROVE_TOKEN_TRANSFER_AMOUNT);
     }
 
 }
