@@ -8,7 +8,10 @@ import { IERC20Metadata } from "openzeppelin-contracts/contracts/token/ERC20/ext
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { UniswapV3Lib } from "lib/grove-alm-controller/src/libraries/UniswapV3Lib.sol";
+import { UniswapV3Lib }      from "lib/grove-alm-controller/src/libraries/UniswapV3Lib.sol";
+import { UniV3UtilsLib }     from "lib/grove-alm-controller/src/libraries/uniswap-v3/UniV3UtilsLib.sol";
+import { LiquidityAmounts }  from "dss-allocator/src/funnels/uniV3/LiquidityAmounts.sol";
+import { TickMath }          from "dss-allocator/src/funnels/uniV3/TickMath.sol";
 
 import { IUniswapV3PoolLike, UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 import { GroveLiquidityLayerHelpers }           from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
@@ -266,10 +269,76 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
             // ===============================================================
             // SCENARIO 3: Range CONTAINS current tick (both tokens deposited)
             // ===============================================================
-            // NOTE: Skipped because the controller's TWAP validation requires non-zero min amounts
-            // when both tokens are expected, which requires computing the exact token ratio
-            // based on current tick position. The two single-sided tests above are sufficient
-            // to validate that add/remove liquidity functionality works correctly.
+            // For two-sided deposits, we compute exact token amounts from a target liquidity
+            // value using Uniswap V3 math, ensuring proper utilization of both tokens.
+            // Save timestamp so we can restore it for swap tests (oracle needs recent observations).
+            uint256 savedTimestamp = block.timestamp;
+
+            // Re-fetch current tick and get sqrtPriceX96
+            uint160 sqrtPriceX96;
+            (sqrtPriceX96, vars.currentTick, , , , , ) = IUniswapV3PoolLike(context.pool).slot0();
+
+            vars.tickLower = _toSpacedTick(vars.currentTick - vars.tickSpacing * 5, vars.tickSpacing);
+            vars.tickUpper = _toSpacedTick(vars.currentTick + vars.tickSpacing * 5, vars.tickSpacing);
+
+            // Clamp to allowed bounds
+            if (vars.tickLower < poolParams.lowerTickBound) {
+                vars.tickLower = _toSpacedTick(poolParams.lowerTickBound, vars.tickSpacing);
+            }
+            if (vars.tickUpper > poolParams.upperTickBound) {
+                vars.tickUpper = _toSpacedTick(poolParams.upperTickBound, vars.tickSpacing);
+            }
+
+            // Only run if range actually contains current tick (both tokens will be deposited)
+            if (vars.tickLower < vars.currentTick && vars.currentTick < vars.tickUpper) {
+                _warpToReplenishRateLimits(token0Params, token1Params);
+
+                uint160 sqrtRatioLowerX96 = TickMath.getSqrtRatioAtTick(vars.tickLower);
+                uint160 sqrtRatioUpperX96 = TickMath.getSqrtRatioAtTick(vars.tickUpper);
+
+                // Calculate liquidity from the expected deposit amounts
+                uint128 targetLiquidity = LiquidityAmounts.getLiquidityForAmounts(
+                    sqrtPriceX96,
+                    sqrtRatioLowerX96,
+                    sqrtRatioUpperX96,
+                    testingParams.expectedDepositAmountToken0,
+                    testingParams.expectedDepositAmountToken1
+                );
+
+                // Scale down liquidity to ~10% to stay within rate limits
+                targetLiquidity = targetLiquidity / 10;
+
+                // Calculate exact token amounts from liquidity (mirrors controller logic)
+                uint256 twoSidedAmount0 = UniV3UtilsLib.getAmount0Delta(
+                    sqrtPriceX96,
+                    sqrtRatioUpperX96,
+                    targetLiquidity,
+                    true // roundUp
+                );
+                uint256 twoSidedAmount1 = UniV3UtilsLib.getAmount1Delta(
+                    sqrtRatioLowerX96,
+                    sqrtPriceX96,
+                    targetLiquidity,
+                    true // roundUp
+                );
+
+                // Ensure non-zero amounts for both tokens
+                require(twoSidedAmount0 > 0 && twoSidedAmount1 > 0, "Two-sided amounts must be non-zero");
+
+                _testOneSidedLiquidityProvisionScenario({
+                    context          : context,
+                    poolParams       : poolParams,
+                    keys             : keys,
+                    vars             : vars,
+                    desiredAmount0   : twoSidedAmount0,
+                    desiredAmount1   : twoSidedAmount1,
+                    expectToken0Used : true,
+                    expectToken1Used : true
+                });
+            }
+
+            // Restore timestamp so swap tests have valid oracle observations
+            vm.warp(savedTimestamp);
         } else {
             // Deposit is disabled
             assertEq(testingParams.expectedDepositAmountToken0, 0, "expectedDepositAmountToken0 must be 0 when deposit disabled");
