@@ -50,9 +50,9 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
 
     // BEFORE :          0 max ;           0/day slope ; 0     max slippage
     // AFTER  : 5,000,000 max  ; 100,000,000/day slope ; 0.999 max slippage (allowing 0.1% slippage)
-    uint256 internal constant CURVE_AUSD_USDC_MAX_SLIPPAGE = 0.999e18;
     uint256 internal constant CURVE_AUSD_USDC_SWAP_MAX     = 5_000_000e18;
     uint256 internal constant CURVE_AUSD_USDC_SWAP_SLOPE   = 100_000_000e18 / uint256(1 days);
+    uint256 internal constant CURVE_AUSD_USDC_MAX_SLIPPAGE = 0.999e18;
 
     // BEFORE :          0 max ;          0/day slope
     // AFTER  : 25,000,000 max ; 25,000,000/day slope
@@ -119,9 +119,9 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
 
     // BEFORE :          0 max ;           0/day slope ; 0     max slippage
     // AFTER  : 5,000,000 max  ; 100,000,000/day slope ; 0.999 max slippage (allowing 0.1% slippage)
-    uint256 internal constant CURVE_PYUSD_USDS_MAX_SLIPPAGE = 0.999e18;
     uint256 internal constant CURVE_PYUSD_USDS_SWAP_MAX     = 5_000_000e18;
     uint256 internal constant CURVE_PYUSD_USDS_SWAP_SLOPE   = 100_000_000e18 / uint256(1 days);
+    uint256 internal constant CURVE_PYUSD_USDS_MAX_SLIPPAGE = 0.999e18;
 
     /******************************************************************************************************************/
     /*** [Mainnet] Onboard Grove x Steakhouse USDC Morpho Vault                                                     ***/

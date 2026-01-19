@@ -61,9 +61,9 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
     uint256 internal constant CURVE_AUSD_USDC_TEST_DEPOSIT_TOKEN0 = 10_000_000e6;
     uint256 internal constant CURVE_AUSD_USDC_TEST_SWAP_TOKEN0    = 2_500_000e6;
-    uint256 internal constant CURVE_AUSD_USDC_MAX_SLIPPAGE        = 0.999e18;
     uint256 internal constant CURVE_AUSD_USDC_SWAP_MAX            = 5_000_000e18;
     uint256 internal constant CURVE_AUSD_USDC_SWAP_SLOPE          = 100_000_000e18 / uint256(1 days);
+    uint256 internal constant CURVE_AUSD_USDC_MAX_SLIPPAGE        = 0.999e18;
     uint256 internal constant CURVE_AUSD_USDC_DEPOSIT_MAX         = 25_000_000e18;
     uint256 internal constant CURVE_AUSD_USDC_DEPOSIT_SLOPE       = 25_000_000e18 / uint256(1 days);
     uint256 internal constant CURVE_AUSD_USDC_WITHDRAW_MAX        = type(uint256).max;
@@ -115,9 +115,9 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     address internal constant CURVE_PYUSD_USDS_POOL = 0xA632D59b9B804a956BfaA9b48Af3A1b74808FC1f;
 
     uint256 internal constant CURVE_PYUSD_USDS_TEST_SWAP_TOKEN0 = 2_000_000e6;
-    uint256 internal constant CURVE_PYUSD_USDS_MAX_SLIPPAGE     = 0.999e18;
     uint256 internal constant CURVE_PYUSD_USDS_SWAP_MAX         = 5_000_000e18;
     uint256 internal constant CURVE_PYUSD_USDS_SWAP_SLOPE       = 100_000_000e18 / uint256(1 days);
+    uint256 internal constant CURVE_PYUSD_USDS_MAX_SLIPPAGE     = 0.999e18;
 
     /******************************************************************************************************************/
     /*** [Mainnet] Onboard Grove x Steakhouse USDC Morpho Vault                                                     ***/
