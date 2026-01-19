@@ -3,7 +3,6 @@
 pragma solidity 0.8.25;
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
-import { Base }     from "lib/grove-address-registry/src/Base.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
@@ -14,21 +13,7 @@ import { UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 import { GroveLiquidityLayerContext } from "src/test-harness/CommonTestBase.sol";
 import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
 
-interface IStarGuardLike {
-    function plot(address addr_, bytes32 tag_) external;
-    function exec() external returns (address);
-}
-
-interface IExecutorLike {
-    function executeDelegateCall(address target, bytes memory data) external;
-}
-
 contract GroveEthereum_20260129_Test is GroveTestBase {
-
-    address internal constant ETHEREUM_20260115_PAYLOAD = 0x90230A17dcA6c0b126521BB55B98f8C6Cf2bA748;
-    address internal constant BASE_20260115_PAYLOAD     = 0xAe9EAd94B00d137f01159A7F279c0b78dd04c860;
-
-    bytes32 internal constant ETHEREUM_20260115_CODEHASH = 0x9317fd876201f5a1b08658b47a47c8980b8c8aa7538e059408668b502acfa5fb;
 
     /******************************************************************************************************************/
     /*** [Mainnet] Re-Onboard Agora AUSD Mint Redeem                                                                ***/
@@ -38,7 +23,6 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     address internal constant OLD_AGORA_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
     address internal constant NEW_AGORA_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
     address internal constant NEW_AGORA_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
-
 
     uint256 internal constant PREV_OLD_AGORA_AUSD_USDC_MINT_MAX   = 50_000_000e6;
     uint256 internal constant PREV_OLD_AGORA_AUSD_USDC_MINT_SLOPE = 50_000_000e6 / uint256(1 days);
@@ -153,31 +137,9 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-01-14T13:00:00Z");
-
-        _executePreviousMainnetSpell();
-        _executePreviousBaseSpell();
+        setupDomains("2026-01-19T14:20:00Z");
 
         deployPayloads();
-    }
-
-    function _executePreviousMainnetSpell() public onChain(ChainIdUtils.Ethereum()) {
-        vm.prank(Ethereum.PAUSE_PROXY);
-        IStarGuardLike(Ethereum.GROVE_STAR_GUARD).plot({
-            addr_ : ETHEREUM_20260115_PAYLOAD,
-            tag_  : ETHEREUM_20260115_CODEHASH
-        });
-
-        address returnedPayloadAddress = IStarGuardLike(Ethereum.GROVE_STAR_GUARD).exec();
-        require(ETHEREUM_20260115_PAYLOAD == returnedPayloadAddress, "FAILED TO EXECUTE PAYLOAD");
-    }
-
-    function _executePreviousBaseSpell() public onChain(ChainIdUtils.Base()) {
-        vm.prank(Base.GROVE_EXECUTOR);
-        IExecutorLike(Base.GROVE_EXECUTOR).executeDelegateCall(
-            BASE_20260115_PAYLOAD,
-            abi.encodeWithSignature('execute()')
-        );
     }
 
     function test_ETHEREUM_offboardOldAgoraAusdMint() public onChain(ChainIdUtils.Ethereum()) {
