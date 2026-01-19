@@ -328,9 +328,10 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
         MainnetController controller = MainnetController(ctx.controller);
 
         // Use tokens already on proxy, or deal if needed
+        // Note: deal2 SETS balance (not adds), so pass full swapAmount
         uint256 currentBalance = IERC20(tokenIn).balanceOf(address(ctx.proxy));
         if (currentBalance < swapAmount) {
-            deal2(tokenIn, address(ctx.proxy), swapAmount - currentBalance);
+            deal2(tokenIn, address(ctx.proxy), swapAmount);
         }
 
         // Calculate minAmountOut based on token decimals and maxSlippage
