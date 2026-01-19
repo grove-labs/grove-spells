@@ -13,6 +13,14 @@ import { UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 import { GroveLiquidityLayerContext } from "src/test-harness/CommonTestBase.sol";
 import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
 
+interface IERC20Like {
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+}
+
 contract GroveEthereum_20260129_Test is GroveTestBase {
 
     /******************************************************************************************************************/
@@ -131,6 +139,18 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
     address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
+
+    /******************************************************************************************************************/
+    /*** [Mainnet] Grove Token Transfer                                                                              ***/
+    /******************************************************************************************************************/
+
+    address internal constant GROVE_TOKEN       = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
+    address internal constant GROVE_LABS_WALLET = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
+
+    uint256 internal constant GROVE_TOKEN_TRANSFER_AMOUNT = 2_500_000_000e18;
+    uint256 internal constant GROVE_TOKEN_GROVE_BALANCE   = 3_000_000_000e18;
+    uint256 internal constant GROVE_TOKEN_SKY_BALANCE     = 7_000_000_000e18;
+    uint256 internal constant GROVE_TOKEN_TOTAL_SUPPLY    = 10_000_000_000e18;
 
     constructor() {
         id = "20260129";
@@ -296,6 +316,26 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_CORE_RELAYER_OPERATOR),      true);
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_SECONDARY_RELAYER_OPERATOR), true);
+    }
+
+    function test_ETHEREUM_transferGroveToken() public onChain(ChainIdUtils.Ethereum()) {
+        assertEq(IERC20Like(GROVE_TOKEN).name(),     "Grove");
+        assertEq(IERC20Like(GROVE_TOKEN).symbol(),   "GROVE");
+        assertEq(IERC20Like(GROVE_TOKEN).decimals(), 18);
+
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
+
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_LABS_WALLET),    0);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY), GROVE_TOKEN_GROVE_BALANCE);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY), GROVE_TOKEN_SKY_BALANCE);
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
+
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_LABS_WALLET),    GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY), GROVE_TOKEN_GROVE_BALANCE - GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY), GROVE_TOKEN_SKY_BALANCE);
     }
 
 }
