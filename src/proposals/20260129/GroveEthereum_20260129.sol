@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
