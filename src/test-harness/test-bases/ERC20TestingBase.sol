@@ -101,7 +101,7 @@ abstract contract ERC20TestingBase is CommonTestBase {
         uint256 initialDestinationBalance = IERC20(token).balanceOf(destination);
 
         assertEq(IERC20(token).balanceOf(address(ctx.proxy)), expectedDepositAmount);
-        assertEq(IERC20(token).balanceOf(destination),        initialDestinationBalance);
+        assertEq(IERC20(token).balanceOf(destination), initialDestinationBalance);
 
         vm.prank(ctx.relayer);
         MainnetController(ctx.controller).transferAsset(token, destination, expectedDepositAmount);
@@ -109,7 +109,7 @@ abstract contract ERC20TestingBase is CommonTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), unlimitedDeposit ? type(uint256).max : depositMax - expectedDepositAmount);
 
         assertEq(IERC20(token).balanceOf(address(ctx.proxy)), 0);
-        assertEq(IERC20(token).balanceOf(destination),        initialDestinationBalance + expectedDepositAmount);
+        assertEq(IERC20(token).balanceOf(destination), initialDestinationBalance + expectedDepositAmount);
 
         if (!unlimitedDeposit) {
             vm.warp(block.timestamp + 1 days + 1 seconds);
