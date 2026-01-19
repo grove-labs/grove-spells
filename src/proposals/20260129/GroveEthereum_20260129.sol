@@ -200,6 +200,7 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
 
         // [Mainnet] Grove Token Transfer
         // Forum : https://forum.sky.money/t/atlas-edit-weekly-cycle-proposal-week-of-2026-01-19/27627#p-105440-authorize-transfer-to-grove-labs-1
+        // Forum : https://forum.sky.money/t/technical-scope-of-grove/27632#p-105451-initialization-5
         _transferGroveToken();
     }
 
