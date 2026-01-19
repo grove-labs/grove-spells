@@ -233,8 +233,8 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, maxAmount);
-        assertEq(rateLimit.slope,     slope);
+        assertEq(rateLimit.maxAmount, maxAmount, "max-amount-not-correct");
+        assertEq(rateLimit.slope,     slope,     "slope-not-correct");
     }
 
     function _assertUnlimitedRateLimit(
@@ -251,8 +251,8 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, 0);
-        assertEq(rateLimit.slope,     0);
+        assertEq(rateLimit.maxAmount, 0, "max-amount-not-zero");
+        assertEq(rateLimit.slope,     0, "slope-not-zero");
     }
 
     function _assertRateLimit(
