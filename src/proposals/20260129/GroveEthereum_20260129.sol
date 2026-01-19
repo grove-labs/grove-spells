@@ -161,7 +161,7 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
     /******************************************************************************************************************/
-    /*** [Mainnet] Grove Token Transfer                                                                              ***/
+    /*** [Mainnet] Grove Token Transfer                                                                             ***/
     /******************************************************************************************************************/
 
     address internal constant GROVE_TOKEN       = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
