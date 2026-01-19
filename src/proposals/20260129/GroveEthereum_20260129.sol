@@ -164,8 +164,8 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     /*** [Mainnet] Grove Token Transfer                                                                              ***/
     /******************************************************************************************************************/
 
-    address internal constant GROVE_TOKEN                   = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
-    address internal constant GROVE_TOKEN_TRANSFER_RECEIVER = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
+    address internal constant GROVE_TOKEN       = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
+    address internal constant GROVE_LABS_WALLET = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
 
     uint256 internal constant GROVE_TOKEN_TRANSFER_AMOUNT = 2_500_000_000e18;
 
@@ -325,7 +325,7 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     }
 
     function _transferGroveToken() internal {
-        IERC20Like(GROVE_TOKEN).transfer(GROVE_TOKEN_TRANSFER_RECEIVER, GROVE_TOKEN_TRANSFER_AMOUNT);
+        IERC20Like(GROVE_TOKEN).transfer(GROVE_LABS_WALLET, GROVE_TOKEN_TRANSFER_AMOUNT);
     }
 
 }

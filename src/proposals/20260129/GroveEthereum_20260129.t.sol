@@ -144,8 +144,8 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     /*** [Mainnet] Grove Token Transfer                                                                              ***/
     /******************************************************************************************************************/
 
-    address internal constant GROVE_TOKEN                   = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
-    address internal constant GROVE_TOKEN_TRANSFER_RECEIVER = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
+    address internal constant GROVE_TOKEN       = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
+    address internal constant GROVE_LABS_WALLET = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
 
     uint256 internal constant GROVE_TOKEN_TRANSFER_AMOUNT = 2_500_000_000e18;
     uint256 internal constant GROVE_TOKEN_GROVE_BALANCE   = 3_000_000_000e18;
@@ -325,17 +325,17 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
         assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
 
-        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_TOKEN_TRANSFER_RECEIVER), 0);
-        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY),          GROVE_TOKEN_GROVE_BALANCE);
-        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY),          GROVE_TOKEN_SKY_BALANCE);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_LABS_WALLET),    0);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY), GROVE_TOKEN_GROVE_BALANCE);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY), GROVE_TOKEN_SKY_BALANCE);
 
         executeAllPayloadsAndBridges();
 
         assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
 
-        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_TOKEN_TRANSFER_RECEIVER), GROVE_TOKEN_TRANSFER_AMOUNT);
-        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY),          GROVE_TOKEN_GROVE_BALANCE - GROVE_TOKEN_TRANSFER_AMOUNT);
-        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY),          GROVE_TOKEN_SKY_BALANCE);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_LABS_WALLET),    GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY), GROVE_TOKEN_GROVE_BALANCE - GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY), GROVE_TOKEN_SKY_BALANCE);
     }
 
 }
