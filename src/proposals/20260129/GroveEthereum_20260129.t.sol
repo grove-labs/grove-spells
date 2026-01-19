@@ -166,6 +166,9 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     address internal constant GROVE_TOKEN_TRANSFER_RECEIVER = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
 
     uint256 internal constant GROVE_TOKEN_TRANSFER_AMOUNT = 2_500_000_000e18;
+    uint256 internal constant GROVE_TOKEN_GROVE_BALANCE   = 3_000_000_000e18;
+    uint256 internal constant GROVE_TOKEN_SKY_BALANCE     = 7_000_000_000e18;
+    uint256 internal constant GROVE_TOKEN_TOTAL_SUPPLY    = 10_000_000_000e18;
 
     constructor() {
         id = "20260129";
@@ -360,13 +363,19 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
         assertEq(IERC20Like(GROVE_TOKEN).symbol(),   "GROVE");
         assertEq(IERC20Like(GROVE_TOKEN).decimals(), 18);
 
-        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), 10_000_000_000e18);
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
+
         assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_TOKEN_TRANSFER_RECEIVER), 0);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY),          GROVE_TOKEN_GROVE_BALANCE);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY),          GROVE_TOKEN_SKY_BALANCE);
 
         executeAllPayloadsAndBridges();
 
-        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), 10_000_000_000e18);
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
+
         assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_TOKEN_TRANSFER_RECEIVER), GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY),          GROVE_TOKEN_GROVE_BALANCE - GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY),          GROVE_TOKEN_SKY_BALANCE);
     }
 
 }
