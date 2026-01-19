@@ -181,6 +181,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
         uint256 depositRateLimit1Before;
         uint256 withdrawRateLimit0Before;
         uint256 withdrawRateLimit1Before;
+        bool    liquidityScenarioRan;
     }
 
     function __assertOnboardedUniswapV3OnboardingIsOperational(
@@ -228,6 +229,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
 
             // Ensure valid tick range
             if (vars.tickLower < vars.tickUpper && vars.tickLower >= poolParams.lowerTickBound) {
+                vars.liquidityScenarioRan = true;
                 _testOneSidedLiquidityProvisionScenario({
                     context          : context,
                     poolParams       : poolParams,
@@ -254,6 +256,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
 
             // Ensure valid tick range
             if (vars.tickLower < vars.tickUpper && vars.tickUpper <= poolParams.upperTickBound) {
+                vars.liquidityScenarioRan = true;
                 _testOneSidedLiquidityProvisionScenario({
                     context          : context,
                     poolParams       : poolParams,
@@ -291,6 +294,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
 
             // Only run if range actually contains current tick (both tokens will be deposited)
             if (vars.tickLower < vars.currentTick && vars.currentTick < vars.tickUpper) {
+                vars.liquidityScenarioRan = true;
                 _warpToReplenishRateLimits(token0Params, token1Params);
 
                 uint160 sqrtRatioLowerX96 = TickMath.getSqrtRatioAtTick(vars.tickLower);
@@ -339,6 +343,9 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
 
             // Restore timestamp so swap tests have valid oracle observations
             vm.warp(savedTimestamp);
+
+            // Ensure at least one liquidity scenario ran (prevents false positive)
+            require(vars.liquidityScenarioRan, "No liquidity scenario could run - tick bounds too narrow");
         } else {
             // Deposit is disabled
             assertEq(testingParams.expectedDepositAmountToken0, 0, "expectedDepositAmountToken0 must be 0 when deposit disabled");
