@@ -47,10 +47,26 @@ abstract contract ERC20TestingBase is CommonTestBase {
     ) internal {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
-        vm.startPrank(ctx.relayer);
-        MainnetController(ctx.controller).mintUSDS(expectedDepositAmount * 1e12);
-        MainnetController(ctx.controller).swapUSDSToUSDC(expectedDepositAmount);
-        vm.stopPrank();
+        uint256 initialUsdcBalance = IERC20(usdc).balanceOf(address(ctx.proxy));
+
+        if (initialUsdcBalance > expectedDepositAmount) {
+            uint256 usdcSurplus = initialUsdcBalance - expectedDepositAmount;
+
+            vm.startPrank(ctx.relayer);
+            MainnetController(ctx.controller).swapUSDCToUSDS(usdcSurplus);
+            MainnetController(ctx.controller).burnUSDS(usdcSurplus * 1e12);
+            vm.stopPrank();
+
+        }
+
+        if (initialUsdcBalance < expectedDepositAmount) {
+            uint256 usdcDeficit = expectedDepositAmount - initialUsdcBalance;
+
+            vm.startPrank(ctx.relayer);
+            MainnetController(ctx.controller).mintUSDS(usdcDeficit * 1e12);
+            MainnetController(ctx.controller).swapUSDSToUSDC(usdcDeficit);
+            vm.stopPrank();
+        }
 
         __runDirectTokenTransferOnboardingTests(
             usdc,

@@ -74,50 +74,69 @@ contract CommonTestBase is SpellRunner {
     if (block.chainid == ChainIds.MAINNET) {
       // Securitize BUIDL
       if (asset == BUIDL_MAINNET) {
-        vm.prank(0xe01605f6b6dC593b7d2917F4a0940db2A625b09e);
-        ISecuritizeAssetLike(asset).issueTokens(user, amount);
+        address securitizeIssuer = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
+        _securitizeIssueTokens(asset, user, securitizeIssuer, amount);
         return true;
       }
       // USDC
       if (asset == USDC_MAINNET) {
-        vm.prank(0xaD354CfBAa4A8572DD6Df021514a3931A8329Ef5);
-        IERC20(asset).transfer(user, amount);
+        address donor = 0xaD354CfBAa4A8572DD6Df021514a3931A8329Ef5;
+        _transferFromDonor(asset, user, donor, amount);
         return true;
       }
       // Securitize STAC
       if (asset == STAC_MAINNET) {
-        vm.prank(0x22F53B51E4272F954f25BC377B1b759c6C5A528B);
-        ISecuritizeAssetLike(asset).issueTokens(user, amount);
+        address securitizeIssuer = 0x22F53B51E4272F954f25BC377B1b759c6C5A528B;
+        _securitizeIssueTokens(asset, user, securitizeIssuer, amount);
         return true;
       }
       // Agora AUSD
       if (asset == AUSD_MAINNET) {
-        vm.prank(0xe488A30Af596135A5c5313b3d4e7aABF985A0C0D);
-        IERC20(asset).transfer(user, amount);
+        address donor = 0xe488A30Af596135A5c5313b3d4e7aABF985A0C0D;
+        _transferFromDonor(asset, user, donor, amount);
         return true;
       }
     } else if (block.chainid == ChainIds.GNOSIS) {
       // EURe
       if (asset == EURE_GNOSIS) {
-        vm.prank(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
-        IERC20(asset).transfer(user, amount);
+        address donor = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
+        _transferFromDonor(asset, user, donor, amount);
         return true;
       }
       // USDC.e
       if (asset == USDCE_GNOSIS) {
-        vm.prank(0xBA12222222228d8Ba445958a75a0704d566BF2C8);
-        IERC20(asset).transfer(user, amount);
+        address donor = 0xBA12222222228d8Ba445958a75a0704d566BF2C8;
+        _transferFromDonor(asset, user, donor, amount);
         return true;
       }
     } else if (block.chainid == ChainIds.BASE) {
       // USDC
       if (asset == USDC_BASE) {
-        vm.prank(0x7C310a03f4CFa19F7f3d7F36DD3E05828629fa78);
-        IERC20(asset).transfer(user, amount);
+        address donor = 0x7C310a03f4CFa19F7f3d7F36DD3E05828629fa78;
+        _transferFromDonor(asset, user, donor, amount);
         return true;
       }
     }
     return false;
+  }
+
+  // NOTE: Deal behavior is to set the balance of the user to the amount, not send additional funds to the user
+  //       so we are trying to replicate that as well as possible
+  function _transferFromDonor(address asset, address user, address donor, uint256 amount) private {
+    uint256 initialBalance = IERC20(asset).balanceOf(user);
+    vm.prank(user);
+    IERC20(asset).transfer(donor, initialBalance);
+    vm.prank(donor);
+    IERC20(asset).transfer(user, amount);
+  }
+
+  // NOTE: Deal behavior is to set the balance of the user to the amount, not send additional funds to the user
+  //       so we are trying to replicate that as well as possible
+  function _securitizeIssueTokens(address asset, address user, address issuer, uint256 amount) private {
+    uint256 initialBalance = IERC20(asset).balanceOf(user);
+    require(amount > initialBalance, "deal2/user-already-has-enough-balance");
+    vm.prank(issuer);
+    ISecuritizeAssetLike(asset).issueTokens(user, amount - initialBalance);
   }
 
   /**
