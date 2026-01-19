@@ -2,10 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { console } from "forge-std/console.sol";
-
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
-import { Base }     from "lib/grove-address-registry/src/Base.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
@@ -16,21 +13,15 @@ import { UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 import { GroveLiquidityLayerContext } from "src/test-harness/CommonTestBase.sol";
 import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
 
-interface IStarGuardLike {
-    function plot(address addr_, bytes32 tag_) external;
-    function exec() external returns (address);
-}
-
-interface IExecutorLike {
-    function executeDelegateCall(address target, bytes memory data) external;
+interface IERC20Like {
+    function name() external view returns (string memory);
+    function symbol() external view returns (string memory);
+    function decimals() external view returns (uint8);
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
 }
 
 contract GroveEthereum_20260129_Test is GroveTestBase {
-
-    address internal constant ETHEREUM_20260115_PAYLOAD = 0x90230A17dcA6c0b126521BB55B98f8C6Cf2bA748;
-    address internal constant BASE_20260115_PAYLOAD     = 0xAe9EAd94B00d137f01159A7F279c0b78dd04c860;
-
-    bytes32 internal constant ETHEREUM_20260115_CODEHASH = 0x9317fd876201f5a1b08658b47a47c8980b8c8aa7538e059408668b502acfa5fb;
 
     /******************************************************************************************************************/
     /*** [Mainnet] Re-Onboard Agora AUSD Mint Redeem                                                                ***/
@@ -40,7 +31,6 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     address internal constant OLD_AGORA_AUSD_MINT_WALLET   = 0xfEa17E5f0e9bF5c86D5d553e2A074199F03B44E8;
     address internal constant NEW_AGORA_AUSD_MINT_WALLET   = 0x748b66a6b3666311F370218Bc2819c0bEe13677e;
     address internal constant NEW_AGORA_AUSD_REDEEM_WALLET = 0xab8306d9FeFBE8183c3C59cA897A2E0Eb5beFE67;
-
 
     uint256 internal constant PREV_OLD_AGORA_AUSD_USDC_MINT_MAX   = 50_000_000e6;
     uint256 internal constant PREV_OLD_AGORA_AUSD_USDC_MINT_SLOPE = 50_000_000e6 / uint256(1 days);
@@ -150,36 +140,26 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     address internal constant GROVE_CORE_RELAYER_OPERATOR      = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
+    /******************************************************************************************************************/
+    /*** [Mainnet] Grove Token Transfer                                                                              ***/
+    /******************************************************************************************************************/
+
+    address internal constant GROVE_TOKEN       = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
+    address internal constant GROVE_LABS_WALLET = 0x1EBC4425B16FD76F01f9260d8bfFE0c2C6ecCe70;
+
+    uint256 internal constant GROVE_TOKEN_TRANSFER_AMOUNT = 2_500_000_000e18;
+    uint256 internal constant GROVE_TOKEN_GROVE_BALANCE   = 3_000_000_000e18;
+    uint256 internal constant GROVE_TOKEN_SKY_BALANCE     = 7_000_000_000e18;
+    uint256 internal constant GROVE_TOKEN_TOTAL_SUPPLY    = 10_000_000_000e18;
+
     constructor() {
         id = "20260129";
     }
 
     function setUp() public {
-        setupDomains("2026-01-14T13:00:00Z");
-
-        _executePreviousMainnetSpell();
-        _executePreviousBaseSpell();
+        setupDomains("2026-01-19T14:20:00Z");
 
         deployPayloads();
-    }
-
-    function _executePreviousMainnetSpell() public onChain(ChainIdUtils.Ethereum()) {
-        vm.prank(Ethereum.PAUSE_PROXY);
-        IStarGuardLike(Ethereum.GROVE_STAR_GUARD).plot({
-            addr_ : ETHEREUM_20260115_PAYLOAD,
-            tag_  : ETHEREUM_20260115_CODEHASH
-        });
-
-        address returnedPayloadAddress = IStarGuardLike(Ethereum.GROVE_STAR_GUARD).exec();
-        require(ETHEREUM_20260115_PAYLOAD == returnedPayloadAddress, "FAILED TO EXECUTE PAYLOAD");
-    }
-
-    function _executePreviousBaseSpell() public onChain(ChainIdUtils.Base()) {
-        vm.prank(Base.GROVE_EXECUTOR);
-        IExecutorLike(Base.GROVE_EXECUTOR).executeDelegateCall(
-            BASE_20260115_PAYLOAD,
-            abi.encodeWithSignature('execute()')
-        );
     }
 
     function test_ETHEREUM_offboardOldAgoraAusdMint() public onChain(ChainIdUtils.Ethereum()) {
@@ -336,6 +316,26 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
 
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_CORE_RELAYER_OPERATOR),      true);
         assertEq(controller.hasRole(controller.RELAYER(), GROVE_SECONDARY_RELAYER_OPERATOR), true);
+    }
+
+    function test_ETHEREUM_transferGroveToken() public onChain(ChainIdUtils.Ethereum()) {
+        assertEq(IERC20Like(GROVE_TOKEN).name(),     "Grove");
+        assertEq(IERC20Like(GROVE_TOKEN).symbol(),   "GROVE");
+        assertEq(IERC20Like(GROVE_TOKEN).decimals(), 18);
+
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
+
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_LABS_WALLET),    0);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY), GROVE_TOKEN_GROVE_BALANCE);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY), GROVE_TOKEN_SKY_BALANCE);
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(IERC20Like(GROVE_TOKEN).totalSupply(), GROVE_TOKEN_TOTAL_SUPPLY);
+
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(GROVE_LABS_WALLET),    GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.GROVE_PROXY), GROVE_TOKEN_GROVE_BALANCE - GROVE_TOKEN_TRANSFER_AMOUNT);
+        assertEq(IERC20Like(GROVE_TOKEN).balanceOf(Ethereum.PAUSE_PROXY), GROVE_TOKEN_SKY_BALANCE);
     }
 
 }
