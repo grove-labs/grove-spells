@@ -230,7 +230,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
             // Ensure valid tick range
             if (vars.tickLower < vars.tickUpper && vars.tickLower >= poolParams.lowerTickBound) {
                 vars.liquidityScenarioRan = true;
-                _testOneSidedLiquidityProvisionScenario({
+                _testLiquidityProvisionScenario({
                     context          : context,
                     poolParams       : poolParams,
                     keys             : keys,
@@ -257,7 +257,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
             // Ensure valid tick range
             if (vars.tickLower < vars.tickUpper && vars.tickUpper <= poolParams.upperTickBound) {
                 vars.liquidityScenarioRan = true;
-                _testOneSidedLiquidityProvisionScenario({
+                _testLiquidityProvisionScenario({
                     context          : context,
                     poolParams       : poolParams,
                     keys             : keys,
@@ -329,7 +329,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
                 // Ensure non-zero amounts for both tokens
                 require(twoSidedAmount0 > 0 && twoSidedAmount1 > 0, "Two-sided amounts must be non-zero");
 
-                _testOneSidedLiquidityProvisionScenario({
+                _testLiquidityProvisionScenario({
                     context          : context,
                     poolParams       : poolParams,
                     keys             : keys,
@@ -447,7 +447,7 @@ abstract contract UniswapV3TestingBase is CommonTestBase {
     }
 
     /// @dev Helper to test a single liquidity scenario (add + remove) with rate limit verification
-    function _testOneSidedLiquidityProvisionScenario(
+    function _testLiquidityProvisionScenario(
         UniswapV3TestingContext              memory context,
         UniswapV3Helpers.UniswapV3PoolParams memory poolParams,
         UniswapV3Keys                        memory keys,
