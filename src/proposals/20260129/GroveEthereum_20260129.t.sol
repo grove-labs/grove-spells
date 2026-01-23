@@ -24,6 +24,12 @@ interface IERC20Like {
 contract GroveEthereum_20260129_Test is GroveTestBase {
 
     /******************************************************************************************************************/
+    /*** Deployed Spell Address                                                                                     ***/
+    /******************************************************************************************************************/
+
+    address internal constant ETHEREUM_PAYLOAD = 0x67aB5b15E3907E3631a303c50060c2207465a9AD;
+
+    /******************************************************************************************************************/
     /*** [Mainnet] Re-Onboard Agora AUSD Mint Redeem                                                                ***/
     /******************************************************************************************************************/
 
@@ -157,9 +163,9 @@ contract GroveEthereum_20260129_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-01-19T14:20:00Z");
+        setupDomains("2026-01-23T19:30:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
     }
 
     function test_ETHEREUM_offboardOldAgoraAusdMint() public onChain(ChainIdUtils.Ethereum()) {
