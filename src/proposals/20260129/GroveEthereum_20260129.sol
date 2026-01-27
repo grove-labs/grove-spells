@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
@@ -161,7 +161,7 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
     address internal constant GROVE_SECONDARY_RELAYER_OPERATOR = 0x9187807e07112359C481870feB58f0c117a29179;
 
     /******************************************************************************************************************/
-    /*** [Mainnet] Grove Token Transfer                                                                              ***/
+    /*** [Mainnet] Grove Token Transfer                                                                             ***/
     /******************************************************************************************************************/
 
     address internal constant GROVE_TOKEN       = 0xB30FE1Cf884B48a22a50D22a9282004F2c5E9406;
@@ -199,6 +199,8 @@ contract GroveEthereum_20260129 is GrovePayloadEthereum {
         _onboardRelayers();
 
         // [Mainnet] Grove Token Transfer
+        // Forum : https://forum.sky.money/t/atlas-edit-weekly-cycle-proposal-week-of-2026-01-19/27627#p-105440-authorize-transfer-to-grove-labs-1
+        // Forum : https://forum.sky.money/t/technical-scope-of-grove/27632#p-105451-initialization-5
         _transferGroveToken();
     }
 
