@@ -8,10 +8,10 @@ import { IERC20Metadata } from "openzeppelin-contracts/contracts/token/ERC20/ext
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { UniswapV3Lib }      from "lib/grove-alm-controller/src/libraries/UniswapV3Lib.sol";
-import { UniV3UtilsLib }     from "lib/grove-alm-controller/src/libraries/uniswap-v3/UniV3UtilsLib.sol";
-import { LiquidityAmounts }  from "dss-allocator/src/funnels/uniV3/LiquidityAmounts.sol";
-import { TickMath }          from "dss-allocator/src/funnels/uniV3/TickMath.sol";
+import { UniswapV3Lib }     from "lib/grove-alm-controller/src/libraries/UniswapV3Lib.sol";
+import { UniV3UtilsLib }    from "lib/grove-alm-controller/src/libraries/uniswap-v3/UniV3UtilsLib.sol";
+import { LiquidityAmounts } from "dss-allocator/src/funnels/uniV3/LiquidityAmounts.sol";
+import { TickMath }         from "dss-allocator/src/funnels/uniV3/TickMath.sol";
 
 import { IUniswapV3PoolLike, UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 import { GroveLiquidityLayerHelpers }           from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";

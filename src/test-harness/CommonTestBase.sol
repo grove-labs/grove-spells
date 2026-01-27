@@ -252,8 +252,8 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, maxAmount);
-        assertEq(rateLimit.slope,     slope);
+        assertEq(rateLimit.maxAmount, maxAmount, "max-amount-not-correct");
+        assertEq(rateLimit.slope,     slope,     "slope-not-correct");
     }
 
     function _assertUnlimitedRateLimit(
@@ -261,8 +261,8 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, type(uint256).max);
-        assertEq(rateLimit.slope,     0);
+        assertEq(rateLimit.maxAmount, type(uint256).max, "unlimited-max-amount-not-correct");
+        assertEq(rateLimit.slope,     0, "unlimited-slope-not-correct");
     }
 
     function _assertZeroRateLimit(
@@ -270,8 +270,8 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, 0);
-        assertEq(rateLimit.slope,     0);
+        assertEq(rateLimit.maxAmount, 0, "zero-max-amount-not-correct");
+        assertEq(rateLimit.slope,     0, "zero-slope-not-correct");
     }
 
     function _assertRateLimit(
@@ -283,10 +283,10 @@ contract CommonTestBase is SpellRunner {
     ) internal view {
         IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount,   maxAmount);
-        assertEq(rateLimit.slope,       slope);
-        assertEq(rateLimit.lastAmount,  lastAmount);
-        assertEq(rateLimit.lastUpdated, lastUpdated);
+        assertEq(rateLimit.maxAmount,   maxAmount,   "max-amount-not-correct");
+        assertEq(rateLimit.slope,       slope,       "slope-not-correct");
+        assertEq(rateLimit.lastAmount,  lastAmount,  "last-amount-not-correct");
+        assertEq(rateLimit.lastUpdated, lastUpdated, "last-updated-not-correct");
     }
 
 }

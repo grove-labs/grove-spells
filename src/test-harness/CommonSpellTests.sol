@@ -55,7 +55,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         }
 
         // Fail if deploy is too expensive
-        assertLe(totalGas, MAX_EXECUTION_COST, "TestError/spell-deploy-cost-too-high");
+        assertLe(totalGas, MAX_EXECUTION_COST, "CommonTest/spell-deploy-cost-too-high");
     }
 
     function test_ETHEREUM_ForeignRecipientsSet() public {
@@ -121,14 +121,14 @@ abstract contract CommonSpellTests is CommonTestBase {
         uint256 actualBytecodeSize   = actualPayload.code.length;
 
         uint256 metadataLength = _getBytecodeMetadataLength(expectedPayload);
-        assertTrue(metadataLength <= expectedBytecodeSize);
+        assertTrue(metadataLength <= expectedBytecodeSize, "CommonTest/metadata-length-not-correct");
         expectedBytecodeSize -= metadataLength;
 
         metadataLength = _getBytecodeMetadataLength(actualPayload);
-        assertTrue(metadataLength <= actualBytecodeSize);
+        assertTrue(metadataLength <= actualBytecodeSize, "CommonTest/metadata-length-not-correct");
         actualBytecodeSize -= metadataLength;
 
-        assertEq(actualBytecodeSize, expectedBytecodeSize);
+        assertEq(actualBytecodeSize, expectedBytecodeSize, "CommonTest/bytecode-size-not-correct");
 
         uint256 size = actualBytecodeSize;
         uint256 expectedHash;
@@ -144,7 +144,7 @@ abstract contract CommonSpellTests is CommonTestBase {
             actualHash := keccak256(ptr, size)
         }
 
-        assertEq(actualHash, expectedHash);
+        assertEq(actualHash, expectedHash, "CommonTest/bytecode-hash-not-correct");
     }
 
     function _getBytecodeMetadataLength(address a) internal view returns (uint256 length) {
@@ -176,14 +176,14 @@ abstract contract CommonSpellTests is CommonTestBase {
         assertEq(
             controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE),
             CastingHelpers.addressToCctpRecipient(Avalanche.ALM_PROXY),
-            "CommonTest/Avalanche/incorrect-cctp-recipient"
+            "CommonTest/avalanche/incorrect-cctp-recipient"
         );
 
         // Centrifuge
         assertEq(
             controller.centrifugeRecipients(GroveLiquidityLayerHelpers.AVALANCHE_DESTINATION_CENTRIFUGE_ID),
             CastingHelpers.addressToCentrifugeRecipient(Avalanche.ALM_PROXY),
-            "CommonTest/Avalanche/incorrect-centrifuge-recipient"
+            "CommonTest/avalanche/incorrect-centrifuge-recipient"
         );
 
         // LayerZero
@@ -197,7 +197,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         assertEq(
             controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_BASE),
             CastingHelpers.addressToCctpRecipient(Base.ALM_PROXY),
-            "CommonTest/Base/incorrect-cctp-recipient"
+            "CommonTest/base/incorrect-cctp-recipient"
         );
 
         // Centrifuge
@@ -217,7 +217,7 @@ abstract contract CommonSpellTests is CommonTestBase {
         assertEq(
             controller.centrifugeRecipients(GroveLiquidityLayerHelpers.PLUME_DESTINATION_CENTRIFUGE_ID),
             CastingHelpers.addressToCentrifugeRecipient(Plume.ALM_PROXY),
-            "CommonTest/Plume/incorrect-centrifuge-recipient"
+            "CommonTest/plume/incorrect-centrifuge-recipient"
         );
 
         // LayerZero
@@ -235,7 +235,7 @@ abstract contract CommonSpellTests is CommonTestBase {
             assertEq(
                 controller.mintRecipients(CCTPv2Forwarder.DOMAIN_ID_CIRCLE_ETHEREUM),
                 CastingHelpers.addressToCctpRecipient(Ethereum.ALM_PROXY),
-                "CommonTest/Mainnet/incorrect-cctp-recipient"
+                "CommonTest/mainnet/incorrect-cctp-recipient"
             );
         }
 
@@ -244,7 +244,7 @@ abstract contract CommonSpellTests is CommonTestBase {
             assertEq(
                 controller.centrifugeRecipients(GroveLiquidityLayerHelpers.ETHEREUM_DESTINATION_CENTRIFUGE_ID),
                 CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY),
-                "CommonTest/Mainnet/incorrect-centrifuge-recipient"
+                "CommonTest/mainnet/incorrect-centrifuge-recipient"
             );
         }
 
@@ -253,7 +253,7 @@ abstract contract CommonSpellTests is CommonTestBase {
             assertEq(
                 controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_ETHEREUM),
                 CastingHelpers.addressToLayerZeroRecipient(Ethereum.ALM_PROXY),
-                "CommonTest/Mainnet/incorrect-layerzero-recipient"
+                "CommonTest/mainnet/incorrect-layerzero-recipient"
             );
         }
     }
