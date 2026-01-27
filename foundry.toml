@@ -10,5 +10,6 @@ fs_permissions = [
 solc = "0.8.25"
 ffi = true
 evm_version = "cancun"
+bytecode_hash = "none"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
