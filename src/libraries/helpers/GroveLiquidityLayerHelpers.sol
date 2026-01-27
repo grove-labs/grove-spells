@@ -131,11 +131,15 @@ library GroveLiquidityLayerHelpers {
      *      the withdraw limit set to unlimited.
      */
     function onboardAaveToken(
+        address controller,
         address rateLimits,
         address token,
+        uint256 maxSlippage,
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
+        MainnetController(controller).setMaxSlippage(token, maxSlippage);
+
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             LIMIT_AAVE_DEPOSIT,
             token
