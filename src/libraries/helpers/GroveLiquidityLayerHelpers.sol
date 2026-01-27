@@ -6,6 +6,8 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
 
+import { IUniswapV3PoolLike, UniswapV3Helpers } from "./UniswapV3Helpers.sol";
+
 /**
  * @notice Helper functions for Grove Liquidity Layer
  */
@@ -29,6 +31,9 @@ library GroveLiquidityLayerHelpers {
     bytes32 public constant LIMIT_CURVE_DEPOSIT       = keccak256("LIMIT_CURVE_DEPOSIT");
     bytes32 public constant LIMIT_CURVE_SWAP          = keccak256("LIMIT_CURVE_SWAP");
     bytes32 public constant LIMIT_CURVE_WITHDRAW      = keccak256("LIMIT_CURVE_WITHDRAW");
+    bytes32 public constant LIMIT_UNISWAP_V3_SWAP     = keccak256("LIMIT_UNISWAP_V3_SWAP");
+    bytes32 public constant LIMIT_UNISWAP_V3_DEPOSIT  = keccak256("LIMIT_UNISWAP_V3_DEPOSIT");
+    bytes32 public constant LIMIT_UNISWAP_V3_WITHDRAW = keccak256("LIMIT_UNISWAP_V3_WITHDRAW");
 
     uint16 public constant        ETHEREUM_DESTINATION_CENTRIFUGE_ID = 1;
     uint16 public constant            BASE_DESTINATION_CENTRIFUGE_ID = 2;
@@ -189,6 +194,91 @@ library GroveLiquidityLayerHelpers {
                 pool
             );
             IRateLimits(rateLimits).setRateLimitData(withdrawKey, withdrawMax, withdrawSlope);
+        }
+    }
+
+    /**********************************************************************************************/
+    /*** Uniswap V3 functions                                                                   ***/
+    /**********************************************************************************************/
+
+    /**
+     * @notice Onboard a Uniswap V3 pool
+     * @dev This will set the rate limit for a Uniswap V3 pool
+     *      for the swap, deposit, and withdraw functions.
+     */
+    function onboardUniswapV3Pool(
+        address controller,
+        address rateLimits,
+        address pool,
+        UniswapV3Helpers.UniswapV3PoolParams  memory poolParams,
+        UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
+        UniswapV3Helpers.UniswapV3TokenParams memory token1Params
+    ) internal {
+        _configureUniswapV3Pool({
+            controller : controller,
+            pool       : pool,
+            poolParams : poolParams
+        });
+
+        _setTokenRateLimitsForUniswapV3Pool({
+            rateLimits  : rateLimits,
+            pool        : pool,
+            token       : IUniswapV3PoolLike(pool).token0(),
+            tokenParams : token0Params
+        });
+
+        _setTokenRateLimitsForUniswapV3Pool({
+            rateLimits  : rateLimits,
+            pool        : pool,
+            token       : IUniswapV3PoolLike(pool).token1(),
+            tokenParams : token1Params
+        });
+    }
+
+    function _configureUniswapV3Pool(
+        address controller,
+        address pool,
+        UniswapV3Helpers.UniswapV3PoolParams  memory poolParams
+    ) private {
+        MainnetController(controller).setMaxSlippage(pool, poolParams.maxSlippage);
+
+        MainnetController(controller).setUniswapV3PoolMaxTickDelta(pool, poolParams.maxTickDelta);
+
+        MainnetController(controller).setUniswapV3TwapSecondsAgo(pool, poolParams.twapSecondsAgo);
+
+        MainnetController(controller).setUniswapV3AddLiquidityLowerTickBound(pool, poolParams.lowerTickBound);
+        MainnetController(controller).setUniswapV3AddLiquidityUpperTickBound(pool, poolParams.upperTickBound);
+    }
+
+    function _setTokenRateLimitsForUniswapV3Pool(
+        address rateLimits,
+        address pool,
+        address token,
+        UniswapV3Helpers.UniswapV3TokenParams memory tokenParams
+    ) private {
+        if (tokenParams.swapMax != 0) {
+            bytes32 swapKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_SWAP,
+                token,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(swapKey, tokenParams.swapMax, tokenParams.swapSlope);
+        }
+        if (tokenParams.depositMax != 0) {
+            bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_DEPOSIT,
+                token,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(depositKey, tokenParams.depositMax, tokenParams.depositSlope);
+        }
+        if (tokenParams.withdrawMax != 0) {
+            bytes32 withdrawKey = RateLimitHelpers.makeAssetDestinationKey(
+                LIMIT_UNISWAP_V3_WITHDRAW,
+                token,
+                pool
+            );
+            IRateLimits(rateLimits).setRateLimitData(withdrawKey, tokenParams.withdrawMax, tokenParams.withdrawSlope);
         }
     }
 

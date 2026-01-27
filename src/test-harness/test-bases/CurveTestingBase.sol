@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
+import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol";
@@ -107,8 +107,8 @@ abstract contract CurveTestingBase is CommonTestBase {
             assertGt(vars.depositAmounts[0], 0);
             assertGt(vars.depositAmounts[1], 0);
 
-            deal(vars.pool.coins(0), address(vars.ctx.proxy), vars.depositAmounts[0]);
-            deal(vars.pool.coins(1), address(vars.ctx.proxy), vars.depositAmounts[1]);
+            deal2(vars.pool.coins(0), address(vars.ctx.proxy), vars.depositAmounts[0]);
+            deal2(vars.pool.coins(1), address(vars.ctx.proxy), vars.depositAmounts[1]);
 
             assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), vars.depositAmounts[0]);
             assertEq(IERC20(vars.pool.coins(1)).balanceOf(address(vars.ctx.proxy)), vars.depositAmounts[1]);
@@ -129,7 +129,7 @@ abstract contract CurveTestingBase is CommonTestBase {
             // Withdraw should also be enabled if deposit is enabled
             assertGt(withdrawMax, 0);
 
-            uint256 snapshot = vm.snapshot();
+            uint256 snapshot = vm.snapshotState();
 
             // Go slightly above maxSlippage due to rounding
             vars.withdrawAmounts = new uint256[](2);
@@ -153,7 +153,7 @@ abstract contract CurveTestingBase is CommonTestBase {
                 (vars.depositAmounts[0] * vars.rates[0] + vars.depositAmounts[1] * vars.rates[1]) * maxSlippage / 1e36
             );
 
-            vm.revertTo(snapshot);  // To allow swapping through higher liquidity below
+            vm.revertToState(snapshot);  // To allow swapping through higher liquidity below
         } else {
             // Deposit is disabled
             assertEq(vars.depositAmounts[0], 0);
@@ -164,7 +164,7 @@ abstract contract CurveTestingBase is CommonTestBase {
         }
 
         if (swapMax != 0) {
-            deal(vars.pool.coins(0), address(vars.ctx.proxy), expectedSwapAmountToken0);
+            deal2(vars.pool.coins(0), address(vars.ctx.proxy), expectedSwapAmountToken0);
             vars.minAmountOut = expectedSwapAmountToken0 * vars.rates[0] * maxSlippage / vars.rates[1] / 1e18;
 
             assertEq(IERC20(vars.pool.coins(0)).balanceOf(address(vars.ctx.proxy)), expectedSwapAmountToken0);
