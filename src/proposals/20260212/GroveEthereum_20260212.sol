@@ -10,8 +10,8 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
 contract GroveEthereum_20260212 is GrovePayloadEthereum {
 
     function _execute() internal override {
-        // [Mainnet] Onboard Grove x Steakhouse Morpho V2 AUSD Vault
-        //   Forum : TODO
+        // [Mainnet] Onboard Grove x Steakhouse AUSD Morpho Vault V2
+        //   Forum : https://forum.sky.money/t/february-12-2026-proposed-changes-to-grove-for-upcoming-spell/27662#p-105571-h-1-mainnet-onboard-grove-x-steakhouse-ausd-morpho-vault-v2-2
         _onboardGroveXSteakhouseAusdMorphoVault();
     }
 
