@@ -126,9 +126,9 @@ library GroveLiquidityLayerHelpers {
     /**********************************************************************************************/
 
     /**
-     * @notice Onboard an Aave token
-     * @dev This will set the deposit to the given numbers with
-     *      the withdraw limit set to unlimited.
+     * @notice Sets up rate limits and slippage controls for an Aave token.
+     * @dev Sets the max slippage for the token, configures the deposit rate limit with specified maximum
+     *      and slope values, and sets the withdraw limit to unlimited.
      */
     function onboardAaveToken(
         address controller,
