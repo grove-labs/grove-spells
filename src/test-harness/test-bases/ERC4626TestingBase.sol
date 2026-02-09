@@ -24,7 +24,7 @@ abstract contract ERC4626TestingBase is CommonTestBase {
         bool unlimitedDeposit = depositMax == type(uint256).max;
 
         // Note: ERC4626 signature is the same for mainnet and foreign
-        deal(IERC4626(vault).asset(), address(ctx.proxy), expectedDepositAmount);
+        deal2(IERC4626(vault).asset(), address(ctx.proxy), expectedDepositAmount);
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             GroveLiquidityLayerHelpers.LIMIT_4626_DEPOSIT,
             vault
