@@ -15,6 +15,7 @@ abstract contract AaveTestingBase is CommonTestBase {
     function _testAaveOnboarding(
         address aToken,
         uint256 expectedDepositAmount,
+        uint256 maxSlippage,
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
@@ -53,6 +54,8 @@ abstract contract AaveTestingBase is CommonTestBase {
 
         _assertRateLimit(depositKey, depositMax, depositSlope);
         _assertRateLimit(withdrawKey, type(uint256).max, 0);
+
+        assertEq(MainnetController(ctx.controller).maxSlippages(aToken), maxSlippage);
 
         if (expectedDepositAmount == 0) return; // Skip the rest of the test if no deposit is expected
 

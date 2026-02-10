@@ -162,17 +162,18 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    function _onboardAaveToken(address token, uint256 depositMax, uint256 depositSlope) internal {
+    function _onboardAaveToken(address token, uint256 maxSlippage, uint256 depositMax, uint256 depositSlope) internal {
         GroveLiquidityLayerHelpers.onboardAaveToken(
+            Ethereum.ALM_CONTROLLER,
             Ethereum.ALM_RATE_LIMITS,
             token,
+            maxSlippage,
             depositMax,
             depositSlope
         );
     }
 
     function _onboardCurvePool(
-        address controller,
         address pool,
         uint256 maxSlippage,
         uint256 swapMax,
@@ -183,7 +184,7 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         uint256 withdrawSlope
     ) internal {
         GroveLiquidityLayerHelpers.onboardCurvePool(
-            controller,
+            Ethereum.ALM_CONTROLLER,
             Ethereum.ALM_RATE_LIMITS,
             pool,
             maxSlippage,
@@ -197,14 +198,13 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
     }
 
     function _onboardUniswapV3Pool(
-        address controller,
         address pool,
         UniswapV3Helpers.UniswapV3PoolParams  memory poolParams,
         UniswapV3Helpers.UniswapV3TokenParams memory token0Params,
         UniswapV3Helpers.UniswapV3TokenParams memory token1Params
     ) internal {
         GroveLiquidityLayerHelpers.onboardUniswapV3Pool(
-            controller,
+            Ethereum.ALM_CONTROLLER,
             Ethereum.ALM_RATE_LIMITS,
             pool,
             poolParams,
