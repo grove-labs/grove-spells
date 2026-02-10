@@ -4,7 +4,7 @@
 
 ## 🔮 Overview
 
-Grove Spells are governance proposals that execute parameter changes and system updates for Grove infrastructure across multiple blockchain domains (currently Ethereum Mainnet, Avalanche, Base and Plume)
+Grove Spells are governance proposals that execute parameter changes and system updates for Grove infrastructure across multiple blockchain domains (currently Ethereum Mainnet, Avalanche, Base, and Plume)
 
 Spells are executed on Ethereum and automatically relay payloads to foreign domains through the [grove-gov-relay](https://github.com/grove-labs/grove-gov-relay) infrastructure
 
