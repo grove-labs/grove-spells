@@ -31,7 +31,7 @@ The latest spells can be found in the `src/proposals/` directory. Spells are org
 
 1. **RPC Endpoints with Historical Block Support**
 
-   Tests fork from historical block timestamps, so you need RPC endpoints that support archive data. Free-tier RPC providers not always support historical state queries
+   Tests fork from historical block timestamps, so you need RPC endpoints that support archive data. Free-tier RPC providers do not always support historical state queries.
 
    Set the following environment variables:
    ```bash
