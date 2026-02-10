@@ -2,11 +2,30 @@
 
 **Governance Spells for Grove**
 
+## 🔮 Overview
+
+Grove Spells are governance proposals that execute parameter changes and system updates for Grove infrastructure across multiple blockchain domains (currently Ethereum Mainnet, Avalanche, Base and Plume)
+
+Spells are executed on Ethereum and automatically relay payloads to foreign domains through the [grove-gov-relay](https://github.com/grove-labs/grove-gov-relay) infrastructure
+
 ## ✨ Spells
 
-The latest spells can be found in the `src/proposals/` directory. Spells are organized by date in YYYYMMDD format, with separate files for each network (i.e. `GroveEthereum_20250724.sol`).
+The latest spells can be found in the `src/proposals/` directory. Spells are organized by date in YYYYMMDD format, with separate files for each domain (i.e. `GroveEthereum_20250724.sol`)
 
-## 🧪 Tests
+## 🪄 Spell Crafting
+
+1. Archive the previous spell by moving its files from `src/proposals/YYYYMMDD/` to the `archive/YYYYMMDD/` directory
+   - Be sure to also add the pull request description for that spell in the archived folder as `YYYYMMDD.md`
+2. Create a new folder in `src/proposals/` using the `YYYYMMDD` date format for your new spell
+3. Add the required files for the new spell:
+   - `GroveEthereum_YYYYMMDD.sol` - Main spell contract inheriting from `GrovePayloadEthereum`
+   - `GroveEthereum_YYYYMMDD.t.sol` - Test file extending `GroveTestBase`
+   - If your spell requires execution on foreign domains, create a separate spell contract for each domain's payload (e.g., `GroveAvalanche_YYYYMMDD.sol`, `GroveBase_YYYYMMDD.sol`). All tests, including cross-chain execution, should remain in the single mainnet test file.
+4. When creating a new spell contract, ensure it inherits from the appropriate base spell contract (such as `GrovePayloadEthereum` or a similar domain-specific payload) and make use of its helper functions as needed. This helps enforce correct cross-chain messaging, governance patterns, and available utilities.
+5. Reference spells in the `archive/` directory for examples of different onboarding patterns.
+
+
+## 🧪 Testing
 
 ### 📋 Prerequisites
 
