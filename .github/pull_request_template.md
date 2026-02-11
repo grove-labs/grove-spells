@@ -9,22 +9,24 @@
 ### Ethereum Mainnet
 
 - **change 1 (high level)**
-    - param 1 (`SPELL_PARAM_1`)
-    - param 2 (`SPELL_PARAM_2`)
+    - paramOneName - paramOneValue (`SPELL_PARAM_1_VAR_NAME`)
+    - paramTwoName - paramTwoValue (`SPELL_PARAM_2_VAR_NAME`)
 
 - **change 2**
-    - param 1 (`SPELL_PARAM_1`)
-    - param 2 (`SPELL_PARAM_2`)
+    - paramOneName - paramOneValue (`SPELL_PARAM_1_VAR_NAME`)
+    - paramTwoName - paramTwoValue (`SPELL_PARAM_2_VAR_NAME`)
 
 ### Other Domain
 
 - **change 1 (high level)**
-    - param 1 (`SPELL_PARAM_1`)
-    - param 2 (`SPELL_PARAM_2`)
+    - paramOneName - paramOneValue (`SPELL_PARAM_1_VAR_NAME`)
+    - paramTwoName - paramTwoValue (`SPELL_PARAM_2_VAR_NAME`)
 
 - **change 2**
-    - param 1 (`SPELL_PARAM_1`)
-    - param 2 (`SPELL_PARAM_2`)
+    - paramOneName - paramOneValue (`SPELL_PARAM_1_VAR_NAME`)
+    - paramTwoName - paramTwoValue (`SPELL_PARAM_2_VAR_NAME`)
+
+<!-- Where applicable values expressing token amounts should mention the precision; i.e. 50.000.000e6 -->
 
 ## Spell Deployment
 
@@ -38,7 +40,6 @@
 ### Other Domain
 `Address TBD`
 [Domain Link](TBD)
-
 
 ## Addresses
 
@@ -60,5 +61,5 @@ New addresses introduced in the spell
 
 | Submodule | Previous Commit | New Commit |
 | --- | --- | --- |
-| `submodule-1-name` | `oldCommit` | `newCommit` |
-| `submodule-2-name` | `oldCommit` | `newCommit` |
+| `submoduleOneName` | `oldCommit` | `newCommit` |
+| `submoduleTwoName` | `oldCommit` | `newCommit` |
