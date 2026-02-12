@@ -22,6 +22,12 @@ contract GroveEthereum_20260226_Test is GroveTestBase {
         deployPayloads();
     }
 
+    function _registerAddressesForDocumentation() internal override {
+        _registerAddress(Ethereum.USDC, "USDC");
+        _registerAddress(GALAXY_DEPOSIT_WALLET, "GALAXY_DEPOSIT_WALLET");
+        _registerAddress(STEAKHOUSE_MORPHO_USDC_VAULT, "STEAKHOUSE_MORPHO_USDC_VAULT");
+    }
+
     function test_ETHEREUM_onboardGalaxyDeposits() public onChain(ChainIdUtils.Ethereum()) {
         _testDirectUsdcTransferOnboarding({
             usdc                  : Ethereum.USDC,

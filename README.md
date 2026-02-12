@@ -66,6 +66,53 @@ forge test
 forge test --help
 ```
 
+## 📋 Rate Limit Documentation
+
+The test harness includes a utility for documenting all rate limits set by a spell. This is useful for generating documentation of the exact hash keys, human-readable labels, and configured values (max amount, slope) for each rate limit.
+
+### Running the Documentation Test
+
+To generate rate limit documentation for a spell, run:
+
+```bash
+forge test --match-test test_printRateLimits -vv
+```
+
+This will output a formatted list of all rate limits set by the spell across all chains (Ethereum, Avalanche, Base, Plume).
+
+### Registering Addresses for Better Labels
+
+By default, addresses in rate limit keys are displayed as hex strings (e.g., `4626_DEPOSIT(0xBEEf...)`). To provide human-readable labels, override `_registerAddressesForDocumentation()` in your spell test:
+
+```solidity
+contract GroveEthereum_20260212_Test is GroveTestBase {
+    address internal constant SOME_VAULT = 0xBEEfF0d672ab7F5018dFB614c93981045D4aA98a;
+
+    // ... setUp and other tests ...
+
+    function _registerAddressesForDocumentation() internal override {
+        _registerAddress(SOME_VAULT, "SOME_VAULT");
+    }
+}
+```
+
+With this override, the output will show `4626_DEPOSIT(SOME_VAULT)` instead of the raw address.
+
+### Example Output
+
+```
+=== Rate Limits Set by Spell [Ethereum] ===
+
+---
+Label:      4626_DEPOSIT(SOME_VAULT)
+Key:        0x09b5f924263c1b33d619ff1c9c794ddf57bc2eb0f618e2cf5cfd838abecb541d
+Max Amount: 20000000000000
+Slope:      20000000000000 / 1 day
+---
+
+Total rate limits set: 1
+```
+
 ## 📦 Archive
 
 The `archive/` directory stores all historical spells that have been executed on-chain. Each archived spell includes:

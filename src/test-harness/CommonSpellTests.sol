@@ -17,8 +17,9 @@ import { ChainIdUtils, ChainId }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GroveLiquidityLayerContext, CommonTestBase } from "./CommonTestBase.sol";
+import { RateLimitDocumentation } from "./RateLimitDocumentation.sol";
 
-abstract contract CommonSpellTests is CommonTestBase {
+abstract contract CommonSpellTests is CommonTestBase, RateLimitDocumentation {
 
     struct BridgeTypesToTest {
         bool cctp;
@@ -255,6 +256,49 @@ abstract contract CommonSpellTests is CommonTestBase {
                 CastingHelpers.addressToLayerZeroRecipient(Ethereum.ALM_PROXY),
                 "CommonTest/mainnet/incorrect-layerzero-recipient"
             );
+        }
+    }
+
+    /**********************************************************************************************/
+    /*** Rate Limit Documentation                                                               ***/
+    /**********************************************************************************************/
+
+    /**
+     * @notice Prints rate limits set by the spell for all chains with payloads
+     * @dev    Run with: forge test --match-test test_printRateLimits -vv
+     */
+    function test_printRateLimits() public {
+        _registerAddressesForDocumentation();
+
+        // 1. Print Ethereum rate limits first (requires executing mainnet payload)
+        if (chainData[ChainIdUtils.Ethereum()].payload != address(0)) {
+            _printRateLimits(ChainIdUtils.Ethereum());
+        }
+
+        // 2. Execute bridge relay for foreign chains (mainnet already executed)
+        _relayMessageOverBridges(allChains);
+
+        // 3. Print rate limits for each foreign chain with a payload
+        for (uint256 i = 0; i < allChains.length; i++) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+            if (chainId == ChainIdUtils.Ethereum()) continue;
+            if (chainData[chainId].payload == address(0)) continue;
+
+            _printRateLimits(chainId);
+        }
+    }
+
+    /**
+     * @notice Implementation of _executeSpellForDocumentation for rate limit capture
+     * @dev    For Ethereum, executes mainnet payload. For foreign chains, mainnet and bridges
+     *         are already executed by test_printRateLimits, so only execute foreign payload.
+     */
+    function _executeSpellForDocumentation(ChainId chainId) internal override {
+        if (chainId == ChainIdUtils.Ethereum()) {
+            executeMainnetPayload();
+        } else {
+            // Mainnet and bridges already executed by test_printRateLimits
+            _executeForeignPayload(chainId);
         }
     }
 
