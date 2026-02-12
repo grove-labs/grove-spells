@@ -307,13 +307,17 @@ abstract contract RateLimitDocumentation is Test {
                 console.log("Max Amount: %s", vm.toString(captured[i].maxAmount));
             }
 
-            // Slope is stored as value/day, multiply back to show original value
+            // Slope: show stored value first, then daily rate in parentheses
             if (captured[i].slope == 0) {
                 console.log("Slope:      0");
             } else if (captured[i].slope == type(uint256).max) {
                 console.log("Slope:      unlimited");
             } else {
-                console.log("Slope:      %s / 1 day", vm.toString(captured[i].slope * 1 days));
+                console.log(
+                    "Slope:      %s (%s / 1 day)",
+                    vm.toString(captured[i].slope),
+                    vm.toString(captured[i].slope * 1 days)
+                );
             }
         }
 
