@@ -12,8 +12,8 @@ contract GroveBase_20260226 is GrovePayloadBase {
     address internal constant STEAKHOUSE_MORPHO_USDC_VAULT = 0xbeef0e0834849aCC03f0089F01f4F1Eeb06873C9;
 
     function execute() external {
-        // [Base] Onboard Steakhouse Morpho v2 USDC Vault
-        //   Forum : TODO
+        // [Base] Onboard Steakhouse Prime Instant USDC Morpho Vault V2
+        //   Forum : https://forum.sky.money/t/february-26-2026-proposed-changes-to-grove-for-upcoming-spell/27712#p-105710-h-1-base-onboard-steakhouse-prime-instant-usdc-morpho-vault-v2-2
         _onboardSteakhouseMorphoUsdcVault();
     }
 

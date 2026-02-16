@@ -23,8 +23,8 @@ contract GroveEthereum_20260226 is GrovePayloadEthereum {
     }
 
     function _execute() internal override {
-        // [Mainnet] Onboard Galaxy Deposit Address
-        //   Forum : TODO
+        // [Ethereum] Onboard Galaxy Warehouse
+        //   Forum : https://forum.sky.money/t/february-26-2026-proposed-changes-to-grove-for-upcoming-spell/27712#p-105710-h-2-ethereum-onboard-galaxy-warehouse-8
         _onboardGalaxyDeposits();
     }
 
