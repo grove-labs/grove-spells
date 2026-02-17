@@ -19,7 +19,7 @@ contract GroveEthereum_20260226 is GrovePayloadEthereum {
     address internal constant GALAXY_DEPOSIT_WALLET = 0x3E23311f9FF660E3c3d87E4b7c207b3c3D7e04f0;
 
     constructor() {
-        PAYLOAD_BASE = address(0); // TODO: Set Base payload address after deployment
+        PAYLOAD_BASE = 0xfC3e2Fa0257d4454fFD6a079dd38f132b361AB9a;
     }
 
     function _execute() internal override {
