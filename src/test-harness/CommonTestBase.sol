@@ -112,7 +112,7 @@ contract CommonTestBase is SpellRunner {
     } else if (block.chainid == ChainIds.BASE) {
       // USDC
       if (asset == USDC_BASE) {
-        address donor = 0x7C310a03f4CFa19F7f3d7F36DD3E05828629fa78;
+        address donor = 0x8da91A6298eA5d1A8Bc985e99798fd0A0f05701a;
         _transferFromDonor(asset, user, donor, amount);
         return true;
       }
