@@ -15,15 +15,15 @@ contract GroveEthereum_20260326 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Onboard Centrifuge ACRDX
-        //   Forum : TODO
+        //   Forum : https://forum.sky.money/t/march-26th-2026-proposed-changes-to-grove-for-upcoming-spell/27761#p-105900-h-1-ethereum-onboard-centrifuge-acrdx-2
         _onboardCentrifugeAcrdx();
 
         // [Ethereum] Onboard Sentora PYUSD Morpho Vault V2
-        //   Forum : TODO
+        //   Forum : https://forum.sky.money/t/march-26th-2026-proposed-changes-to-grove-for-upcoming-spell/27761#p-105900-h-2-ethereum-onboard-sentora-pyusd-morpho-vault-v2-8
         _onboardSentoraPyusdMorphoVault();
 
         // [Ethereum] Onboard Sentora RLUSD Morpho Vault V2
-        //   Forum : TODO
+        //   Forum : https://forum.sky.money/t/march-26th-2026-proposed-changes-to-grove-for-upcoming-spell/27761#p-105900-h-3-ethereum-onboard-sentora-rlusd-morpho-vault-v2-14
         _onboardSentoraRlusdMorphoVault();
     }
 
