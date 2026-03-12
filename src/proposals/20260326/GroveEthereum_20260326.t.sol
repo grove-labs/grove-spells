@@ -16,7 +16,7 @@ contract GroveEthereum_20260326_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-03-09T10:00:00Z");
+        setupDomains("2026-03-12T10:00:00Z");
 
         deployPayloads();
     }
