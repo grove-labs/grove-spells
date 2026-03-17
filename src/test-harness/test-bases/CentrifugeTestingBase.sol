@@ -63,10 +63,6 @@ interface IAsyncRedeemManagerLike {
 interface IBalanceSheetLike {
     function deposit(uint64 poolId, bytes16 scId, address asset, uint256 tokenId, uint128 amount)
         external;
-    function noteDeposit(uint64 poolId, bytes16 scId, address asset, uint256 tokenId, uint128 amount)
-        external;
-    function unreserve(uint64 poolId, bytes16 scId, address asset, uint256 tokenId, uint128 amount, address reserver, uint32 reason)
-        external;
 }
 
 interface ISpokeLike {
@@ -356,6 +352,22 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
     ) internal {
         uint128 _assetAmount = uint128(assetAmount);
 
+        // ApprovedDeposits callback
+        {
+            bytes memory payload = abi.encodePacked(
+                uint8(RequestCallbackType.ApprovedDeposits),
+                _assetAmount,      // approvedAssetAmount
+                uint128(1e18)      // pricePoolPerAsset (1:1 for stablecoins)
+            );
+            vm.prank(config.centrifugeRoot);
+            IAsyncRedeemManagerLike(config.centrifugeManager).callback(
+                config.centrifugePoolId,
+                config.centrifugeScId,
+                config.centrifugeAssetId,
+                payload
+            );
+        }
+
         // IssuedShares callback
         {
             bytes memory payload = abi.encodePacked(
@@ -391,38 +403,6 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
             );
         }
 
-        // After fulfillment, register deposited assets with escrow and make them available.
-        // This simulates what the protocol does when the Hub confirms the deposit.
-        {
-            IAsyncRedeemManagerLike manager = IAsyncRedeemManagerLike(config.centrifugeManager);
-            address balanceSheet = manager.balanceSheet();
-            address asset = ICentrifugeV3Vault(config.centrifugeVault).asset();
-
-            // Deposit to register assets with escrow accounting
-            deal2(asset, config.centrifugeManager, _assetAmount);
-            vm.prank(config.centrifugeManager);
-            IERC20(asset).approve(balanceSheet, _assetAmount);
-            vm.prank(config.centrifugeManager);
-            IBalanceSheetLike(balanceSheet).deposit(
-                config.centrifugePoolId,
-                config.centrifugeScId,
-                asset,
-                0,
-                _assetAmount
-            );
-
-            // Unreserve to make assets available for withdrawal
-            vm.prank(config.centrifugeManager);
-            IBalanceSheetLike(balanceSheet).unreserve(
-                config.centrifugePoolId,
-                config.centrifugeScId,
-                asset,
-                0,
-                _assetAmount,
-                config.centrifugeManager,
-                1  // REASON_DEPOSIT
-            );
-        }
     }
 
     function _centrifugeV3FulfillRedeemRequest(
@@ -457,6 +437,24 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
                 uint128(2e18)      // pricePoolPerShare
             )
         );
+
+        // Deposit assets so that user can claim USDC via vault afterwards
+        {
+            address balanceSheet = manager.balanceSheet();
+            address asset = ICentrifugeV3Vault(config.centrifugeVault).asset();
+
+            deal2(asset, config.centrifugeManager, _tokenAmount * 2);
+            vm.prank(config.centrifugeManager);
+            IERC20(asset).approve(balanceSheet, _tokenAmount * 2);
+            vm.prank(config.centrifugeManager);
+            IBalanceSheetLike(balanceSheet).deposit(
+                config.centrifugePoolId,
+                config.centrifugeScId,
+                asset,
+                0,
+                _tokenAmount * 2
+            );
+        }
 
         // FulfilledRedeemRequest callback
         vm.prank(config.centrifugeRoot);
