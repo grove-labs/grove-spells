@@ -7,6 +7,8 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260326_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0x78e187473527938211187C85a414b19dD34ECD53;
+
     address internal constant CENTRIFUGE_ACRDX      = 0x74A739EA1Dc67c5a0179ebad665D1D3c4b80B712;
     address internal constant SENTORA_PYUSD_MAIN_V2 = 0xb576765fB15505433aF24FEe2c0325895C559FB2;
     address internal constant SENTORA_RLUSD_MAIN_V2 = 0x6dC58a0FdfC8D694e571DC59B9A52EEEa780E6bf;
@@ -16,9 +18,9 @@ contract GroveEthereum_20260326_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-03-12T10:00:00Z");
+        setupDomains("2026-03-18T16:10:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
     }
 
     function test_ETHEREUM_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Ethereum()) {
