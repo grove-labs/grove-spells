@@ -13,6 +13,15 @@ import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidity
 
 import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
 
+enum RequestCallbackType {
+    Invalid,
+    ApprovedDeposits,
+    IssuedShares,
+    RevokedShares,
+    FulfilledDepositRequest,
+    FulfilledRedeemRequest
+}
+
 struct CentrifugeV3Config {
     address centrifugeVault;
     address centrifugeRoot;
@@ -45,36 +54,7 @@ interface IFreelyTransferableHookLike {
 }
 
 interface IAsyncRedeemManagerLike {
-    function issuedShares(
-        uint64  poolId,
-        bytes16 scId,
-        uint128 shareAmount,
-        uint128 pricePoolPerShare) external;
-    function revokedShares(
-        uint64  poolId,
-        bytes16 scId,
-        uint128 assetId,
-        uint128 assetAmount,
-        uint128 shareAmount,
-        uint128 pricePoolPerShare) external;
-    function fulfillDepositRequest(
-        uint64  poolId,
-        bytes16 scId,
-        address user,
-        uint128 assetId,
-        uint128 fulfilledAssets,
-        uint128 fulfilledShares,
-        uint128 cancelledAssets
-    ) external;
-    function fulfillRedeemRequest(
-        uint64  poolId,
-        bytes16 scId,
-        address user,
-        uint128 assetId,
-        uint128 fulfilledAssets,
-        uint128 fulfilledShares,
-        uint128 cancelledShares
-    ) external;
+    function callback(uint64 poolId, bytes16 scId, uint128 assetId, bytes calldata payload) external;
     function balanceSheet()            external view returns (address);
     function spoke()                   external view returns (address);
     function poolEscrow(uint64 poolId) external view returns (address);
@@ -269,7 +249,6 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
     }
 
-
     function _testCentrifugeCrosschainTransferOnboarding(
         address centrifugeVault,
         address destinationAddress,
@@ -342,14 +321,14 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
         address centrifugeAsset = ICentrifugeV3Vault(centrifugeVault).asset();
 
         return CentrifugeV3Config({
-            centrifugeVault:   centrifugeVault,
-            centrifugeRoot:    ICentrifugeV3Vault(centrifugeVault).root(),
-            centrifugeManager: address(centrifugeManager),
-            centrifugeAsset:   centrifugeAsset,
-            centrifugeSpoke:   address(centrifugeSpoke),
-            centrifugeScId:    ICentrifugeV3Vault(centrifugeVault).scId(),
-            centrifugePoolId:  ICentrifugeV3Vault(centrifugeVault).poolId(),
-            centrifugeAssetId: centrifugeSpoke.assetToId(centrifugeAsset, 0)
+            centrifugeVault   : centrifugeVault,
+            centrifugeRoot    : ICentrifugeV3Vault(centrifugeVault).root(),
+            centrifugeManager : address(centrifugeManager),
+            centrifugeAsset   : centrifugeAsset,
+            centrifugeSpoke   : address(centrifugeSpoke),
+            centrifugeScId    : ICentrifugeV3Vault(centrifugeVault).scId(),
+            centrifugePoolId  : ICentrifugeV3Vault(centrifugeVault).poolId(),
+            centrifugeAssetId : centrifugeSpoke.assetToId(centrifugeAsset, 0)
         });
     }
 
@@ -372,28 +351,58 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
         uint256 assetAmount
     ) internal {
         uint128 _assetAmount = uint128(assetAmount);
-        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
+        // ApprovedDeposits callback
+        {
+            bytes memory payload = abi.encodePacked(
+                uint8(RequestCallbackType.ApprovedDeposits),
+                _assetAmount,      // approvedAssetAmount
+                uint128(1e18)      // pricePoolPerAsset (1:1 for stablecoins)
+            );
+            vm.prank(config.centrifugeRoot);
+            IAsyncRedeemManagerLike(config.centrifugeManager).callback(
+                config.centrifugePoolId,
+                config.centrifugeScId,
+                config.centrifugeAssetId,
+                payload
+            );
+        }
 
-        vm.prank(config.centrifugeRoot);
-        IAsyncRedeemManagerLike(config.centrifugeManager).issuedShares(
-            config.centrifugePoolId,
-            config.centrifugeScId,
-            _assetAmount / 2,
-            2e18
-        );
+        // IssuedShares callback
+        {
+            bytes memory payload = abi.encodePacked(
+                uint8(RequestCallbackType.IssuedShares),
+                _assetAmount / 2,  // shareAmount
+                uint128(2e18)      // pricePoolPerShare
+            );
+            vm.prank(config.centrifugeRoot);
+            IAsyncRedeemManagerLike(config.centrifugeManager).callback(
+                config.centrifugePoolId,
+                config.centrifugeScId,
+                config.centrifugeAssetId,
+                payload
+            );
+        }
 
-        // Fulfill request at price 2.0
-        vm.prank(config.centrifugeRoot);
-        IAsyncRedeemManagerLike(config.centrifugeManager).fulfillDepositRequest(
-            config.centrifugePoolId,
-            config.centrifugeScId,
-            address(ctx.proxy),
-            config.centrifugeAssetId,
-            _assetAmount,
-            _assetAmount / 2,
-            0
-        );
+        // FulfilledDepositRequest callback
+        {
+            GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+            bytes memory payload = abi.encodePacked(
+                uint8(RequestCallbackType.FulfilledDepositRequest),
+                bytes32(bytes20(address(ctx.proxy))),  // investor (LEFT-aligned)
+                _assetAmount,                          // fulfilledAssets
+                _assetAmount / 2,                      // fulfilledShares
+                uint128(0)                             // cancelledAssets
+            );
+            vm.prank(config.centrifugeRoot);
+            IAsyncRedeemManagerLike(config.centrifugeManager).callback(
+                config.centrifugePoolId,
+                config.centrifugeScId,
+                config.centrifugeAssetId,
+                payload
+            );
+        }
+
     }
 
     function _centrifugeV3FulfillRedeemRequest(
@@ -404,47 +413,62 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         IAsyncRedeemManagerLike manager = IAsyncRedeemManagerLike(config.centrifugeManager);
-        address poolEscrow = manager.poolEscrow(config.centrifugePoolId);
-        deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), poolEscrow, 5_000_000_000e6);
 
-        // Deposit assets into balanceSheet
-        deal(ICentrifugeV3Vault(config.centrifugeVault).asset(), config.centrifugeRoot, tokenAmount * 2);
-        IBalanceSheetLike balanceSheet = IBalanceSheetLike(manager.balanceSheet());
-
-        vm.startPrank(config.centrifugeRoot);
-
-        ISpokeLike centrifugeSpoke = ISpokeLike(manager.spoke());
-        (uint64 computedAt,,)= centrifugeSpoke.markersPricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId);
-        if (computedAt == 0) {
-            // Sets initial asset price to 1.00
-            centrifugeSpoke.updatePricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId, 1e18, uint64(block.timestamp));
+        // Set initial asset price if not set
+        {
+            ISpokeLike spoke = ISpokeLike(manager.spoke());
+            (uint64 computedAt,,) = spoke.markersPricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId);
+            if (computedAt == 0) {
+                vm.prank(config.centrifugeRoot);
+                spoke.updatePricePoolPerAsset(config.centrifugePoolId, config.centrifugeScId, config.centrifugeAssetId, 1e18, uint64(block.timestamp));
+            }
         }
 
-        IERC20(ICentrifugeV3Vault(config.centrifugeVault).asset()).approve(address(balanceSheet), tokenAmount * 2);
-        balanceSheet.deposit(config.centrifugePoolId, config.centrifugeScId, ICentrifugeV3Vault(config.centrifugeVault).asset(), 0, uint128(tokenAmount * 2));
-        vm.stopPrank();
-
-        // Revoke shares
+        // RevokedShares callback
         vm.prank(config.centrifugeRoot);
-        manager.revokedShares(
+        manager.callback(
             config.centrifugePoolId,
             config.centrifugeScId,
             config.centrifugeAssetId,
-            _tokenAmount * 2,
-            _tokenAmount,
-            2e18
+            abi.encodePacked(
+                uint8(RequestCallbackType.RevokedShares),
+                _tokenAmount * 2,  // assetAmount
+                _tokenAmount,      // shareAmount
+                uint128(2e18)      // pricePoolPerShare
+            )
         );
 
-        // Fulfill request at price 2.0
+        // Deposit assets so that user can claim USDC via vault afterwards
+        {
+            address balanceSheet = manager.balanceSheet();
+            address asset = ICentrifugeV3Vault(config.centrifugeVault).asset();
+
+            deal2(asset, config.centrifugeManager, _tokenAmount * 2);
+            vm.prank(config.centrifugeManager);
+            IERC20(asset).approve(balanceSheet, _tokenAmount * 2);
+            vm.prank(config.centrifugeManager);
+            IBalanceSheetLike(balanceSheet).deposit(
+                config.centrifugePoolId,
+                config.centrifugeScId,
+                asset,
+                0,
+                _tokenAmount * 2
+            );
+        }
+
+        // FulfilledRedeemRequest callback
         vm.prank(config.centrifugeRoot);
-        manager.fulfillRedeemRequest(
+        manager.callback(
             config.centrifugePoolId,
             config.centrifugeScId,
-            address(ctx.proxy),
             config.centrifugeAssetId,
-            _tokenAmount * 2,
-            _tokenAmount,
-            0
+            abi.encodePacked(
+                uint8(RequestCallbackType.FulfilledRedeemRequest),
+                bytes32(bytes20(address(ctx.proxy))),  // investor (LEFT-aligned)
+                _tokenAmount * 2,                      // fulfilledAssets
+                _tokenAmount,                          // fulfilledShares
+                uint128(0)                             // cancelledShares
+            )
         );
     }
 
