@@ -20,15 +20,15 @@ contract GroveEthereum_20260409 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Onboard Maple syrupUSDC
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/april-9th-2026-proposed-changes-to-grove-for-upcoming-spell/27801#p-106019-h-1-ethereum-onboard-maple-syrupusdc-2
         _onboardMapleSyrupUsdc();
 
         // [Ethereum] Increase JTRSY Deposit Rate Limits
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/april-9th-2026-proposed-changes-to-grove-for-upcoming-spell/27801#p-106019-h-2-ethereum-increase-jtrsy-deposit-rate-limits-8
         _increaseJtrsyDepositRateLimit();
 
         // [Ethereum] Increase PSM USDS/USDC Swap Rate Limits
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/april-9th-2026-proposed-changes-to-grove-for-upcoming-spell/27801#p-106019-h-3-ethereum-increase-psm-usdsusdc-swap-rate-limits-14
         _increasePsmUsdsUsdcSwapRateLimit();
     }
 
