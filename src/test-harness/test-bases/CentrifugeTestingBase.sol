@@ -167,6 +167,16 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
         uint256 depositMax,
         uint256 depositSlope
     ) public {
+        _testCentrifugeV3DepositRateLimitIncrease(centrifugeVault, 0, 0, depositMax, depositSlope);
+    }
+
+    function _testCentrifugeV3DepositRateLimitIncrease(
+        address centrifugeVault,
+        uint256 previousDepositMax,
+        uint256 previousDepositSlope,
+        uint256 newDepositMax,
+        uint256 newDepositSlope
+    ) public {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         CentrifugeV3Config memory centrifugeConfig = _prepareCentrifugeConfig(centrifugeVault);
@@ -184,30 +194,35 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
             centrifugeVault
         );
 
-        _assertZeroRateLimit(depositKey);
-        _assertZeroRateLimit(redeemKey);
+        bool isOnboarding = previousDepositMax == 0 && previousDepositSlope == 0;
+
+        _assertRateLimit(depositKey, previousDepositMax, previousDepositSlope);
+        if (isOnboarding) {
+            _assertZeroRateLimit(redeemKey);
+        } else {
+            _assertRateLimit(redeemKey, type(uint256).max, 0);
+        }
 
         executeAllPayloadsAndBridges();
 
-        // Reload the context after spell execution to get the new controller after potential controller upgrade
         ctx = _getGroveLiquidityLayerContext();
 
         IERC20 asset = IERC20(ICentrifugeV3Vault(centrifugeVault).asset());
 
-        deal(address(asset), address(ctx.proxy), depositMax);
+        deal(address(asset), address(ctx.proxy), newDepositMax);
 
-        _assertRateLimit(depositKey, depositMax,        depositSlope);
+        _assertRateLimit(depositKey, newDepositMax,     newDepositSlope);
         _assertRateLimit(redeemKey,  type(uint256).max, 0);
 
         uint256 startShareBalance = vaultToken.balanceOf(address(ctx.proxy));
 
-        assertEq(asset.balanceOf(address(ctx.proxy)),      depositMax);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      newDepositMax);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
-        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), depositMax);
+        assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), newDepositMax);
 
         vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).requestDepositERC7540(centrifugeVault, depositMax);
+        MainnetController(ctx.controller).requestDepositERC7540(centrifugeVault, newDepositMax);
 
         assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey), 0);
 
@@ -216,7 +231,7 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
 
         _centrifugeV3FulfillDepositRequest(
             centrifugeConfig,
-            depositMax
+            newDepositMax
         );
 
         assertEq(asset.balanceOf(address(ctx.proxy)),      0);
@@ -226,17 +241,17 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
         MainnetController(ctx.controller).claimDepositERC7540(centrifugeVault);
 
         assertEq(asset.balanceOf(address(ctx.proxy)),      0);
-        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance + depositMax / 2);
+        assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance + newDepositMax / 2);
 
         vm.prank(ctx.relayer);
-        MainnetController(ctx.controller).requestRedeemERC7540(centrifugeVault, depositMax / 2);
+        MainnetController(ctx.controller).requestRedeemERC7540(centrifugeVault, newDepositMax / 2);
 
         assertEq(asset.balanceOf(address(ctx.proxy)),      0);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
 
         _centrifugeV3FulfillRedeemRequest(
             centrifugeConfig,
-            depositMax / 2
+            newDepositMax / 2
         );
 
         assertEq(asset.balanceOf(address(ctx.proxy)),      0);
@@ -245,7 +260,7 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
         vm.prank(ctx.relayer);
         MainnetController(ctx.controller).claimRedeemERC7540(centrifugeVault);
 
-        assertEq(asset.balanceOf(address(ctx.proxy)),      depositMax);
+        assertEq(asset.balanceOf(address(ctx.proxy)),      newDepositMax);
         assertEq(vaultToken.balanceOf(address(ctx.proxy)), startShareBalance);
     }
 

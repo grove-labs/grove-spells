@@ -23,6 +23,12 @@ contract GroveEthereum_20260326_Test is GroveTestBase {
         chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
     }
 
+    function _registerAddressesForDocumentation() internal override {
+        _registerAddress(CENTRIFUGE_ACRDX,      "CENTRIFUGE_ACRDX");
+        _registerAddress(SENTORA_PYUSD_MAIN_V2, "SENTORA_PYUSD_MAIN_V2");
+        _registerAddress(SENTORA_RLUSD_MAIN_V2, "SENTORA_RLUSD_MAIN_V2");
+    }
+
     function test_ETHEREUM_onboardCentrifugeAcrdx() public onChain(ChainIdUtils.Ethereum()) {
         _testCentrifugeV3Onboarding({
             centrifugeVault : CENTRIFUGE_ACRDX,
