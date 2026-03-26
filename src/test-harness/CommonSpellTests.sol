@@ -17,8 +17,9 @@ import { ChainIdUtils, ChainId }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
 import { GroveLiquidityLayerContext, CommonTestBase } from "./CommonTestBase.sol";
+import { RateLimitDocumentation } from "./RateLimitDocumentation.sol";
 
-abstract contract CommonSpellTests is CommonTestBase {
+abstract contract CommonSpellTests is CommonTestBase, RateLimitDocumentation {
 
     struct BridgeTypesToTest {
         bool cctp;
@@ -255,6 +256,42 @@ abstract contract CommonSpellTests is CommonTestBase {
                 CastingHelpers.addressToLayerZeroRecipient(Ethereum.ALM_PROXY),
                 "CommonTest/mainnet/incorrect-layerzero-recipient"
             );
+        }
+    }
+
+    /**********************************************************************************************/
+    /*** Rate Limit Documentation                                                               ***/
+    /**********************************************************************************************/
+
+    /**
+     * @notice Prints rate limits set by the spell for all chains with payloads
+     * @dev    Run with: forge test --match-test test_printRateLimits -vv
+     */
+    function test_printRateLimits() public {
+        _registerAddressesForDocumentation();
+
+        // 1. Execute mainnet payload
+        if (chainData[ChainIdUtils.Ethereum()].payload != address(0)) {
+            executeMainnetPayload();
+        }
+
+        // 2. Relay bridge messages (queues action sets for foreign chains)
+        _relayMessageOverBridges(allChains);
+
+        // 3. Print Ethereum rate limits (uses RecordedLogs to preserve logs for bridge relay)
+        if (chainData[ChainIdUtils.Ethereum()].payload != address(0)) {
+            _printRateLimits(_getRecordedLogs(), ChainIdUtils.Ethereum());
+        }
+
+        // 4. Execute and print rate limits for each foreign chain
+        for (uint256 i = 0; i < allChains.length; i++) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+            if (chainId == ChainIdUtils.Ethereum()) continue;
+            if (chainData[chainId].payload == address(0)) continue;
+
+            vm.recordLogs();
+            _executeForeignPayload(chainId);
+            _printRateLimits(vm.getRecordedLogs(), chainId);
         }
     }
 

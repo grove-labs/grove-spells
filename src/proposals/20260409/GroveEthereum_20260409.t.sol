@@ -29,6 +29,11 @@ contract GroveEthereum_20260409_Test is GroveTestBase {
         deployPayloads();
     }
 
+    function _registerAddressesForDocumentation() internal override {
+        _registerAddress(MAPLE_SYRUP_USDC,          "MAPLE_SYRUP_USDC");
+        _registerAddress(Ethereum.CENTRIFUGE_JTRSY, "CENTRIFUGE_JTRSY");
+    }
+
     function test_ETHEREUM_onboardMapleSyrupUsdc() public onChain(ChainIdUtils.Ethereum()) {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
