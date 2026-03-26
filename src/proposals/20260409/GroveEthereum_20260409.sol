@@ -33,42 +33,42 @@ contract GroveEthereum_20260409 is GrovePayloadEthereum {
     }
 
     function _onboardMapleSyrupUsdc() internal {
-        MainnetController(Ethereum.ALM_CONTROLLER).setMaxExchangeRate(
-            MAPLE_SYRUP_USDC,
-            1e6,  // BEFORE: 0
-            3e6   // BEFORE: 0
-        );
+        MainnetController(Ethereum.ALM_CONTROLLER).setMaxExchangeRate({
+            token             : MAPLE_SYRUP_USDC,
+            shares            : 1e6,  // BEFORE: 0
+            maxExpectedAssets : 3e6   // BEFORE: 0
+        });
 
-        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
-            GroveLiquidityLayerHelpers.LIMIT_4626_DEPOSIT,
-            MAPLE_SYRUP_USDC
-        );
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey({
+            key   : GroveLiquidityLayerHelpers.LIMIT_4626_DEPOSIT,
+            asset : MAPLE_SYRUP_USDC
+        });
 
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
-            depositKey,
-            50_000_000e6,                   // BEFORE: 0
-            50_000_000e6 / uint256(1 days)  // BEFORE: 0
-        );
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
+            key       : depositKey,
+            maxAmount : 50_000_000e6,                   // BEFORE: 0
+            slope     : 50_000_000e6 / uint256(1 days)  // BEFORE: 0
+        });
     }
 
     function _increaseJtrsyDepositRateLimit() internal {
-        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
-            GroveLiquidityLayerHelpers.LIMIT_7540_DEPOSIT,
-            Ethereum.CENTRIFUGE_JTRSY
-        );
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey({
+            key   : GroveLiquidityLayerHelpers.LIMIT_7540_DEPOSIT,
+            asset : Ethereum.CENTRIFUGE_JTRSY
+        });
 
-        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
-            depositKey,
-            500_000_000e6,                   // BEFORE: 50_000_000e6
-            500_000_000e6 / uint256(1 days)  // BEFORE: 50_000_000e6 / uint256(1 days)
-        );
+        IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
+            key       : depositKey,
+            maxAmount : 500_000_000e6,                   // BEFORE: 50_000_000e6
+            slope     : 500_000_000e6 / uint256(1 days)  // BEFORE: 50_000_000e6 / uint256(1 days)
+        });
     }
 
     function _increasePsmUsdsUsdcSwapRateLimit() internal {
-        _setUSDSToUSDCRateLimit(
-            500_000_000e6,                   // BEFORE: 100_000_000e6
-            500_000_000e6 / uint256(1 days)  // BEFORE: 50_000_000e6 / uint256(1 days)
-        );
+        _setUSDSToUSDCRateLimit({
+            maxAmount : 500_000_000e6,                   // BEFORE: 100_000_000e6
+            slope     : 500_000_000e6 / uint256(1 days)  // BEFORE: 50_000_000e6 / uint256(1 days)
+        });
     }
 
 }
