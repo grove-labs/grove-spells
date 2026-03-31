@@ -16,6 +16,8 @@ import { GroveTestBase }              from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260409_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0x679eD4739c71300f7d78102AE5eE17EF8b8b2162;
+
     address internal constant MAPLE_SYRUP_USDC              = 0x80ac24aA929eaF5013f6436cdA2a7ba190f5Cc0b;
     address internal constant MAPLE_POOL_PERMISSION_MANAGER = 0x7aD5fFa5fdF509E30186F4609c2f6269f4B6158F;
 
@@ -24,9 +26,9 @@ contract GroveEthereum_20260409_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-03-24T16:00:00Z");
+        setupDomains("2026-03-31T12:00:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
     }
 
     function test_ETHEREUM_onboardMapleSyrupUsdc() public onChain(ChainIdUtils.Ethereum()) {
