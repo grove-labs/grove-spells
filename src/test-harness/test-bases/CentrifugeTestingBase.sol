@@ -34,12 +34,13 @@ struct CentrifugeV3Config {
 }
 
 interface ICentrifugeV3Vault {
-    function asset()   external view returns (address);
-    function share()   external view returns (address);
-    function manager() external view returns (address);
-    function poolId()  external view returns (uint64);
-    function scId()    external view returns (bytes16);
-    function root()    external view returns (address);
+    function asset()               external view returns (address);
+    function share()               external view returns (address);
+    function manager()             external view returns (address);
+    function asyncRedeemManager()  external view returns (address);
+    function poolId()              external view returns (uint64);
+    function scId()                external view returns (bytes16);
+    function root()                external view returns (address);
 }
 
 interface ICentrifugeV3ShareLike {
@@ -331,7 +332,12 @@ abstract contract CentrifugeTestingBase is CommonTestBase {
     }
 
     function _prepareCentrifugeConfig(address centrifugeVault) internal view returns (CentrifugeV3Config memory) {
-        IAsyncRedeemManagerLike centrifugeManager = IAsyncRedeemManagerLike(ICentrifugeV3Vault(centrifugeVault).manager());
+        IAsyncRedeemManagerLike centrifugeManager;
+        try ICentrifugeV3Vault(centrifugeVault).manager() returns (address mgr) {
+            centrifugeManager = IAsyncRedeemManagerLike(mgr);
+        } catch {
+            centrifugeManager = IAsyncRedeemManagerLike(ICentrifugeV3Vault(centrifugeVault).asyncRedeemManager());
+        }
         ISpokeLike centrifugeSpoke = ISpokeLike(centrifugeManager.spoke());
         address centrifugeAsset = ICentrifugeV3Vault(centrifugeVault).asset();
 
