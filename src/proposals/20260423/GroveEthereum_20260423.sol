@@ -47,15 +47,15 @@ contract GroveEthereum_20260423 is GrovePayloadEthereum {
     function _onboardCentrifugeJtrsyUsds() internal {
         _onboardERC7540Vault({
             vault        : CENTRIFUGE_JTRSY_USDS,
-            depositMax   : 500_000_000e18,
-            depositSlope : 500_000_000e18 / uint256(1 days)
+            depositMax   : 500_000_000e18,                   // BEFORE: 0
+            depositSlope : 500_000_000e18 / uint256(1 days)  // BEFORE: 0
         });
     }
 
     function _increaseUsdsMintRateLimit() internal {
         _setUSDSMintRateLimit({
-            maxAmount : 500_000_000e18,
-            slope     : 500_000_000e18 / uint256(1 days)
+            maxAmount : 500_000_000e18,                  // BEFORE: 100_000_000e18
+            slope     : 500_000_000e18 / uint256(1 days) // BEFORE: 50_000_000e18/day
         });
     }
 
@@ -73,8 +73,8 @@ contract GroveEthereum_20260423 is GrovePayloadEthereum {
 
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData({
             key       : lzTransferKey,
-            maxAmount : 50_000_000e18,
-            slope     : 50_000_000e18 / uint256(1 days)
+            maxAmount : 50_000_000e18,                  // BEFORE: 0
+            slope     : 50_000_000e18 / uint256(1 days) // BEFORE: 0
         });
     }
 
