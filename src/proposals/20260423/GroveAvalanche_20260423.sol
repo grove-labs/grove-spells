@@ -130,8 +130,8 @@ contract GroveAvalanche_20260423 is GrovePayloadAvalanche {
 
         IRateLimits(Avalanche.ALM_RATE_LIMITS).setRateLimitData({
             key       : lzTransferKey,
-            maxAmount : 20_000_000e18,
-            slope     : 20_000_000e18 / uint256(1 days)
+            maxAmount : 20_000_000e18,                  // BEFORE: 0
+            slope     : 20_000_000e18 / uint256(1 days) // BEFORE: 0
         });
     }
 
@@ -149,13 +149,13 @@ contract GroveAvalanche_20260423 is GrovePayloadAvalanche {
             controller    : NEW_AVALANCHE_CONTROLLER,
             rateLimits    : Avalanche.ALM_RATE_LIMITS,
             pool          : CURVE_USDS_USDC_POOL,
-            maxSlippage   : 0.999e18,
-            swapMax       : 5_000_000e18,
-            swapSlope     : 100_000_000e18 / uint256(1 days),
-            depositMax    : 50_000_000e18,
-            depositSlope  : 50_000_000e18 / uint256(1 days),
-            withdrawMax   : type(uint256).max,
-            withdrawSlope : 0
+            maxSlippage   : 0.999e18,                         // BEFORE: 0
+            swapMax       : 5_000_000e18,                     // BEFORE: 0
+            swapSlope     : 100_000_000e18 / uint256(1 days), // BEFORE: 0
+            depositMax    : 50_000_000e18,                    // BEFORE: 0
+            depositSlope  : 50_000_000e18 / uint256(1 days),  // BEFORE: 0
+            withdrawMax   : type(uint256).max,                // BEFORE: 0
+            withdrawSlope : 0                                 // BEFORE: 0
         });
     }
 
