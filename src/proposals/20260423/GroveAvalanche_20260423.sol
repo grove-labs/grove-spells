@@ -13,8 +13,6 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { ForeignControllerInit, ControllerInstance } from "lib/grove-alm-controller/deploy/ForeignControllerInit.sol";
 
-import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
-
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 

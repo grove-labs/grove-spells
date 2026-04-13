@@ -11,8 +11,6 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
 import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
-import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
-
 import { ChainIdUtils }               from "src/libraries/helpers/ChainId.sol";
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
