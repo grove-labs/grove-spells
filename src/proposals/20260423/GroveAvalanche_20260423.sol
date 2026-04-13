@@ -27,12 +27,9 @@ import { GrovePayloadAvalanche } from "src/libraries/payloads/GrovePayloadAvalan
 contract GroveAvalanche_20260423 is GrovePayloadAvalanche {
 
     address internal constant NEW_AVALANCHE_CONTROLLER = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
-    address internal constant LZ_RECEIVER              = 0x380Be2b91B63BF75B194913b6e2C07Df09598c22;
 
-    // TODO: Verify correctness of this address
-    address internal constant ALM_RELAYER_2 = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
+    address internal constant ALM_RELAYER_2 = 0x9187807e07112359C481870feB58f0c117a29179;
 
-    // TODO: Verify correctness of this address
     address internal constant USDS_OFT = 0x4fec40719fD9a8AE3F8E20531669DEC5962D2619;
 
     address internal constant CURVE_USDS_USDC_POOL = 0xA9d7d3D7e68a0cae89FB33c736199172f405C8D3;
@@ -41,10 +38,6 @@ contract GroveAvalanche_20260423 is GrovePayloadAvalanche {
         // [Avalanche] Upgrade Controller & Governance Relay to LayerZero V2
         //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-4-avalanche-upgrade-controller-governance-relay-to-layerzero-v2-20
         _upgradeController();
-
-        // [Avalanche] Grant LZ Receiver SUBMISSION_ROLE on Executor
-        //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-4-avalanche-upgrade-controller-governance-relay-to-layerzero-v2-20
-        _grantLzReceiverSubmissionRole();
 
         // [Avalanche] Onboard USDS SkyLink Transfers to Ethereum
         //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-5-avalanche-onboard-usds-skylink-transfers-to-ethereum-26
@@ -108,16 +101,6 @@ contract GroveAvalanche_20260423 is GrovePayloadAvalanche {
             layerZeroRecipients,
             centrifugeRecipients
         );
-    }
-
-    function _grantLzReceiverSubmissionRole() internal {
-        IExecutor(address(this)).grantRole({
-            role    : IExecutor(address(this)).SUBMISSION_ROLE(),
-            account : LZ_RECEIVER
-        });
-        // NOTE: The previous CCTP receiver retains its SUBMISSION_ROLE. It will only be revoked
-        //       in a future spell delivered via this newly onboarded LZ receiver, ensuring we
-        //       always have a proven functional receiver before removing the old one.
     }
 
     function _onboardUsdsSkyLinkTransfersToEthereum() internal {

@@ -38,10 +38,6 @@ contract GroveEthereum_20260423 is GrovePayloadEthereum {
         // [Ethereum] Onboard USDS SkyLink Transfers to Avalanche
         //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-3-ethereum-onboard-usds-skylink-transfers-to-avalanche-14
         _onboardUsdsSkyLinkTransfersToAvalanche();
-
-        // [Ethereum] Configure LayerZero Sender for Avalanche Governance Relay
-        //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-4-avalanche-upgrade-controller-governance-relay-to-layerzero-v2-20
-        _configureLzSenderForAvalanche();
     }
 
     function _onboardCentrifugeJtrsyUsds() internal {
@@ -75,19 +71,6 @@ contract GroveEthereum_20260423 is GrovePayloadEthereum {
             key       : lzTransferKey,
             maxAmount : 50_000_000e18,                  // BEFORE: 0
             slope     : 50_000_000e18 / uint256(1 days) // BEFORE: 0
-        });
-    }
-
-    function _configureLzSenderForAvalanche() internal {
-        address[] memory dvns = new address[](2);
-        dvns[0] = LZForwarder.LAYER_ZERO_DVN_ETHEREUM;
-        dvns[1] = LZForwarder.NETHERMIND_DVN_ETHEREUM;
-
-        LZForwarder.configureSender({
-            endpoint  : LZForwarder.ENDPOINT_ETHEREUM,
-            remoteEid : LZForwarder.ENDPOINT_ID_AVALANCHE,
-            dvns      : dvns,
-            executor  : LZForwarder.EXECUTOR_ETHEREUM
         });
     }
 

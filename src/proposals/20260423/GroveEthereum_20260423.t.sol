@@ -27,11 +27,10 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
     address internal constant USDS_OFT_AVALANCHE = 0x4fec40719fD9a8AE3F8E20531669DEC5962D2619;
 
     address internal constant NEW_AVALANCHE_CONTROLLER = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
-    address internal constant LZ_RECEIVER              = 0x380Be2b91B63BF75B194913b6e2C07Df09598c22;
 
     address internal constant DEPLOYER = 0xC60b3F7C23Fc5ED78798BB120635bBB7A7D84310;
 
-    address internal constant ALM_RELAYER_2 = 0x4364D17B578b0eD1c42Be9075D774D1d6AeAFe96;
+    address internal constant ALM_RELAYER_2 = 0x9187807e07112359C481870feB58f0c117a29179;
 
     address internal constant CURVE_USDS_USDC_POOL = 0xA9d7d3D7e68a0cae89FB33c736199172f405C8D3;
 
@@ -143,31 +142,6 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
         assertEq(
             newController.centrifugeRecipients(1),
             CastingHelpers.addressToCentrifugeRecipient(Ethereum.ALM_PROXY)
-        );
-    }
-
-    function test_AVALANCHE_grantLzReceiverSubmissionRole() public onChain(ChainIdUtils.Avalanche()) {
-        IExecutor executor = IExecutor(Avalanche.GROVE_EXECUTOR);
-        bytes32 submissionRole = executor.SUBMISSION_ROLE();
-
-        assertTrue(
-            executor.hasRole(submissionRole, Avalanche.GROVE_RECEIVER),
-            "GROVE_RECEIVER should have SUBMISSION_ROLE before spell"
-        );
-        assertFalse(
-            executor.hasRole(submissionRole, LZ_RECEIVER),
-            "LZ_RECEIVER should NOT have SUBMISSION_ROLE before spell"
-        );
-
-        executeAllPayloadsAndBridges();
-
-        assertTrue(
-            executor.hasRole(submissionRole, Avalanche.GROVE_RECEIVER),
-            "GROVE_RECEIVER should retain SUBMISSION_ROLE after spell"
-        );
-        assertTrue(
-            executor.hasRole(submissionRole, LZ_RECEIVER),
-            "LZ_RECEIVER should have SUBMISSION_ROLE after spell"
         );
     }
 
