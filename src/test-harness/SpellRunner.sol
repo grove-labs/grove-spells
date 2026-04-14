@@ -21,6 +21,7 @@ import { AMBBridgeTesting }      from "xchain-helpers/testing/bridges/AMBBridgeT
 import { ArbitrumBridgeTesting } from "xchain-helpers/testing/bridges/ArbitrumBridgeTesting.sol";
 import { CCTPBridgeTesting }     from "xchain-helpers/testing/bridges/CCTPBridgeTesting.sol";
 import { CCTPv2BridgeTesting }   from "xchain-helpers/testing/bridges/CCTPv2BridgeTesting.sol";
+import { LZBridgeTesting }       from "xchain-helpers/testing/bridges/LZBridgeTesting.sol";
 
 import { ChainIdUtils, ChainId } from "../libraries/helpers/ChainId.sol";
 
@@ -50,7 +51,13 @@ abstract contract SpellRunner is Test {
         bool      spellExecuted;
     }
 
-    mapping(ChainId => DomainData) internal chainData;
+    struct LZOftPair {
+        address sourceOft;
+        address destinationOft;
+    }
+
+    mapping(ChainId => DomainData)   internal chainData;
+    mapping(ChainId => LZOftPair[])  internal lzOftPairs;
 
     ChainId[] internal allChains;
     string internal    id;
@@ -206,6 +213,18 @@ abstract contract SpellRunner is Test {
                 chainData[ChainIdUtils.Avalanche()].domain
             )
         );
+        chainData[ChainIdUtils.Avalanche()].bridges.push(
+            LZBridgeTesting.createLZBridge(
+                chainData[ChainIdUtils.Ethereum()].domain,
+                chainData[ChainIdUtils.Avalanche()].domain
+            )
+        );
+        // USDS SkyLink OFT (Ethereum <-> Avalanche)
+        // TODO: Use addresses from address registry after these are added there
+        lzOftPairs[ChainIdUtils.Avalanche()].push(LZOftPair(
+            0x1e1D42781FC170EF9da004Fb735f56F0276d01B8, // USDS OFT Ethereum
+            0x4fec40719fD9a8AE3F8E20531669DEC5962D2619  // USDS OFT Avalanche
+        ));
 
         // Base
         chainData[ChainIdUtils.Base()].bridges.push(
@@ -306,6 +325,13 @@ abstract contract SpellRunner is Test {
             AMBBridgeTesting.relayMessagesToDestination(bridge, false);
         } else if (bridge.bridgeType == BridgeType.ARBITRUM) {
             ArbitrumBridgeTesting.relayMessagesToDestination(bridge, false);
+        } else if (bridge.bridgeType == BridgeType.LZ) {
+            ChainId destChainId = ChainIdUtils.fromDomain(bridge.destination);
+            LZOftPair[] storage pairs = lzOftPairs[destChainId];
+            for (uint256 i = 0; i < pairs.length; i++) {
+                LZBridgeTesting.relayMessagesToDestination(bridge, false, pairs[i].sourceOft, pairs[i].destinationOft);
+                LZBridgeTesting.relayMessagesToSource(bridge, false, pairs[i].destinationOft, pairs[i].sourceOft);
+            }
         }
     }
 

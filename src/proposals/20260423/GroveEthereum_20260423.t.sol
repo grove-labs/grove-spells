@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
+import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 
@@ -11,7 +13,7 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 import { CCTPForwarder } from "lib/xchain-helpers/src/forwarders/CCTPForwarder.sol";
 import { LZForwarder }   from "lib/xchain-helpers/src/forwarders/LZForwarder.sol";
 
-import { ChainIdUtils }               from "src/libraries/helpers/ChainId.sol";
+import { ChainIdUtils, ChainId }      from "src/libraries/helpers/ChainId.sol";
 import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
@@ -19,18 +21,18 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260423_Test is GroveTestBase {
 
-    address internal constant CENTRIFUGE_JTRSY_USDS = 0x381f4F3B43C30B78C1f7777553236e57bB8AE9ff;
+    address internal constant MAINNET_CENTRIFUGE_JTRSY_USDS = 0x381f4F3B43C30B78C1f7777553236e57bB8AE9ff;
 
-    address internal constant USDS_OFT_ETHEREUM  = 0x1e1D42781FC170EF9da004Fb735f56F0276d01B8;
-    address internal constant USDS_OFT_AVALANCHE = 0x4fec40719fD9a8AE3F8E20531669DEC5962D2619;
+    address internal constant MAINNET_USDS_OFT = 0x1e1D42781FC170EF9da004Fb735f56F0276d01B8;
+
+    address internal constant AVALANCHE_USDS_OFT = 0x4fec40719fD9a8AE3F8E20531669DEC5962D2619;
+    address internal constant AVALANCHE_USDS     = 0x86Ff09db814ac346a7C6FE2Cd648F27706D1D470;
 
     address internal constant NEW_AVALANCHE_CONTROLLER = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
+    address internal constant AVALANCHE_DEPLOYER       = 0xC60b3F7C23Fc5ED78798BB120635bBB7A7D84310;
+    address internal constant AVALANCHE_ALM_RELAYER_2  = 0x9187807e07112359C481870feB58f0c117a29179;
 
-    address internal constant DEPLOYER = 0xC60b3F7C23Fc5ED78798BB120635bBB7A7D84310;
-
-    address internal constant ALM_RELAYER_2 = 0x9187807e07112359C481870feB58f0c117a29179;
-
-    address internal constant CURVE_USDS_USDC_POOL = 0xA9d7d3D7e68a0cae89FB33c736199172f405C8D3;
+    address internal constant AVALANCHE_CURVE_USDS_USDC_POOL = 0xA9d7d3D7e68a0cae89FB33c736199172f405C8D3;
 
     constructor() {
         id = "20260423";
@@ -46,7 +48,7 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
 
     function test_ETHEREUM_onboardCentrifugeJtrsyUsds() public onChain(ChainIdUtils.Ethereum()) {
         _testCentrifugeV3Onboarding({
-            centrifugeVault : CENTRIFUGE_JTRSY_USDS,
+            centrifugeVault : MAINNET_CENTRIFUGE_JTRSY_USDS,
             depositMax      : 500_000_000e18,
             depositSlope    : 500_000_000e18 / uint256(1 days)
         });
@@ -67,7 +69,7 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
 
         bytes32 lzTransferKey = keccak256(abi.encode(
             controller.LIMIT_LAYERZERO_TRANSFER(),
-            USDS_OFT_ETHEREUM,
+            MAINNET_USDS_OFT,
             LZForwarder.ENDPOINT_ID_AVALANCHE
         ));
 
@@ -86,7 +88,7 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
     function test_AVALANCHE_upgradeController() public onChain(ChainIdUtils.Avalanche()) {
         address[] memory relayers = new address[](2);
         relayers[0] = Avalanche.ALM_RELAYER;
-        relayers[1] = ALM_RELAYER_2;
+        relayers[1] = AVALANCHE_ALM_RELAYER_2;
 
         _verifyForeignControllerDeployment(
             AlmSystemContracts({
@@ -96,7 +98,7 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
                 controller : NEW_AVALANCHE_CONTROLLER
             }),
             AlmSystemActors({
-                deployer : DEPLOYER,
+                deployer : AVALANCHE_DEPLOYER,
                 freezer  : Avalanche.ALM_FREEZER,
                 relayers : relayers
             }),
@@ -148,7 +150,7 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
 
         bytes32 lzTransferKey = keccak256(abi.encode(
             controller.LIMIT_LAYERZERO_TRANSFER(),
-            USDS_OFT_AVALANCHE,
+            AVALANCHE_USDS_OFT,
             LZForwarder.ENDPOINT_ID_ETHEREUM
         ));
 
@@ -172,7 +174,7 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
 
     function test_AVALANCHE_onboardCurveUsdsUsdcPool() public onChain(ChainIdUtils.Avalanche()) {
         _testCurveOnboarding({
-            pool                        : CURVE_USDS_USDC_POOL,
+            pool                        : AVALANCHE_CURVE_USDS_USDC_POOL,
             expectedDepositAmountToken0 : 10_000_000e6,
             expectedSwapAmountToken0    : 2_500_000e6,
             maxSlippage                 : 0.999e18,
@@ -186,30 +188,64 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_AVALANCHE_layerZeroTransferE2E() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(true);
-        // TODO: Implement end-to-end LayerZero USDS transfer test (modeled after test_ETHEREUM_AVALANCHE_cctpTransferE2E in archive/20250807)
-        //
-        // Step 1: Execute all payloads and bridges
-        //   - executeAllPayloadsAndBridges()
-        //
-        // Step 2: Ethereum → Avalanche transfer
-        //   - Mint USDS on Ethereum via mainnetController.mintUSDS(amount)
-        //   - Call mainnetController.transferTokenLayerZero(USDS_OFT_ETHEREUM, amount, ENDPOINT_ID_AVALANCHE) as relayer
-        //   - Assert USDS balance decreased on Ethereum ALM_PROXY
-        //   - selectChain(ChainIdUtils.Avalanche())
-        //   - Assert USDS balance on Avalanche ALM_PROXY is 0 before relay
-        //   - _relayMessageOverBridges()
-        //   - Assert USDS balance on Avalanche ALM_PROXY increased by the bridged amount
-        //
-        // Step 3: Avalanche → Ethereum transfer
-        //   - Call foreignController.transferTokenLayerZero(USDS_OFT_AVALANCHE, amount, ENDPOINT_ID_ETHEREUM) as relayer
-        //   - Assert USDS balance on Avalanche ALM_PROXY is 0
-        //   - selectChain(ChainIdUtils.Ethereum())
-        //   - Record USDS balance on Ethereum ALM_PROXY before relay
-        //   - _relayMessageOverBridges()
-        //   - Assert USDS balance on Ethereum ALM_PROXY increased by the bridged amount
-        //   - Burn USDS via mainnetController.burnUSDS(amount) to clean up
-        //   - Assert final balances are consistent
+
+        executeAllPayloadsAndBridges();
+
+        IERC20 ethereumUsds  = IERC20(Ethereum.USDS);
+        IERC20 avalancheUsds = IERC20(AVALANCHE_USDS);
+
+        MainnetController mainnetController   = MainnetController(Ethereum.ALM_CONTROLLER);
+        ForeignController avalancheController = ForeignController(NEW_AVALANCHE_CONTROLLER);
+
+        ChainId[] memory avalancheOnly = new ChainId[](1);
+        avalancheOnly[0] = ChainIdUtils.Avalanche();
+
+        // --- Step 1: Mint USDS and bridge to Avalanche via LayerZero ---
+
+        uint256 usdsAmount = 2_500_000e18;
+
+        deal(Ethereum.ALM_RELAYER, 0.001 ether);
+
+        vm.startPrank(Ethereum.ALM_RELAYER);
+        mainnetController.mintUSDS(usdsAmount);
+        mainnetController.transferTokenLayerZero{value: 0.001 ether}(
+            MAINNET_USDS_OFT,
+            usdsAmount,
+            LZForwarder.ENDPOINT_ID_AVALANCHE
+        );
+        vm.stopPrank();
+
+        selectChain(ChainIdUtils.Avalanche());
+
+        assertEq(avalancheUsds.balanceOf(Avalanche.ALM_PROXY), 0);
+
+        _relayMessageOverBridges(avalancheOnly);
+
+        assertEq(avalancheUsds.balanceOf(Avalanche.ALM_PROXY), usdsAmount);
+
+        // --- Step 2: Bridge USDS back to Ethereum via LayerZero ---
+
+        deal(Avalanche.ALM_RELAYER, 0.1 ether);
+
+        vm.prank(Avalanche.ALM_RELAYER);
+        avalancheController.transferTokenLayerZero{value: 0.1 ether}(
+            AVALANCHE_USDS_OFT,
+            usdsAmount,
+            LZForwarder.ENDPOINT_ID_ETHEREUM
+        );
+
+        assertEq(avalancheUsds.balanceOf(Avalanche.ALM_PROXY), 0);
+
+        selectChain(ChainIdUtils.Ethereum());
+
+        uint256 usdsPrevBalance = ethereumUsds.balanceOf(Ethereum.ALM_PROXY);
+
+        _relayMessageOverBridges(avalancheOnly);
+
+        assertEq(ethereumUsds.balanceOf(Ethereum.ALM_PROXY), usdsPrevBalance + usdsAmount);
+
+        vm.prank(Ethereum.ALM_RELAYER);
+        mainnetController.burnUSDS(usdsAmount);
     }
 
 }
