@@ -37,7 +37,7 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-04-09T12:00:00Z");
+        setupDomains("2026-04-14T11:03:00Z");
 
         chainData[ChainIdUtils.Avalanche()].newController = NEW_AVALANCHE_CONTROLLER;
 

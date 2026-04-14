@@ -73,10 +73,6 @@ abstract contract CurveTestingBase is CommonTestBase {
 
         assertEq(vars.pool.N_COINS(), 2, "Curve pool must have 2 coins");
 
-        if (vars.pool.totalSupply() == 0) {
-            _seedCurvePool(vars.pool);
-        }
-
         vars.ctx        = _getGroveLiquidityLayerContext();
         vars.controller = MainnetController(vars.ctx.controller);
 
@@ -207,28 +203,6 @@ abstract contract CurveTestingBase is CommonTestBase {
             assertGe(maxSlippage, 0.9985e18, "maxSlippage too low");
             assertLe(maxSlippage, 1e18,      "maxSlippage too high");
         }
-    }
-
-    function _seedCurvePool(ICurvePoolLike pool) internal {
-        address seeder = makeAddr("curvePoolSeeder");
-        address coin0  = pool.coins(0);
-        address coin1  = pool.coins(1);
-
-        uint256 seedAmount0 = 100 * (10 ** IERC20(coin0).decimals());
-        uint256 seedAmount1 = 100 * (10 ** IERC20(coin1).decimals());
-
-        deal2(coin0, seeder, seedAmount0);
-        deal2(coin1, seeder, seedAmount1);
-
-        vm.startPrank(seeder);
-        IERC20(coin0).approve(address(pool), seedAmount0);
-        IERC20(coin1).approve(address(pool), seedAmount1);
-
-        uint256[] memory seedAmounts = new uint256[](2);
-        seedAmounts[0] = seedAmount0;
-        seedAmounts[1] = seedAmount1;
-        pool.add_liquidity(seedAmounts, 0, seeder);
-        vm.stopPrank();
     }
 
 }
