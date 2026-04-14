@@ -25,8 +25,7 @@ import { GrovePayloadAvalanche } from "src/libraries/payloads/GrovePayloadAvalan
 contract GroveAvalanche_20260423 is GrovePayloadAvalanche {
 
     address internal constant NEW_AVALANCHE_CONTROLLER = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
-
-    address internal constant ALM_RELAYER_2 = 0x9187807e07112359C481870feB58f0c117a29179;
+    address internal constant ALM_RELAYER_2            = 0x9187807e07112359C481870feB58f0c117a29179;
 
     address internal constant USDS_OFT = 0x4fec40719fD9a8AE3F8E20531669DEC5962D2619;
 
