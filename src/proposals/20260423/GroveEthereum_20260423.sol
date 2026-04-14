@@ -27,17 +27,24 @@ contract GroveEthereum_20260423 is GrovePayloadEthereum {
     }
 
     function _execute() internal override {
-        // [Ethereum] Onboard USDS to Centrifuge JTRSY
-        //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-1-ethereum-onboard-usds-to-centrifuge-jtrsy-2
-        _onboardCentrifugeJtrsyUsds();
 
         // [Ethereum] Increase USDS Mint Rate Limits
-        //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-2-ethereum-increase-usds-mint-rate-limits-8
+        //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-1-ethereum-increase-usds-mint-rate-limits-2
         _increaseUsdsMintRateLimit();
+        // [Ethereum] Onboard USDS to Centrifuge JTRSY
+        //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-2-ethereum-onboard-usds-to-centrifuge-jtrsy-8
+        _onboardCentrifugeJtrsyUsds();
 
         // [Ethereum] Onboard USDS SkyLink Transfers to Avalanche
         //   Forum : https://forum.skyeco.com/t/april-23-2026-proposed-changes-to-grove-for-upcoming-spell/27829#p-106126-h-3-ethereum-onboard-usds-skylink-transfers-to-avalanche-14
         _onboardUsdsSkyLinkTransfersToAvalanche();
+    }
+
+    function _increaseUsdsMintRateLimit() internal {
+        _setUSDSMintRateLimit({
+            maxAmount : 500_000_000e18,                  // BEFORE: 100_000_000e18
+            slope     : 500_000_000e18 / uint256(1 days) // BEFORE: 50_000_000e18/day
+        });
     }
 
     function _onboardCentrifugeJtrsyUsds() internal {
@@ -45,13 +52,6 @@ contract GroveEthereum_20260423 is GrovePayloadEthereum {
             vault        : CENTRIFUGE_JTRSY_USDS,
             depositMax   : 500_000_000e18,                   // BEFORE: 0
             depositSlope : 500_000_000e18 / uint256(1 days)  // BEFORE: 0
-        });
-    }
-
-    function _increaseUsdsMintRateLimit() internal {
-        _setUSDSMintRateLimit({
-            maxAmount : 500_000_000e18,                  // BEFORE: 100_000_000e18
-            slope     : 500_000_000e18 / uint256(1 days) // BEFORE: 50_000_000e18/day
         });
     }
 

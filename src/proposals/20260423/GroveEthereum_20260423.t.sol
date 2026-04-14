@@ -46,14 +46,6 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
         deployPayloads();
     }
 
-    function test_ETHEREUM_onboardCentrifugeJtrsyUsds() public onChain(ChainIdUtils.Ethereum()) {
-        _testCentrifugeV3Onboarding({
-            centrifugeVault : MAINNET_CENTRIFUGE_JTRSY_USDS,
-            depositMax      : 500_000_000e18,
-            depositSlope    : 500_000_000e18 / uint256(1 days)
-        });
-    }
-
     function test_ETHEREUM_increaseUsdsMintRateLimit() public onChain(ChainIdUtils.Ethereum()) {
         bytes32 mintKey = GroveLiquidityLayerHelpers.LIMIT_USDS_MINT;
 
@@ -62,6 +54,14 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
         executeAllPayloadsAndBridges();
 
         _assertRateLimit(mintKey, 500_000_000e18, 500_000_000e18 / uint256(1 days));
+    }
+
+    function test_ETHEREUM_onboardCentrifugeJtrsyUsds() public onChain(ChainIdUtils.Ethereum()) {
+        _testCentrifugeV3Onboarding({
+            centrifugeVault : MAINNET_CENTRIFUGE_JTRSY_USDS,
+            depositMax      : 500_000_000e18,
+            depositSlope    : 500_000_000e18 / uint256(1 days)
+        });
     }
 
     function test_ETHEREUM_onboardUsdsSkyLinkTransfersToAvalanche() public onChain(ChainIdUtils.Ethereum()) {
