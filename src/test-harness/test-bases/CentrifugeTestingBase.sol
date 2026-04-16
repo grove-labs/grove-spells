@@ -47,7 +47,6 @@ interface ICentrifugeV3ShareLike {
     function balanceOf(address account) external view returns (uint256);
     function totalSupply() external view returns (uint256);
     function hook() external view returns (address);
-    function file(bytes32 what, address data) external;
 }
 
 interface IFreelyTransferableHookLike {
