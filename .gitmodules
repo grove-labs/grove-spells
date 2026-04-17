@@ -19,3 +19,6 @@
 [submodule "lib/grove-gov-relay"]
 	path = lib/grove-gov-relay
 	url = https://github.com/grove-labs/grove-gov-relay
+[submodule "lib/openzeppelin-contracts"]
+	path = lib/openzeppelin-contracts
+	url = https://github.com/OpenZeppelin/openzeppelin-contracts
