@@ -21,6 +21,9 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260423_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM  = 0x339379EF564df249CA0876aA9Ae23F65F655e733;
+    address internal constant PAYLOAD_AVALANCHE = 0x5F29ad86591A2825046461eCf8Dc4c0e842623c2;
+
     address internal constant MAINNET_CENTRIFUGE_JTRSY_USDS = 0x381f4F3B43C30B78C1f7777553236e57bB8AE9ff;
 
     address internal constant MAINNET_USDS_OFT = 0x1e1D42781FC170EF9da004Fb735f56F0276d01B8;
@@ -39,11 +42,12 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-04-14T11:03:00Z");
+        setupDomains("2026-04-17T13:50:00Z");
 
         chainData[ChainIdUtils.Avalanche()].newController = NEW_AVALANCHE_CONTROLLER;
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload  = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Avalanche()].payload = PAYLOAD_AVALANCHE;
     }
 
     function test_ETHEREUM_increaseUsdsMintRateLimit() public onChain(ChainIdUtils.Ethereum()) {
@@ -225,10 +229,10 @@ contract GroveEthereum_20260423_Test is GroveTestBase {
 
         // --- Step 2: Bridge USDS back to Ethereum via LayerZero ---
 
-        deal(Avalanche.ALM_RELAYER, 0.1 ether);
+        deal(Avalanche.ALM_RELAYER, 1 ether);
 
         vm.prank(Avalanche.ALM_RELAYER);
-        avalancheController.transferTokenLayerZero{value: 0.1 ether}(
+        avalancheController.transferTokenLayerZero{value: 1 ether}(
             AVALANCHE_USDS_OFT,
             usdsAmount,
             LZForwarder.ENDPOINT_ID_ETHEREUM

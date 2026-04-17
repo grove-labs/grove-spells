@@ -21,9 +21,8 @@ contract GroveEthereum_20260423 is GrovePayloadEthereum {
     address internal constant CENTRIFUGE_JTRSY_USDS = 0x381f4F3B43C30B78C1f7777553236e57bB8AE9ff;
     address internal constant USDS_OFT              = 0x1e1D42781FC170EF9da004Fb735f56F0276d01B8;
 
-    // TODO: Set the Avalanche payload address after deployment
     constructor() {
-        // PAYLOAD_AVALANCHE = address(0);
+        PAYLOAD_AVALANCHE = 0x5F29ad86591A2825046461eCf8Dc4c0e842623c2;
     }
 
     function _execute() internal override {
