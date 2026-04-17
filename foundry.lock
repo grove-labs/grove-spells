@@ -14,9 +14,6 @@
   "lib/grove-gov-relay": {
     "rev": "f314e2480204f4ab897ba757886b7af45d61b746"
   },
-  "lib/openzeppelin-contracts": {
-    "rev": "5fd1781b1454fd1ef8e722282f86f9293cacf256"
-  },
   "lib/spark-address-registry": {
     "rev": "7970fef921881720179967e5fa8b7305e59cf61e"
   },
