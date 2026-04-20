@@ -19,7 +19,7 @@ interface ICurvePoolLike {
         address receiver
     ) external;
     function balances(uint256 index) external view returns (uint256);
-    function coins(uint256 index) external returns (address);
+    function coins(uint256 index) external view returns (address);
     function exchange(
         int128  inputIndex,
         int128  outputIndex,

@@ -71,8 +71,8 @@ abstract contract CommonSpellTests is CommonTestBase {
             ChainIdUtils.Avalanche(),
             BridgeTypesToTest({
                 cctp       : true,
-                centrifuge : false, // Centrifuge crosschain transfers are not onboarded on Avalanche yet
-                layerZero  : false  // LayerZero  crosschain transfers are not onboarded on Avalanche yet
+                centrifuge : true,
+                layerZero  : true
             })
         );
     }
@@ -187,7 +187,11 @@ abstract contract CommonSpellTests is CommonTestBase {
         );
 
         // LayerZero
-        // NOTE LayerZero crosschain transfers to Avalanche are not onboarded yet
+        assertEq(
+            controller.layerZeroRecipients(LZForwarder.ENDPOINT_ID_AVALANCHE),
+            CastingHelpers.addressToLayerZeroRecipient(Avalanche.ALM_PROXY),
+            "CommonTest/avalanche/incorrect-layerzero-recipient"
+        );
 
         /**********************************************************************************************/
         /*** Base                                                                                  ***/
