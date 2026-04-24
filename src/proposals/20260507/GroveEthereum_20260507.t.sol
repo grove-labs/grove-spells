@@ -35,7 +35,15 @@ contract GroveEthereum_20260507_Test is GroveTestBase {
         chainData[ChainIdUtils.Avalanche()].prevController = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
         chainData[ChainIdUtils.Avalanche()].newController  = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
 
+        // Clear Avalanche payload to avoid executing it again
+        chainData[ChainIdUtils.Avalanche()].payload = address(0);
+
         deployPayloads();
+    }
+
+    function test_ETHEREUM_onboardGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
+        // TODO Grove Basin onboarding - implementation WIP
+        vm.skip(true);
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseRlusdMorphoVaultV2() public onChain(ChainIdUtils.Ethereum()) {
