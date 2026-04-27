@@ -25,6 +25,7 @@ contract GroveEthereum_20260507_Test is GroveTestBase {
         setupDomains("2026-04-22T10:00:00Z");
 
         // Execute prior (20260423) payloads as dependencies for this spell
+        /**************************************************************************************************************/
         chainData[ChainIdUtils.Avalanche()].newController = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
 
         chainData[ChainIdUtils.Ethereum()].payload  = 0x76Ba24676e1055D3E6b160086f0bc9BaffF76929;
@@ -37,13 +38,9 @@ contract GroveEthereum_20260507_Test is GroveTestBase {
 
         // Clear Avalanche payload to avoid executing it again
         chainData[ChainIdUtils.Avalanche()].payload = address(0);
+        /**************************************************************************************************************/
 
         deployPayloads();
-    }
-
-    function test_ETHEREUM_onboardGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
-        // TODO Grove Basin onboarding - implementation WIP
-        vm.skip(true);
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseRlusdMorphoVaultV2() public onChain(ChainIdUtils.Ethereum()) {

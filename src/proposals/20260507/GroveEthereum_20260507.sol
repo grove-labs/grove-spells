@@ -20,21 +20,13 @@ contract GroveEthereum_20260507 is GrovePayloadEthereum {
     uint256 internal constant GROVE_FOUNDATION_GRANT_AMOUNT = 800_000e18;
 
     function _execute() internal override {
-        // [Ethereum] Onboard Tokenized Treasury Instance — Initial Deposit (JTRSY)
-        //   Forum : TODO: Add forum link
-        _onboardTokenizedTreasuryInstanceJtrsy();
-
         // [Ethereum] Onboard Grove x Steakhouse RLUSD Morpho Vault V2
-        //   Forum : TODO: Add forum link
+        //   Forum : https://forum.skyeco.com/t/may-7-2026-proposed-changes-to-grove-for-upcoming-spell/27858#p-106239-h-2-ethereum-onboard-grove-x-steakhouse-rlusd-morpho-vault-v2-8
         _onboardGroveXSteakhouseRlusdMorphoVaultV2();
 
         // [Ethereum] Grove Treasury — Monthly Grant for Grove Foundation
-        //   Forum : TODO: Add forum link
+        //   Forum : https://forum.skyeco.com/t/may-7-2026-proposed-changes-to-grove-for-upcoming-spell/27858#p-106239-h-3-ethereum-grove-treasury-monthly-grant-for-grove-foundation-15
         _transferMonthlyGrantToGroveFoundation();
-    }
-
-    function _onboardTokenizedTreasuryInstanceJtrsy() internal {
-        // TODO: Implement JTRSY instance onboarding (pending audit completion and deployment)
     }
 
     function _onboardGroveXSteakhouseRlusdMorphoVaultV2() internal {
