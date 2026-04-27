@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { IERC20 } from "forge-std/interfaces/IERC20.sol";
-
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereum.sol";
+
+interface IERC20Like {
+    function transfer(address to, uint256 amount) external returns (bool);
+}
 
 /**
  * @title  May 7, 2026 Grove Ethereum Proposal
@@ -40,7 +42,7 @@ contract GroveEthereum_20260507 is GrovePayloadEthereum {
     }
 
     function _transferMonthlyGrantToGroveFoundation() internal {
-        IERC20(Ethereum.USDS).transfer(GROVE_FOUNDATION, GROVE_FOUNDATION_GRANT_AMOUNT);
+        IERC20Like(Ethereum.USDS).transfer(GROVE_FOUNDATION, GROVE_FOUNDATION_GRANT_AMOUNT);
     }
 
 }
