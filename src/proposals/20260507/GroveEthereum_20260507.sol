@@ -42,7 +42,7 @@ contract GroveEthereum_20260507 is GrovePayloadEthereum {
     }
 
     function _transferMonthlyGrantToGroveFoundation() internal {
-        IERC20Like(Ethereum.USDS).transfer(GROVE_FOUNDATION, GROVE_FOUNDATION_GRANT_AMOUNT);
+        require(IERC20Like(Ethereum.USDS).transfer(GROVE_FOUNDATION, GROVE_FOUNDATION_GRANT_AMOUNT));
     }
 
 }
