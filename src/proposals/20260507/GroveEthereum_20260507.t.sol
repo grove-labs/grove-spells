@@ -11,6 +11,8 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260507_Test is GroveTestBase {
 
+    address internal constant ETHEREUM_PAYLOAD = 0x8EF80aBDa108a23eA01C8A3D1F5C8B49DD2008e8;
+
     address internal constant GROVE_X_STEAKHOUSE_RLUSD_V2 = 0xBeEff4fD39F8e48b6a6e475445D650cb11e9599F;
 
     address internal constant GROVE_FOUNDATION = 0xE3EC4CC359E68c9dCE15Bf667b1aD37Df54a5a42;
@@ -22,25 +24,9 @@ contract GroveEthereum_20260507_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-04-22T10:00:00Z");
+        setupDomains("2026-04-30T16:18:00Z");
 
-        // Execute prior (20260423) payloads as dependencies for this spell
-        /**************************************************************************************************************/
-        chainData[ChainIdUtils.Avalanche()].newController = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
-
-        chainData[ChainIdUtils.Ethereum()].payload  = 0x76Ba24676e1055D3E6b160086f0bc9BaffF76929;
-        chainData[ChainIdUtils.Avalanche()].payload = 0x1204f2C342706cE6B75997c89619D130Ee9dDa2c;
-        executeAllPayloadsAndBridges();
-
-        // After 20260423 upgraded the Avalanche controller, update prev/new to the post-upgrade address
-        chainData[ChainIdUtils.Avalanche()].prevController = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
-        chainData[ChainIdUtils.Avalanche()].newController  = 0x4236B772BEeEAFF57550Aa392A0f227C0b908Ce7;
-
-        // Clear Avalanche payload to avoid executing it again
-        chainData[ChainIdUtils.Avalanche()].payload = address(0);
-        /**************************************************************************************************************/
-
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = ETHEREUM_PAYLOAD;
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseRlusdMorphoVaultV2() public onChain(ChainIdUtils.Ethereum()) {
