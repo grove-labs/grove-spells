@@ -73,4 +73,6 @@ The `archive/` directory stores all historical spells that have been executed on
 - The PR description (`YYYYMMDD.md`) documenting the intended changes, addresses, and deployment info
 - The corresponding test file (`GroveEthereum_YYYYMMDD.t.sol`) used to test the spell at the time of its deployment
 
+If the archived spell introduced any new addresses, the commit archiving the spell should also update the `grove-address-registry` submodule to include these new addresses.
+
 **Note:** Archived spells may not compile or run tests with the current codebase, as they may depend on older versions of helper libraries or test harnesses. If you need to run tests for a historical spell, check out the git commit from when that spell was in the `src/proposals/` directory.
