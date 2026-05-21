@@ -15,4 +15,6 @@ docs/
 
 # IDE
 WARP.md
-.claude/settings.local.json
+
+# helper md files
+src/proposals/*/*.md
