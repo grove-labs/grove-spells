@@ -123,7 +123,7 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
         // Net expected SubProxy USDS delta = -1_600_000e18 + 753_649e18 = -846_351e18.
         assertEq(
             usds.balanceOf(Ethereum.GROVE_PROXY),
-            subProxyUsdsBefore - 1_600_000e18 + 753_649e18,
+            subProxyUsdsBefore + 753_649e18 - 1_600_000e18,
             "grove-sub-proxy-usds-net-delta-mismatch"
         );
     }
