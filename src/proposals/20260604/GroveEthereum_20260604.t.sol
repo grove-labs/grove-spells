@@ -16,8 +16,6 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260604_Test is GroveTestBase {
 
-    address internal constant WRAPPER_USDS_LITE_PSM_USDC_A = 0xA188EEC8F81263234dA3622A406892F3D630f98c;
-
     address internal constant JTRSY_GROVE_BASIN = 0x1FA4dB8D545Cbd22b7bbA2084348A2E6ef36E363;
     address internal constant BUIDL_GROVE_BASIN = 0x10b3d3A96646720f8B3a29229cF96d513f3C84F1;
 
@@ -26,7 +24,7 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-05-21T12:30:00Z");
+        setupDomains("2026-05-22T11:00:00Z");
         deployPayloads();
     }
 
@@ -112,6 +110,12 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
 
         uint256 subProxyUsdsBefore = usds.balanceOf(Ethereum.GROVE_PROXY);
 
+        assertGe(
+            subProxyUsdsBefore,
+            1_600_000e18,
+            "grove-proxy-insufficient-usds-balance"
+        );
+
         executeAllPayloadsAndBridges();
 
         // Item 1 moves -1_600_000e18 USDS out of the SubProxy (Foundation grant).
@@ -125,11 +129,33 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_depositInitialUsdsToJtrsyGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _runInitialUsdsDepositToGroveBasinTest(JTRSY_GROVE_BASIN, 50_000_000e18);
+        _runInitialUsdsDepositToGroveBasinTest({
+            basinAddr      : JTRSY_GROVE_BASIN,
+            depositAmount  : 50_000_000e18,
+            withdrawAmount : 1_000_000e18
+        });
     }
 
     function test_ETHEREUM_depositInitialUsdsToBuidlGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _runInitialUsdsDepositToGroveBasinTest(BUIDL_GROVE_BASIN, 50_000_000e18);
+        _runInitialUsdsDepositToGroveBasinTest({
+            basinAddr      : BUIDL_GROVE_BASIN,
+            depositAmount  : 50_000_000e18,
+            withdrawAmount : 1_000_000e18
+        });
+    }
+
+    function test_ETHEREUM_e2eJtrsyGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
+        _runGroveBasinSwapTest({
+            basinAddr : JTRSY_GROVE_BASIN,
+            amountIn  : 100e6
+        });
+    }
+
+    function test_ETHEREUM_e2eBuidlGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
+        _runGroveBasinSwapTest({
+            basinAddr : BUIDL_GROVE_BASIN,
+            amountIn  : 100e6
+        });
     }
 
     function test_ETHEREUM_almProxyControllerRoleGrantedToGroveProxyDuringSpell() public onChain(ChainIdUtils.Ethereum()) {
