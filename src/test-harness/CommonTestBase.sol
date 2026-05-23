@@ -22,30 +22,6 @@ interface ISecuritizeAssetLike {
   function issueTokens(address to, uint256 amount) external;
 }
 
-interface IDsTokenLike {
-  function getDSService(uint256 serviceId) external view returns (address);
-  function COMPLIANCE_SERVICE()            external view returns (uint256);
-  function WALLET_REGISTRAR()              external view returns (uint256);
-  function REGISTRY_SERVICE()              external view returns (uint256);
-}
-
-contract NoOpFallback {
-  fallback() external payable {
-    assembly {
-      return(0, 256)
-    }
-  }
-}
-
-interface ICentrifugeShareTokenLike {
-  function hook()       external view returns (address);
-  function hookDataOf(address) external view returns (bytes16);
-}
-
-interface IFullRestrictionsHookLike {
-  function updateMember(address token, address user, uint64 validUntil) external;
-}
-
 struct GroveLiquidityLayerContext {
     address     admin;
     address     controller;
@@ -76,12 +52,10 @@ contract CommonTestBase is SpellRunner {
 
   bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 
-  address public constant AUSD_MAINNET   = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
-  address public constant BUIDL_MAINNET  = 0x7712c34205737192402172409a8F7ccef8aA2AEc;
-  address public constant BUIDLI_MAINNET = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
-  address public constant JTRSY_MAINNET  = 0x8c213ee79581Ff4984583C6a801e5263418C4b86;
-  address public constant USDC_MAINNET   = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
-  address public constant STAC_MAINNET   = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
+  address public constant AUSD_MAINNET  = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
+  address public constant BUIDL_MAINNET = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
+  address public constant USDC_MAINNET  = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+  address public constant STAC_MAINNET  = 0x51C2d74017390CbBd30550179A16A1c28F7210fc;
 
   address public constant EURE_GNOSIS  = 0xcB444e90D8198415266c6a2724b7900fb12FC56E;
   address public constant USDCE_GNOSIS = 0x2a22f9c3b484c3629090FeED35F17Ff8F88f76F0;
@@ -102,17 +76,6 @@ contract CommonTestBase is SpellRunner {
       if (asset == BUIDL_MAINNET) {
         address securitizeIssuer = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
         _securitizeIssueTokens(asset, user, securitizeIssuer, amount);
-        return true;
-      }
-      // Securitize BUIDLI (shares the BUIDL issuer)
-      if (asset == BUIDLI_MAINNET) {
-        address securitizeIssuer = 0xe01605f6b6dC593b7d2917F4a0940db2A625b09e;
-        _securitizeIssueTokens(asset, user, securitizeIssuer, amount);
-        return true;
-      }
-      // Centrifuge JTRSY share token (FullRestrictions-gated)
-      if (asset == JTRSY_MAINNET) {
-        _dealCentrifugeShareToken(asset, user, amount);
         return true;
       }
       // USDC
@@ -170,57 +133,10 @@ contract CommonTestBase is SpellRunner {
   // NOTE: Deal behavior is to set the balance of the user to the amount, not send additional funds to the user
   //       so we are trying to replicate that as well as possible
   function _securitizeIssueTokens(address asset, address user, address issuer, uint256 amount) private {
-    _bypassDsTokenCompliance(asset);
     uint256 initialBalance = IERC20(asset).balanceOf(user);
     require(amount > initialBalance, "deal2/user-already-has-enough-balance");
     vm.prank(issuer);
     ISecuritizeAssetLike(asset).issueTokens(user, amount - initialBalance);
-  }
-
-  // Disable Securitize wallet-registrar + compliance gating so freshly issued tokens can be
-  // transferred to arbitrary addresses during a test. The compliance service does its own
-  // checks that aren't reachable via the registry getters, so we have to NoOp its bytecode.
-  function _bypassDsTokenCompliance(address token) private {
-    IDsTokenLike ds = IDsTokenLike(token);
-    address complianceService = ds.getDSService(ds.COMPLIANCE_SERVICE());
-    address walletRegistrar   = ds.getDSService(ds.WALLET_REGISTRAR());
-    address registryService   = ds.getDSService(ds.REGISTRY_SERVICE());
-    vm.etch(complianceService, type(NoOpFallback).runtimeCode);
-    vm.mockCall(walletRegistrar, abi.encodeWithSignature("isWallet(address)"), abi.encode(true));
-    vm.mockCall(registryService, abi.encodeWithSignature("isWallet(address)"), abi.encode(true));
-  }
-
-  // Deal a Centrifuge V3 share token (FullRestrictions-gated). The auth bits we flip on the
-  // share token and its hook to allow `updateMember` are saved and restored, so the only
-  // persistent state changes are the user's hook allowlist entry and balance.
-  function _dealCentrifugeShareToken(address token, address user, uint256 amount) private {
-    require(amount <= type(uint128).max, "deal2/centrifuge-balance-overflow");
-
-    address hook = ICentrifugeShareTokenLike(token).hook();
-
-    bytes32 hookSelfWardSlot  = keccak256(abi.encode(address(this), uint256(0)));
-    bytes32 tokenHookWardSlot = keccak256(abi.encode(hook,          uint256(0)));
-
-    bytes32 hookSelfWardBefore  = vm.load(hook,  hookSelfWardSlot);
-    bytes32 tokenHookWardBefore = vm.load(token, tokenHookWardSlot);
-
-    vm.store(hook,  hookSelfWardSlot,  bytes32(uint256(1)));
-    vm.store(token, tokenHookWardSlot, bytes32(uint256(1)));
-
-    IFullRestrictionsHookLike(hook).updateMember(token, user, type(uint64).max);
-
-    vm.store(hook,  hookSelfWardSlot,  hookSelfWardBefore);
-    vm.store(token, tokenHookWardSlot, tokenHookWardBefore);
-
-    bytes16 hookData = ICentrifugeShareTokenLike(token).hookDataOf(user);
-
-    vm.record();
-    IERC20(token).balanceOf(user);
-    (bytes32[] memory reads, ) = vm.accesses(token);
-    require(reads.length > 0, "deal2/centrifuge-balance-slot-not-found");
-
-    bytes32 packed = bytes32((uint256(uint128(hookData)) << 128) | uint256(amount));
-    vm.store(token, reads[0], packed);
   }
 
   /**

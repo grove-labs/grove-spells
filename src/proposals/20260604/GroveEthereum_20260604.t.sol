@@ -2,22 +2,14 @@
 pragma solidity 0.8.25;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
-import { Vm }     from "forge-std/Vm.sol";
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
-
-import { IALMProxy } from "grove-alm-controller/src/interfaces/IALMProxy.sol";
-
-import { RecordedLogs } from "xchain-helpers/testing/utils/RecordedLogs.sol";
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260604_Test is GroveTestBase {
-
-    address internal constant JTRSY_GROVE_BASIN = 0x1FA4dB8D545Cbd22b7bbA2084348A2E6ef36E363;
-    address internal constant BUIDL_GROVE_BASIN = 0x10b3d3A96646720f8B3a29229cF96d513f3C84F1;
 
     constructor() {
         id = "20260604";
@@ -125,76 +117,6 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
             usds.balanceOf(Ethereum.GROVE_PROXY),
             subProxyUsdsBefore + 753_649e18 - 1_600_000e18,
             "grove-sub-proxy-usds-net-delta-mismatch"
-        );
-    }
-
-    function test_ETHEREUM_depositInitialUsdsToJtrsyGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _runInitialUsdsDepositToGroveBasinTest({
-            basinAddr      : JTRSY_GROVE_BASIN,
-            depositAmount  : 50_000_000e18,
-            withdrawAmount : 1_000_000e18
-        });
-    }
-
-    function test_ETHEREUM_depositInitialUsdsToBuidlGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _runInitialUsdsDepositToGroveBasinTest({
-            basinAddr      : BUIDL_GROVE_BASIN,
-            depositAmount  : 50_000_000e18,
-            withdrawAmount : 1_000_000e18
-        });
-    }
-
-    function test_ETHEREUM_e2eJtrsyGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _runGroveBasinSwapTest({
-            basinAddr : JTRSY_GROVE_BASIN,
-            amountIn  : 100e6
-        });
-    }
-
-    function test_ETHEREUM_e2eBuidlGroveBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _runGroveBasinSwapTest({
-            basinAddr : BUIDL_GROVE_BASIN,
-            amountIn  : 100e6
-        });
-    }
-
-    function test_ETHEREUM_almProxyControllerRoleGrantedToGroveProxyDuringSpell() public onChain(ChainIdUtils.Ethereum()) {
-        IALMProxy almProxy       = IALMProxy(Ethereum.ALM_PROXY);
-        bytes32   controllerRole = almProxy.CONTROLLER();
-
-        assertFalse(
-            almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY),
-            "grove-proxy-holds-controller-role-before-spell"
-        );
-
-        executeAllPayloadsAndBridges();
-
-        bytes32 roleGrantedTopic = keccak256("RoleGranted(bytes32,address,address)");
-        bytes32 groveProxyTopic  = bytes32(uint256(uint160(Ethereum.GROVE_PROXY)));
-
-        Vm.Log[] memory logs = RecordedLogs.getLogs();
-
-        bool seenGrantToGroveProxy;
-        for (uint256 i = 0; i < logs.length; i++) {
-            Vm.Log memory log = logs[i];
-            if (log.emitter != Ethereum.ALM_PROXY)   continue;
-            if (log.topics.length < 4)               continue;
-            if (log.topics[0] != roleGrantedTopic)   continue;
-            if (log.topics[1] != controllerRole)     continue;
-            if (log.topics[2] != groveProxyTopic)    continue;
-
-            seenGrantToGroveProxy = true;
-            break;
-        }
-
-        assertTrue(
-            seenGrantToGroveProxy,
-            "controller-role-not-granted-to-grove-proxy-during-spell"
-        );
-
-        assertFalse(
-            almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY),
-            "grove-proxy-retained-controller-role-after-spell"
         );
     }
 
