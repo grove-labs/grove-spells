@@ -3,7 +3,12 @@ pragma solidity 0.8.25;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
+import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
+
+import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
+
+import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
@@ -11,12 +16,14 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260604_Test is GroveTestBase {
 
+    address internal constant AVALANCHE_CCTP_V2_RECEIVER = 0x8Ea8Dff8c29f568eA1E716E2C3AfbD003EB83cfA;
+
     constructor() {
         id = "20260604";
     }
 
     function setUp() public {
-        setupDomains("2026-05-22T11:00:00Z");
+        setupDomains("2026-05-24T20:00:00Z");
         deployPayloads();
     }
 
@@ -117,6 +124,39 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
             usds.balanceOf(Ethereum.GROVE_PROXY),
             subProxyUsdsBefore + 753_649e18 - 1_600_000e18,
             "grove-sub-proxy-usds-net-delta-mismatch"
+        );
+    }
+
+    function test_AVALANCHE_cctpV2ReceiverDeployment() public onChain(ChainIdUtils.Avalanche()) {
+        _verifyCctpV2ReceiverDeployment({
+            _executor                 : Avalanche.GROVE_EXECUTOR,
+            _receiver                 : AVALANCHE_CCTP_V2_RECEIVER,
+            _cctpV2MessageTransmitter : CCTPv2Forwarder.MESSAGE_TRANSMITTER_CIRCLE_AVALANCHE
+        });
+    }
+
+    function test_AVALANCHE_cctpV2ReceiverOnboarding() public onChain(ChainIdUtils.Avalanche()) {
+        IExecutor executor       = IExecutor(Avalanche.GROVE_EXECUTOR);
+        bytes32   submissionRole = executor.SUBMISSION_ROLE();
+
+        assertFalse(
+            executor.hasRole(submissionRole, AVALANCHE_CCTP_V2_RECEIVER),
+            "cctpv2-receiver-already-has-submission-role"
+        );
+        assertTrue(
+            executor.hasRole(submissionRole, Avalanche.GROVE_RECEIVER),
+            "old-receiver-missing-submission-role-before"
+        );
+
+        executeAllPayloadsAndBridges();
+
+        assertTrue(
+            executor.hasRole(submissionRole, AVALANCHE_CCTP_V2_RECEIVER),
+            "cctpv2-receiver-missing-submission-role"
+        );
+        assertTrue(
+            executor.hasRole(submissionRole, Avalanche.GROVE_RECEIVER),
+            "old-receiver-missing-submission-role-after"
         );
     }
 

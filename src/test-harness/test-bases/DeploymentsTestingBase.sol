@@ -15,6 +15,7 @@ import { Executor } from "grove-gov-relay/src/Executor.sol";
 
 import { ArbitrumReceiver } from "lib/xchain-helpers/src/receivers/ArbitrumReceiver.sol";
 import { CCTPReceiver }     from "lib/xchain-helpers/src/receivers/CCTPReceiver.sol";
+import { CCTPv2Receiver }   from "lib/xchain-helpers/src/receivers/CCTPv2Receiver.sol";
 import { LZReceiver }       from "lib/xchain-helpers/src/receivers/LZReceiver.sol";
 import { OptimismReceiver } from "lib/xchain-helpers/src/receivers/OptimismReceiver.sol";
 
@@ -192,6 +193,26 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
 
         // Receiver's destination messenger has to be the local cctp messenger
         assertEq(receiver.destinationMessenger(), _cctpMessageTransmitter, "incorrect-cctp-transmitter");
+
+        // Source domain id has to be always Ethereum Mainnet id
+        assertEq(receiver.sourceDomainId(), 0, "incorrect-source-domain-id");
+
+        // Source authority has to be the Ethereum Mainnet Grove Proxy
+        assertEq(receiver.sourceAuthority(), CastingHelpers.addressToCctpRecipient(Ethereum.GROVE_PROXY), "incorrect-source-authority");
+
+        // Target has to be the executor
+        assertEq(receiver.target(), _executor, "incorrect-target");
+    }
+
+    function _verifyCctpV2ReceiverDeployment(
+        address _executor,
+        address _receiver,
+        address _cctpV2MessageTransmitter
+    ) internal view {
+        CCTPv2Receiver receiver = CCTPv2Receiver(_receiver);
+
+        // Receiver's destination messenger has to be the local cctp v2 messenger
+        assertEq(receiver.destinationMessenger(), _cctpV2MessageTransmitter, "incorrect-cctp-v2-transmitter");
 
         // Source domain id has to be always Ethereum Mainnet id
         assertEq(receiver.sourceDomainId(), 0, "incorrect-source-domain-id");
