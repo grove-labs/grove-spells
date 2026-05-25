@@ -81,7 +81,7 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
         assertGe(
             subProxyUsdcBefore,
             753_649e6,
-            "grove-sub-proxy-insufficient-usdc-balance"
+            "grove-proxy-insufficient-usdc-balance"
         );
 
         executeAllPayloadsAndBridges();
@@ -89,12 +89,12 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
         assertEq(
             usdc.balanceOf(Ethereum.GROVE_PROXY),
             subProxyUsdcBefore - 753_649e6,
-            "grove-sub-proxy-usdc-not-decreased"
+            "grove-proxy-usdc-not-decreased"
         );
         assertEq(
             usdc.balanceOf(Ethereum.GROVE_PROXY),
             0,
-            "grove-sub-proxy-usdc-not-fully-spent"
+            "grove-proxy-usdc-not-fully-spent"
         );
 
         // The corresponding SubProxy USDS inflow from the PSM swap is verified via the
@@ -121,7 +121,7 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
         assertEq(
             usds.balanceOf(Ethereum.GROVE_PROXY),
             subProxyUsdsBefore + 753_649e18 - 1_600_000e18,
-            "grove-sub-proxy-usds-net-delta-mismatch"
+            "grove-proxy-usds-net-delta-mismatch"
         );
     }
 
