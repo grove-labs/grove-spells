@@ -20,7 +20,7 @@ contract GroveAvalanche_20260604 is GrovePayloadAvalanche {
 
     function execute() external {
         // [Avalanche] Onboard CCTP v2 Receiver
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/june-4-2026-proposed-changes-to-grove-for-upcoming-spell/27924
         _onboardCctpV2Receiver();
     }
 
