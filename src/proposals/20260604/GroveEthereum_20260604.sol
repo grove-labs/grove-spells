@@ -24,15 +24,15 @@ contract GroveEthereum_20260604 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Grove Treasury — Monthly Grant for Grove Foundation (Months 2 + 3 combined)
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/june-4-2026-proposed-changes-to-grove-for-upcoming-spell/27924
         _transferMonthlyGrantToGroveFoundation();
 
         // [Ethereum] Transfer GROVE Tokens to Grove Foundation
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/june-4-2026-proposed-changes-to-grove-for-upcoming-spell/27924
         _transferGroveTokensToGroveFoundation();
 
         // [Ethereum] Swap USDC to USDS in Grove SubProxy
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/june-4-2026-proposed-changes-to-grove-for-upcoming-spell/27924
         _swapUsdcToUsdsViaPsm();
     }
 
