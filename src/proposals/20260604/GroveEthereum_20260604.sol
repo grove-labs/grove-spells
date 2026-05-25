@@ -22,6 +22,10 @@ contract GroveEthereum_20260604 is GrovePayloadEthereum {
 
     address internal constant WRAPPER_USDS_LITE_PSM_USDC_A = 0xA188EEC8F81263234dA3622A406892F3D630f98c;
 
+    constructor() {
+        PAYLOAD_AVALANCHE = address(0); // TODO set after the Avalanche payload deployment
+    }
+
     function _execute() internal override {
         // [Ethereum] Grove Treasury — Monthly Grant for Grove Foundation (Months 2 + 3 combined)
         //   Forum : https://forum.skyeco.com/t/june-4-2026-proposed-changes-to-grove-for-upcoming-spell/27924
