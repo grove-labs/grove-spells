@@ -91,6 +91,11 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
             subProxyUsdcBefore - 753_649e6,
             "grove-sub-proxy-usdc-not-decreased"
         );
+        assertEq(
+            usdc.balanceOf(Ethereum.GROVE_PROXY),
+            0,
+            "grove-sub-proxy-usdc-not-fully-spent"
+        );
 
         // The corresponding SubProxy USDS inflow from the PSM swap is verified via the
         // spell-wide USDS conservation check in test_ETHEREUM_subProxyUsdsNetDelta(); it is
