@@ -16,6 +16,9 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260604_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM  = 0xbE5E67C516074ba0807A3535035868cE7F2Bd372;
+    address internal constant PAYLOAD_AVALANCHE = 0xa080c8fd1B68F4D3D8F36C30137913E0BD25b0B9;
+
     address internal constant AVALANCHE_CCTP_V2_RECEIVER = 0x8Ea8Dff8c29f568eA1E716E2C3AfbD003EB83cfA;
 
     constructor() {
@@ -23,8 +26,10 @@ contract GroveEthereum_20260604_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-05-24T20:00:00Z");
-        deployPayloads();
+        setupDomains("2026-05-27T20:33:00Z");
+
+        chainData[ChainIdUtils.Ethereum()].payload  = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Avalanche()].payload = PAYLOAD_AVALANCHE;
     }
 
     function test_ETHEREUM_transferMonthlyGrantToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {

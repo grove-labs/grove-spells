@@ -23,7 +23,7 @@ contract GroveEthereum_20260604 is GrovePayloadEthereum {
     address internal constant WRAPPER_USDS_LITE_PSM_USDC_A = 0xA188EEC8F81263234dA3622A406892F3D630f98c;
 
     constructor() {
-        PAYLOAD_AVALANCHE = address(0); // TODO set after the Avalanche payload deployment
+        PAYLOAD_AVALANCHE = 0xa080c8fd1B68F4D3D8F36C30137913E0BD25b0B9;
     }
 
     function _execute() internal override {
