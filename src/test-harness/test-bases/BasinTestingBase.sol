@@ -5,10 +5,13 @@ import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
 import { PAUContext, CommonPAUTestBase } from "../CommonPAUTestBase.sol";
 
-interface IBasinFacetLike {
-    function deposit(address basin, address asset, uint256 amount, uint256 minSharesOut)
+// The controller dispatches namespaced call selectors (basin_*) to the
+// BasinFacet's internal deposit/withdraw delegate selectors, so callers
+// must encode the namespaced form (see IMainnetControllerFull in diamond-pau).
+interface IBasinControllerLike {
+    function basin_deposit(address basin, address asset, uint256 amount, uint256 minSharesOut)
         external returns (uint256 shares);
-    function withdraw(address basin, address asset, uint256 maxAmount, uint256 minConversionRate)
+    function basin_withdraw(address basin, address asset, uint256 maxAmount, uint256 minConversionRate)
         external returns (uint256 assetsWithdrawn);
 }
 
@@ -56,7 +59,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         // (RateLimits/zero-maxAmount).
         vm.expectRevert();
         _callAsPAUActor(abi.encodeCall(
-            IBasinFacetLike.deposit,
+            IBasinControllerLike.basin_deposit,
             (basin, asset, expectedDepositAmount, 0)
         ));
 
@@ -68,7 +71,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         if (!unlimitedDeposit) {
             vm.expectRevert("RateLimits/rate-limit-exceeded");
             _callAsPAUActor(abi.encodeCall(
-                IBasinFacetLike.deposit,
+                IBasinControllerLike.basin_deposit,
                 (basin, asset, depositMax + 1, 0)
             ));
         }
@@ -79,7 +82,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         uint256 startingShares = IBasinLike(basin).shares(proxy);
 
         _callAsPAUActor(abi.encodeCall(
-            IBasinFacetLike.deposit,
+            IBasinControllerLike.basin_deposit,
             (basin, asset, expectedDepositAmount, 0)
         ));
 
@@ -90,7 +93,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(withdrawKey), type(uint256).max);
 
         _callAsPAUActor(abi.encodeCall(
-            IBasinFacetLike.withdraw,
+            IBasinControllerLike.basin_withdraw,
             (basin, asset, expectedDepositAmount / 2, 0)
         ));
 
