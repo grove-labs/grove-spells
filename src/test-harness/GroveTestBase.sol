@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { AaveTestingBase }           from "./test-bases/AaveTestingBase.sol";
+import { BasinTestingBase }          from "./test-bases/BasinTestingBase.sol";
 import { CentrifugeTestingBase }     from "./test-bases/CentrifugeTestingBase.sol";
 import { CurveTestingBase }          from "./test-bases/CurveTestingBase.sol";
 import { DeploymentsTestingBase }    from "./test-bases/DeploymentsTestingBase.sol";
@@ -19,6 +20,7 @@ abstract contract GroveTestBase is
     CommonALMSpellTests,
     CommonPAUSpellTests,
     AaveTestingBase,
+    BasinTestingBase,
     CentrifugeTestingBase,
     CurveTestingBase,
     DeploymentsTestingBase,
