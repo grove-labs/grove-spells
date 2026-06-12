@@ -16,9 +16,9 @@ import { TickMath }         from "dss-allocator/src/funnels/uniV3/TickMath.sol";
 import { IUniswapV3PoolLike, UniswapV3Helpers } from "src/libraries/helpers/UniswapV3Helpers.sol";
 import { GroveLiquidityLayerHelpers }           from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
-abstract contract UniswapV3TestingBase is CommonTestBase {
+abstract contract UniswapV3TestingBase is CommonALMTestBase {
 
     struct UniswapV3TestingContext {
         address pool;

@@ -16,13 +16,13 @@ import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers
 import { ChainIdUtils, ChainId }      from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { GroveLiquidityLayerContext } from "./CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "./CommonALMTestBase.sol";
 
 import { CommonSpellTests } from "./CommonSpellTests.sol";
 
 /// @dev Spell tests specific to the legacy ALM controller system
 /// (grove-alm-controller MainnetController/ForeignController + ALM_PROXY).
-abstract contract CommonALMSpellTests is CommonSpellTests {
+abstract contract CommonALMSpellTests is CommonSpellTests, CommonALMTestBase {
 
     bytes32 internal constant GROVE_ALM_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
 

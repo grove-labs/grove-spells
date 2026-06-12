@@ -4,17 +4,7 @@ pragma solidity >=0.7.5 <0.9.0;
 import "forge-std/StdJson.sol";
 import "forge-std/Test.sol";
 
-import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
-import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
-import { Base }      from "lib/grove-address-registry/src/Base.sol";
-import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
-
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
-
-import { IALMProxy }   from "grove-alm-controller/src/interfaces/IALMProxy.sol";
-import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
-
-import { ChainId, ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
 import { SpellRunner } from "./SpellRunner.sol";
 
@@ -22,13 +12,17 @@ interface ISecuritizeAssetLike {
   function issueTokens(address to, uint256 amount) external;
 }
 
-struct GroveLiquidityLayerContext {
-    address     admin;
-    address     controller;
-    IALMProxy   proxy;
-    IRateLimits rateLimits;
-    address     relayer;
-    address     freezer;
+/// @dev Minimal read interface shared by the legacy ALM and PAU RateLimits
+/// contracts, whose getRateLimitData ABIs are identical.
+interface IRateLimitsLike {
+  struct RateLimitData {
+    uint256 maxAmount;
+    uint256 slope;
+    uint256 lastAmount;
+    uint256 lastUpdated;
+  }
+
+  function getRateLimitData(bytes32 key) external view returns (RateLimitData memory data);
 }
 
 library ChainIds {
@@ -178,113 +172,56 @@ contract CommonTestBase is SpellRunner {
     return false;
   }
 
-  function _getGroveLiquidityLayerContext(ChainId chain) internal view returns(GroveLiquidityLayerContext memory ctx) {
-      address controller;
-      if(chainData[chain].spellExecuted) {
-          controller = chainData[chain].newController;
-      } else {
-          controller = chainData[chain].prevController;
-      }
-      if (chain == ChainIdUtils.Ethereum()) {
-          ctx = GroveLiquidityLayerContext(
-              Ethereum.GROVE_PROXY,
-              controller,
-              IALMProxy(Ethereum.ALM_PROXY),
-              IRateLimits(Ethereum.ALM_RATE_LIMITS),
-              Ethereum.ALM_RELAYER,
-              Ethereum.ALM_FREEZER
-      );
-      } else if (chain == ChainIdUtils.Avalanche()) {
-          ctx = GroveLiquidityLayerContext(
-              Avalanche.GROVE_EXECUTOR,
-              controller,
-              IALMProxy(Avalanche.ALM_PROXY),
-              IRateLimits(Avalanche.ALM_RATE_LIMITS),
-              Avalanche.ALM_RELAYER,
-              Avalanche.ALM_FREEZER
-          );
-      } else if (chain == ChainIdUtils.Base()) {
-          ctx = GroveLiquidityLayerContext(
-              Base.GROVE_EXECUTOR,
-              controller,
-              IALMProxy(Base.ALM_PROXY),
-              IRateLimits(Base.ALM_RATE_LIMITS),
-              Base.ALM_RELAYER,
-              Base.ALM_FREEZER
-          );
-      } else if (chain == ChainIdUtils.Plume()) {
-          ctx = GroveLiquidityLayerContext(
-              Plume.GROVE_EXECUTOR,
-              controller,
-              IALMProxy(Plume.ALM_PROXY),
-              IRateLimits(Plume.ALM_RATE_LIMITS),
-              Plume.ALM_RELAYER,
-              Plume.ALM_FREEZER
-          );
-      } else {
-          revert("Chain not supported by GroveLiquidityLayerContext");
-      }
-  }
-
-  function _getGroveLiquidityLayerContext() internal view returns(GroveLiquidityLayerContext memory) {
-      return _getGroveLiquidityLayerContext(ChainIdUtils.fromUint(block.chainid));
-  }
-
-    /**
-     * @notice Asserts the USDS and USDC balances of the ALM proxy
-     * @param usds The expected USDS balance
-     * @param usdc The expected USDC balance
-     */
-    function _assertMainnetAlmProxyBalances(
-        uint256 usds,
-        uint256 usdc
-    ) internal view {
-        assertEq(IERC20(Ethereum.USDS).balanceOf(Ethereum.ALM_PROXY), usds, "incorrect-alm-proxy-usds-balance");
-        assertEq(IERC20(Ethereum.USDC).balanceOf(Ethereum.ALM_PROXY), usdc, "incorrect-alm-proxy-usdc-balance");
-    }
-
     function _assertRateLimit(
+        address rateLimits,
         bytes32 key,
         uint256 maxAmount,
-        uint256 slope
+        uint256 slope,
+        string memory errorPrefix
     ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        IRateLimitsLike.RateLimitData memory rateLimit = IRateLimitsLike(rateLimits).getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, maxAmount, "max-amount-not-correct");
-        assertEq(rateLimit.slope,     slope,     "slope-not-correct");
+        assertEq(rateLimit.maxAmount, maxAmount, string.concat(errorPrefix, "max-amount-not-correct"));
+        assertEq(rateLimit.slope,     slope,     string.concat(errorPrefix, "slope-not-correct"));
     }
 
     function _assertUnlimitedRateLimit(
-        bytes32 key
+        address rateLimits,
+        bytes32 key,
+        string memory errorPrefix
     ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        IRateLimitsLike.RateLimitData memory rateLimit = IRateLimitsLike(rateLimits).getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, type(uint256).max, "unlimited-max-amount-not-correct");
-        assertEq(rateLimit.slope,     0, "unlimited-slope-not-correct");
+        assertEq(rateLimit.maxAmount, type(uint256).max, string.concat(errorPrefix, "unlimited-max-amount-not-correct"));
+        assertEq(rateLimit.slope,     0, string.concat(errorPrefix, "unlimited-slope-not-correct"));
     }
 
     function _assertZeroRateLimit(
-        bytes32 key
+        address rateLimits,
+        bytes32 key,
+        string memory errorPrefix
     ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        IRateLimitsLike.RateLimitData memory rateLimit = IRateLimitsLike(rateLimits).getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount, 0, "zero-max-amount-not-correct");
-        assertEq(rateLimit.slope,     0, "zero-slope-not-correct");
+        assertEq(rateLimit.maxAmount, 0, string.concat(errorPrefix, "zero-max-amount-not-correct"));
+        assertEq(rateLimit.slope,     0, string.concat(errorPrefix, "zero-slope-not-correct"));
     }
 
     function _assertRateLimit(
+        address rateLimits,
         bytes32 key,
         uint256 maxAmount,
         uint256 slope,
         uint256 lastAmount,
-        uint256 lastUpdated
+        uint256 lastUpdated,
+        string memory errorPrefix
     ) internal view {
-        IRateLimits.RateLimitData memory rateLimit = _getGroveLiquidityLayerContext().rateLimits.getRateLimitData(key);
+        IRateLimitsLike.RateLimitData memory rateLimit = IRateLimitsLike(rateLimits).getRateLimitData(key);
 
-        assertEq(rateLimit.maxAmount,   maxAmount,   "max-amount-not-correct");
-        assertEq(rateLimit.slope,       slope,       "slope-not-correct");
-        assertEq(rateLimit.lastAmount,  lastAmount,  "last-amount-not-correct");
-        assertEq(rateLimit.lastUpdated, lastUpdated, "last-updated-not-correct");
+        assertEq(rateLimit.maxAmount,   maxAmount,   string.concat(errorPrefix, "max-amount-not-correct"));
+        assertEq(rateLimit.slope,       slope,       string.concat(errorPrefix, "slope-not-correct"));
+        assertEq(rateLimit.lastAmount,  lastAmount,  string.concat(errorPrefix, "last-amount-not-correct"));
+        assertEq(rateLimit.lastUpdated, lastUpdated, string.concat(errorPrefix, "last-updated-not-correct"));
     }
 
 }

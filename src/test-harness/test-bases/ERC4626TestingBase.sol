@@ -8,9 +8,9 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
-abstract contract ERC4626TestingBase is CommonTestBase {
+abstract contract ERC4626TestingBase is CommonALMTestBase {
 
     function _testERC4626Onboarding(
         address vault,

@@ -8,7 +8,7 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
 interface ICurvePoolLike {
     function balanceOf(address account) external view returns (uint256);
@@ -37,7 +37,7 @@ interface ICurvePoolLike {
     function stored_rates() external view returns (uint256[] memory);
 }
 
-abstract contract CurveTestingBase is CommonTestBase {
+abstract contract CurveTestingBase is CommonALMTestBase {
 
     struct CurveOnboardingVars {
         ICurvePoolLike pool;

@@ -3,9 +3,9 @@ pragma solidity ^0.8.0;
 
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
-abstract contract InitializationTestingBase is CommonTestBase {
+abstract contract InitializationTestingBase is CommonALMTestBase {
 
     struct ControllerConfigParams {
         address   freezer;

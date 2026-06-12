@@ -8,9 +8,9 @@ import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
-abstract contract ERC20TestingBase is CommonTestBase {
+abstract contract ERC20TestingBase is CommonALMTestBase {
 
     /**********************************************************************************************/
     /*** Testing functions                                                                      ***/
