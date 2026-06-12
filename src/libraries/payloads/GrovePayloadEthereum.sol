@@ -8,9 +8,9 @@ import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
-import { ArbitrumERC20Forwarder }            from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
-import { CCTPForwarder }                     from "xchain-helpers/forwarders/CCTPForwarder.sol";
-import { OptimismForwarder }                 from "xchain-helpers/forwarders/OptimismForwarder.sol";
+import { ArbitrumERC20Forwarder } from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
+import { CCTPv2Forwarder }        from "xchain-helpers/forwarders/CCTPv2Forwarder.sol";
+import { OptimismForwarder }      from "xchain-helpers/forwarders/OptimismForwarder.sol";
 
 import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
@@ -55,10 +55,10 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         _execute();
 
         if (PAYLOAD_AVALANCHE != address(0)) {
-            CCTPForwarder.sendMessage({
-                messageTransmitter  : CCTPForwarder.MESSAGE_TRANSMITTER_CIRCLE_ETHEREUM,
-                destinationDomainId : CCTPForwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
-                recipient           : Avalanche.GROVE_RECEIVER,
+            CCTPv2Forwarder.sendMessage({
+                messageTransmitter  : CCTPv2Forwarder.MESSAGE_TRANSMITTER_CIRCLE_ETHEREUM,
+                destinationDomainId : CCTPv2Forwarder.DOMAIN_ID_CIRCLE_AVALANCHE,
+                recipient           : Avalanche.GROVE_CCTP_V2_RECEIVER,
                 messageBody         : _encodePayloadQueue(PAYLOAD_AVALANCHE)
             });
         }
