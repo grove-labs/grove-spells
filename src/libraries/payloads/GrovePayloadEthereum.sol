@@ -14,8 +14,9 @@ import { OptimismForwarder }      from "xchain-helpers/forwarders/OptimismForwar
 
 import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
-import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
-import { UniswapV3Helpers }           from "../helpers/UniswapV3Helpers.sol";
+import { GroveLiquidityLayerHelpers }             from "../helpers/GroveLiquidityLayerHelpers.sol";
+import { GroveParallelizedAllocationUnitHelpers } from "../helpers/GroveParallelizedAllocationUnitHelpers.sol";
+import { UniswapV3Helpers }                       from "../helpers/UniswapV3Helpers.sol";
 
 interface IStarSpellLike {
 
@@ -210,6 +211,49 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
             poolParams,
             token0Params,
             token1Params
+        );
+    }
+
+    function _onboardUsdsMintBurnDpau(
+        address rateLimits,
+        uint256 mintMax,
+        uint256 mintSlope,
+        uint256 burnMax,
+        uint256 burnSlope
+    ) internal {
+        GroveParallelizedAllocationUnitHelpers.onboardUsdsMintBurn(
+            rateLimits,
+            mintMax,
+            mintSlope,
+            burnMax,
+            burnSlope
+        );
+    }
+
+    function _onboardPsmSwapDpau(
+        address rateLimits,
+        uint256 usdsToUsdcMax,
+        uint256 usdsToUsdcSlope,
+        uint256 usdcToUsdsMax,
+        uint256 usdcToUsdsSlope
+    ) internal {
+        GroveParallelizedAllocationUnitHelpers.onboardPsmSwap(
+            rateLimits,
+            usdsToUsdcMax,
+            usdsToUsdcSlope,
+            usdcToUsdsMax,
+            usdcToUsdsSlope
+        );
+    }
+
+    function _onboardBasinDpau(address rateLimits, address basin, uint256 depositMax, uint256 depositSlope) internal {
+        GroveParallelizedAllocationUnitHelpers.onboardBasin(
+            rateLimits,
+            basin,
+            Ethereum.USDS,
+            Ethereum.USDC,
+            depositMax,
+            depositSlope
         );
     }
 
