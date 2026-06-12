@@ -35,12 +35,12 @@ interface IAdministeredAgentLike {
 }
 
 struct PAUContext {
-    address              controller;
-    IPAUProxyLike        proxy;
+    address                controller;
+    IPAUProxyLike          proxy;
     IPAUAccessControlsLike accessControls;
-    IPAURateLimitsLike   rateLimits;
-    address              agent;  // AdministeredAgent holding ALLOCATOR_ROLE
-    address              actor;  // EOA allowed to drive the agent
+    IPAURateLimitsLike     rateLimits;
+    address                agent;  // AdministeredAgent holding ALLOCATOR_ROLE
+    address                actor;  // EOA allowed to drive the agent
 }
 
 /// @dev Test base for the DPAU controller system
