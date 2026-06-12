@@ -3,7 +3,7 @@ pragma solidity ^0.8.0;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { PAUContext, CommonPAUTestBase } from "../CommonPAUTestBase.sol";
+import { IPAUControllerLike, PAUContext, CommonPAUTestBase } from "../CommonPAUTestBase.sol";
 
 // The controller dispatches namespaced call selectors (basin_*) to the
 // BasinFacet's internal deposit/withdraw delegate selectors, so callers
@@ -53,11 +53,21 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         _assertPAUZeroRateLimit(depositKey);
         _assertPAUZeroRateLimit(withdrawKey);
 
-        // Before the spell the deposit must revert: either the Basin
-        // integration is not synced to the controller yet
-        // (CallSelectorNotWired) or it is synced with no rate limit set
-        // (RateLimits/zero-maxAmount).
-        vm.expectRevert();
+        // Before the spell the deposit must revert. Derive the concrete
+        // reason from onchain state so a wrong revert (e.g. a selector typo)
+        // cannot slip through a catch-all expectRevert.
+        bytes4 depositSelector = IBasinControllerLike.basin_deposit.selector;
+
+        if (IPAUControllerLike(ctx.controller).getDispatch(depositSelector).facet == address(0)) {
+            // Basin integration not synced to the controller yet
+            vm.expectRevert(abi.encodeWithSignature("CallSelectorNotWired(bytes4)", depositSelector));
+        } else if (!ctx.accessControls.hasRole(ALLOCATOR_ROLE, ctx.agent)) {
+            // Integration synced but the agent is not an allocator yet
+            vm.expectRevert(abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", ctx.agent, ALLOCATOR_ROLE));
+        } else {
+            // Integration synced and agent authorized, but no rate limit set
+            vm.expectRevert("RateLimits/zero-maxAmount");
+        }
         _callAsPAUActor(abi.encodeCall(
             IBasinControllerLike.basin_deposit,
             (basin, asset, expectedDepositAmount, 0)
