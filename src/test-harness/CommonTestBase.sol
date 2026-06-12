@@ -50,8 +50,6 @@ library ChainIds {
 contract CommonTestBase is SpellRunner {
   using stdJson for string;
 
-  bytes32 internal constant GROVE_ALLOCATOR_ILK = "ALLOCATOR-BLOOM-A";
-
   address public constant AUSD_MAINNET  = 0x00000000eFE302BEAA2b3e6e1b18d08D69a9012a;
   address public constant BUIDL_MAINNET = 0x6a9DA2D710BB9B700acde7Cb81F10F1fF8C89041;
   address public constant USDC_MAINNET  = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
