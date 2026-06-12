@@ -10,9 +10,17 @@ import { CommonTestBase } from "./CommonTestBase.sol";
 // onchain deployments through inline *Like interfaces instead of importing
 // their sources (same pattern as pau-assemblers).
 
+// Mirrors IEnumerableIntegrations.Dispatch: the facet and delegate selector a
+// call selector resolves to on the controller (zero facet = not wired).
+struct PAUDispatch {
+    address facet;
+    bytes4  delegateSelector;
+}
+
 interface IPAUControllerLike {
     function accessControls() external view returns (address);
     function beacon() external view returns (address);
+    function getDispatch(bytes4 callSelector) external view returns (PAUDispatch memory dispatch);
     function proxy() external view returns (address);
     function rateLimits() external view returns (address);
 }
@@ -65,8 +73,17 @@ abstract contract CommonPAUTestBase is CommonTestBase {
         require(ctx.controller != address(0), "PAU context not configured for chain");
     }
 
-    function _getPAUContext() internal view returns (PAUContext memory) {
-        return _getPAUContext(ChainIdUtils.fromUint(block.chainid));
+    function _getPAUContext() internal view returns (PAUContext memory ctx) {
+        ctx = _getPAUContext(ChainIdUtils.fromUint(block.chainid));
+
+        // Contexts are hand-configured until registry constants land, so
+        // cross-check against the controller's own references to catch typos.
+        // Only this variant validates: block.chainid guarantees the active
+        // fork matches the context being checked.
+        IPAUControllerLike controller = IPAUControllerLike(ctx.controller);
+        require(controller.proxy()          == address(ctx.proxy),          "PAU context proxy mismatch");
+        require(controller.rateLimits()     == address(ctx.rateLimits),     "PAU context rateLimits mismatch");
+        require(controller.accessControls() == address(ctx.accessControls), "PAU context accessControls mismatch");
     }
 
     /**
