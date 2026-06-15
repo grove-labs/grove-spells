@@ -68,7 +68,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
             // Integration synced and agent authorized, but no rate limit set
             vm.expectRevert("RateLimits/zero-maxAmount");
         }
-        _callAsPAUActor(abi.encodeCall(
+        _callAsPAUActor(ctx, abi.encodeCall(
             IBasinControllerLike.basin_deposit,
             (basin, asset, expectedDepositAmount, 0)
         ));
@@ -80,7 +80,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
 
         if (!unlimitedDeposit) {
             vm.expectRevert("RateLimits/rate-limit-exceeded");
-            _callAsPAUActor(abi.encodeCall(
+            _callAsPAUActor(ctx, abi.encodeCall(
                 IBasinControllerLike.basin_deposit,
                 (basin, asset, depositMax + 1, 0)
             ));
@@ -91,7 +91,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
 
         uint256 startingShares = IBasinLike(basin).shares(proxy);
 
-        _callAsPAUActor(abi.encodeCall(
+        _callAsPAUActor(ctx, abi.encodeCall(
             IBasinControllerLike.basin_deposit,
             (basin, asset, expectedDepositAmount, 0)
         ));
@@ -102,7 +102,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(depositKey),  unlimitedDeposit ? type(uint256).max : depositMax - expectedDepositAmount);
         assertEq(ctx.rateLimits.getCurrentRateLimit(withdrawKey), type(uint256).max);
 
-        _callAsPAUActor(abi.encodeCall(
+        _callAsPAUActor(ctx, abi.encodeCall(
             IBasinControllerLike.basin_withdraw,
             (basin, asset, expectedDepositAmount / 2, 0)
         ));

@@ -89,10 +89,15 @@ abstract contract CommonPAUTestBase is CommonTestBase {
     /**
      * @notice Executes a controller call through the PAU operational path:
      *         actor EOA -> AdministeredAgent.call -> Controller (facet dispatch)
+     * @dev    Takes the caller's already-loaded (and validated) context so the
+     *         agent call is the first external call after any preceding
+     *         vm.expectRevert. Fetching the context here would fire the
+     *         validating staticcalls in _getPAUContext() first, and Foundry
+     *         would bind expectRevert to those instead of the controller call.
+     * @param ctx  The PAU context (load once via _getPAUContext()).
      * @param data The calldata for the controller (facet function selector + args)
      */
-    function _callAsPAUActor(bytes memory data) internal returns (bytes memory result) {
-        PAUContext memory ctx = _getPAUContext();
+    function _callAsPAUActor(PAUContext memory ctx, bytes memory data) internal returns (bytes memory result) {
         vm.prank(ctx.actor);
         result = IAdministeredAgentLike(ctx.agent).call(ctx.controller, data);
     }
