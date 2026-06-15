@@ -1,0 +1,125 @@
+// SPDX-License-Identifier: AGPL-3.0
+pragma solidity ^0.8.0;
+
+import { ChainId, ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
+
+import { CommonTestBase } from "./CommonTestBase.sol";
+
+// NOTE: The DPAU contracts (diamond-pau, pau-administered-agent) are compiled
+// with solc ^0.8.34 while this repo pins 0.8.25, so we interface with their
+// onchain deployments through inline *Like interfaces instead of importing
+// their sources (same pattern as pau-assemblers).
+
+// Mirrors IEnumerableIntegrations.Dispatch: the facet and delegate selector a
+// call selector resolves to on the controller (zero facet = not wired).
+struct PAUDispatch {
+    address facet;
+    bytes4  delegateSelector;
+}
+
+interface IPAUControllerLike {
+    function accessControls() external view returns (address);
+    function beacon() external view returns (address);
+    function getDispatch(bytes4 callSelector) external view returns (PAUDispatch memory dispatch);
+    function proxy() external view returns (address);
+    function rateLimits() external view returns (address);
+}
+
+interface IPAUAccessControlsLike {
+    function hasRole(bytes32 role, address account) external view returns (bool);
+}
+
+interface IPAURateLimitsLike {
+    function getCurrentRateLimit(bytes32 key) external view returns (uint256 rateLimit);
+    function hasRole(bytes32 role, address account) external view returns (bool);
+}
+
+interface IPAUProxyLike {
+    function hasRole(bytes32 role, address account) external view returns (bool);
+}
+
+interface IAdministeredAgentLike {
+    function call(address target, bytes memory data) external payable returns (bytes memory result);
+}
+
+struct PAUContext {
+    address                controller;
+    IPAUProxyLike          proxy;
+    IPAUAccessControlsLike accessControls;
+    IPAURateLimitsLike     rateLimits;
+    address                agent;  // AdministeredAgent holding ALLOCATOR_ROLE
+    address                actor;  // EOA allowed to drive the agent
+}
+
+/// @dev Test base for the DPAU controller system
+/// (diamond-pau Controller + AccessControls + AdministeredAgent allocators).
+abstract contract CommonPAUTestBase is CommonTestBase {
+
+    bytes32 internal constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
+    bytes32 internal constant CONTROLLER     = keccak256("CONTROLLER");
+
+    // No PAU addresses exist in grove-address-registry yet, so spell tests
+    // configure the context in setUp via _setPAUContext. Once registry
+    // constants land, this can resolve them directly like
+    // _getGroveLiquidityLayerContext does for the legacy ALM system.
+    mapping(ChainId => PAUContext) private pauContext;
+
+    function _setPAUContext(ChainId chain, PAUContext memory ctx) internal {
+        pauContext[chain] = ctx;
+    }
+
+    function _getPAUContext(ChainId chain) internal view returns (PAUContext memory ctx) {
+        ctx = pauContext[chain];
+        require(ctx.controller != address(0), "PAU context not configured for chain");
+    }
+
+    function _getPAUContext() internal view returns (PAUContext memory ctx) {
+        ctx = _getPAUContext(ChainIdUtils.fromUint(block.chainid));
+
+        // Contexts are hand-configured until registry constants land, so
+        // cross-check against the controller's own references to catch typos.
+        // Only this variant validates: block.chainid guarantees the active
+        // fork matches the context being checked.
+        IPAUControllerLike controller = IPAUControllerLike(ctx.controller);
+        require(controller.proxy()          == address(ctx.proxy),          "PAU context proxy mismatch");
+        require(controller.rateLimits()     == address(ctx.rateLimits),     "PAU context rateLimits mismatch");
+        require(controller.accessControls() == address(ctx.accessControls), "PAU context accessControls mismatch");
+    }
+
+    /**
+     * @notice Executes a controller call through the PAU operational path:
+     *         actor EOA -> AdministeredAgent.call -> Controller (facet dispatch)
+     * @dev    Takes the caller's already-loaded (and validated) context so the
+     *         agent call is the first external call after any preceding
+     *         vm.expectRevert. Fetching the context here would fire the
+     *         validating staticcalls in _getPAUContext() first, and Foundry
+     *         would bind expectRevert to those instead of the controller call.
+     * @param ctx  The PAU context (load once via _getPAUContext()).
+     * @param data The calldata for the controller (facet function selector + args)
+     */
+    function _callAsPAUActor(PAUContext memory ctx, bytes memory data) internal returns (bytes memory result) {
+        vm.prank(ctx.actor);
+        result = IAdministeredAgentLike(ctx.agent).call(ctx.controller, data);
+    }
+
+    function _assertPAURateLimit(
+        bytes32 key,
+        uint256 maxAmount,
+        uint256 slope
+    ) internal view {
+        _assertRateLimit(address(_getPAUContext().rateLimits), key, maxAmount, slope, "pau-");
+    }
+
+    function _assertPAUUnlimitedRateLimit(
+        bytes32 key
+    ) internal view {
+        _assertUnlimitedRateLimit(address(_getPAUContext().rateLimits), key, "pau-");
+    }
+
+    function _assertPAUZeroRateLimit(
+        bytes32 key
+    ) internal view {
+        _assertZeroRateLimit(address(_getPAUContext().rateLimits), key, "pau-");
+    }
+
+}

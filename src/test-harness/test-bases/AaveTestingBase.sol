@@ -8,9 +8,9 @@ import { RateLimitHelpers }  from "grove-alm-controller/src/RateLimitHelpers.sol
 
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
-abstract contract AaveTestingBase is CommonTestBase {
+abstract contract AaveTestingBase is CommonALMTestBase {
 
     function _testAaveOnboarding(
         address aToken,

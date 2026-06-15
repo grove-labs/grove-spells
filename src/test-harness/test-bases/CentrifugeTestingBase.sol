@@ -11,7 +11,7 @@ import { CastingHelpers }             from "src/libraries/helpers/CastingHelpers
 import { ChainIdUtils }               from "src/libraries/helpers/ChainId.sol";
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
 
-import { GroveLiquidityLayerContext, CommonTestBase } from "../CommonTestBase.sol";
+import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
 enum RequestCallbackType {
     Invalid,
@@ -82,7 +82,7 @@ interface ISpokeLike {
     );
 }
 
-abstract contract CentrifugeTestingBase is CommonTestBase {
+abstract contract CentrifugeTestingBase is CommonALMTestBase {
 
     function _testCentrifugeV3RedemptionsOnlyOnboarding(
         address centrifugeVault,

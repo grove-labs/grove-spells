@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import { AaveTestingBase }           from "./test-bases/AaveTestingBase.sol";
+import { BasinTestingBase }          from "./test-bases/BasinTestingBase.sol";
 import { CentrifugeTestingBase }     from "./test-bases/CentrifugeTestingBase.sol";
 import { CurveTestingBase }          from "./test-bases/CurveTestingBase.sol";
 import { DeploymentsTestingBase }    from "./test-bases/DeploymentsTestingBase.sol";
@@ -10,13 +11,16 @@ import { ERC4626TestingBase }        from "./test-bases/ERC4626TestingBase.sol";
 import { InitializationTestingBase } from "./test-bases/InitializationTestingBase.sol";
 import { UniswapV3TestingBase }      from "./test-bases/UniswapV3TestingBase.sol";
 
-import { CommonSpellTests } from "./CommonSpellTests.sol";
+import { CommonALMSpellTests } from "./CommonALMSpellTests.sol";
+import { CommonPAUSpellTests } from "./CommonPAUSpellTests.sol";
 
 /// @dev convenience contract meant to be the single point of entry for all
 /// spell-specific test contracts
 abstract contract GroveTestBase is
-    CommonSpellTests,
+    CommonALMSpellTests,
+    CommonPAUSpellTests,
     AaveTestingBase,
+    BasinTestingBase,
     CentrifugeTestingBase,
     CurveTestingBase,
     DeploymentsTestingBase,
