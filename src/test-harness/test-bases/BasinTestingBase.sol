@@ -98,7 +98,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         address collateralToken,
         uint256 amount,
         uint256 depositMax
-    ) internal {
+    ) private {
         address proxy = address(ctx.proxy);
 
         uint256 proxySwapTokenStart       = IERC20(swapToken).balanceOf(proxy);
@@ -119,7 +119,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
 
         // 3. Simulate the credit-token swap (pocket pays out USDS) + its redemption to USDC at par
         //    (basin, the collateral custodian, receives USDC). USDS is 18dp, USDC is 6dp.
-        uint256 redeemedCollateral = (amount / 2) / 1e12;
+        uint256 redeemedCollateral = (amount / 2) / _collateralScale(swapToken, collateralToken);
         {
             address pocket = IBasinLike(basin).pocket();
             deal2(swapToken,       pocket, IERC20(swapToken).balanceOf(pocket) - amount / 2);
@@ -127,20 +127,25 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         }
 
         // 4. Withdraw the redeemed USDC (exercises the USDC withdraw limit this spell adds).
-        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.basin_withdraw, (basin, collateralToken, redeemedCollateral, 0)));
-        uint256 collateralOut = IERC20(collateralToken).balanceOf(proxy) - proxyCollateralTokenStart;
-        assertGt(collateralOut, 0,                  "basin-lifecycle-withdraw");
-        assertLe(collateralOut, redeemedCollateral, "basin-lifecycle-overdraw");
+        bytes memory withdrawReturn = _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.basin_withdraw, (basin, collateralToken, redeemedCollateral, 0)));
+        uint256 collateralOut = abi.decode(withdrawReturn, (uint256));
+        assertEq(collateralOut, redeemedCollateral, "basin-lifecycle-withdraw");
+        assertEq(IERC20(collateralToken).balanceOf(proxy) - proxyCollateralTokenStart, collateralOut, "basin-lifecycle-withdraw-balance");
         assertEq(ctx.rateLimits.getCurrentRateLimit(_basinWithdrawKey(basin, collateralToken)), type(uint256).max, "basin-lifecycle-withdraw-unlimited");
 
         // 5. Swap the withdrawn USDC back to USDS through the PSM (0 fee).
         _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.psm_swapUSDCToUSDS, (collateralOut)));
         assertEq(IERC20(collateralToken).balanceOf(proxy), proxyCollateralTokenStart,                  "basin-lifecycle-psm-collateral");
-        assertEq(IERC20(swapToken).balanceOf(proxy),       proxySwapTokenStart + collateralOut * 1e12, "basin-lifecycle-psm-asset");
+        assertEq(IERC20(swapToken).balanceOf(proxy),       proxySwapTokenStart + collateralOut * _collateralScale(swapToken, collateralToken), "basin-lifecycle-psm-asset");
 
         // 6. Burn the round-tripped USDS, closing out the position.
-        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.usds_burn, (collateralOut * 1e12)));
+        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.usds_burn, (collateralOut * _collateralScale(swapToken, collateralToken))));
         assertEq(IERC20(swapToken).balanceOf(proxy), proxySwapTokenStart, "basin-lifecycle-burn");
+    }
+
+    /// @dev Scale between the swap-leg (e.g. USDS, 18dp) and collateral-leg (e.g. USDC, 6dp) decimal bases.
+    function _collateralScale(address swapToken, address collateralToken) private view returns (uint256) {
+        return 10 ** (IERC20(swapToken).decimals() - IERC20(collateralToken).decimals());
     }
 
 }

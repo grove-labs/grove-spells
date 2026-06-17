@@ -16,8 +16,7 @@ import {
     IPAUProxyLike,
     IPAUAccessControlsLike,
     IPAURateLimitsLike,
-    PAUContext,
-    PAUDispatch
+    PAUContext
 } from "src/test-harness/CommonPAUTestBase.sol";
 
 import { IBasinControllerLike } from "src/test-harness/test-bases/BasinTestingBase.sol";
@@ -28,15 +27,18 @@ interface IVatLike {
     function ilks(bytes32 ilk) external view returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
     function init(bytes32 ilk) external;
     function file(bytes32 ilk, bytes32 what, uint256 data) external;
-    function file(bytes32 what, uint256 data) external;
     function slip(bytes32 ilk, address usr, int256 wad) external;
     function grab(bytes32 i, address u, address v, address w, int256 dink, int256 dart) external;
-    function Line() external view returns (uint256);
 }
 
 interface IJugLike {
     function ilks(bytes32 ilk) external view returns (uint256 duty, uint256 rho);
     function init(bytes32 ilk) external;
+}
+
+interface IDssAutoLineLike {
+    function setIlk(bytes32 ilk, uint256 line, uint256 gap, uint256 ttl) external;
+    function exec(bytes32 ilk) external returns (uint256);
 }
 
 // --- Sky allocator instance (dss-allocator) ---
@@ -81,7 +83,6 @@ interface IAdministeredAgentMembersLike {
 
 interface ILitePsmLike {
     function kiss(address usr) external;
-    function bud(address usr) external view returns (uint256);
 }
 
 contract GroveEthereum_20260702_Test is GroveTestBase {
@@ -132,6 +133,10 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
     // USDS amount driven through the basin onboarding lifecycle (within mint (5M) and deposit (5M) limits).
     uint256 internal constant BASIN_DEPOSIT_TEST_AMOUNT = 1_000_000e18;
+
+    // Mirrors the payload: SubProxy USDC->USDS PSM swap amount, and the Grove Foundation distribution.
+    uint256 internal constant SUBPROXY_PSM_SWAP_USDC      = 1_102_056_359999;
+    uint256 internal constant GROVE_FOUNDATION_USDS_GRANT = 800_000e18;
 
     constructor() {
         id = "20260702";
@@ -248,20 +253,20 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         PAUContext memory ctx  = _getPAUContext();
         IERC20            usds = IERC20(Ethereum.USDS);
 
-        uint256 proxyUsdsBefore = usds.balanceOf(address(ctx.proxy));
-        uint256 amount          = 1_000_000e18;
+        uint256 proxyUsdsStart = usds.balanceOf(address(ctx.proxy));
+        uint256 amount         = 1_000_000e18;
 
         assertEq(ctx.rateLimits.getCurrentRateLimit(mintKey), USDS_MINT_MAX, "mint-rate-limit-not-full");
         assertEq(ctx.rateLimits.getCurrentRateLimit(burnKey), USDS_BURN_MAX, "burn-rate-limit-not-full");
 
         _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.usds_mint, (amount)));
 
-        assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsBefore + amount, "proxy-usds-not-minted");
-        assertEq(ctx.rateLimits.getCurrentRateLimit(mintKey), USDS_MINT_MAX - amount,   "mint-rate-limit-not-decreased");
+        assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsStart + amount, "proxy-usds-not-minted");
+        assertEq(ctx.rateLimits.getCurrentRateLimit(mintKey), USDS_MINT_MAX - amount,  "mint-rate-limit-not-decreased");
 
         _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.usds_burn, (amount)));
 
-        assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsBefore,        "proxy-usds-not-burned");
+        assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsStart,         "proxy-usds-not-burned");
         assertEq(ctx.rateLimits.getCurrentRateLimit(burnKey), USDS_BURN_MAX - amount, "burn-rate-limit-not-decreased");
     }
 
@@ -372,11 +377,11 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     function test_ETHEREUM_swapUsdcToUsdsViaPsm() public onChain(ChainIdUtils.Ethereum()) {
         IERC20 usdc = IERC20(Ethereum.USDC);
 
-        uint256 subProxyUsdcBefore = usdc.balanceOf(Ethereum.GROVE_PROXY);
+        uint256 subProxyUsdcStart = usdc.balanceOf(Ethereum.GROVE_PROXY);
 
         assertGe(
-            subProxyUsdcBefore,
-            1_102_056_359999,
+            subProxyUsdcStart,
+            SUBPROXY_PSM_SWAP_USDC,
             "grove-proxy-insufficient-usdc-balance"
         );
 
@@ -384,22 +389,22 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         assertEq(
             usdc.balanceOf(Ethereum.GROVE_PROXY),
-            subProxyUsdcBefore - 1_102_056_359999,
+            subProxyUsdcStart - SUBPROXY_PSM_SWAP_USDC,
             "grove-proxy-usdc-not-decreased"
         );
 
-        // The corresponding SubProxy USDS inflow (+1_102_056_359999 * 1e12 at the current 0 PSM fee)
+        // The corresponding SubProxy USDS inflow (+SUBPROXY_PSM_SWAP_USDC * 1e12 at the current 0 PSM fee)
         // is verified together with the treasury-distribution outflow in test_ETHEREUM_subProxyUsdsNetDelta().
     }
 
     function test_ETHEREUM_treasuryDistributionToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {
         IERC20 usds = IERC20(Ethereum.USDS);
 
-        uint256 foundationBalanceBefore = usds.balanceOf(Ethereum.GROVE_FOUNDATION);
+        uint256 foundationUsdsStart = usds.balanceOf(Ethereum.GROVE_FOUNDATION);
 
         assertGe(
             usds.balanceOf(Ethereum.GROVE_PROXY),
-            800_000e18,
+            GROVE_FOUNDATION_USDS_GRANT,
             "grove-proxy-insufficient-usds-balance"
         );
 
@@ -407,7 +412,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         assertEq(
             usds.balanceOf(Ethereum.GROVE_FOUNDATION),
-            foundationBalanceBefore + 800_000e18,
+            foundationUsdsStart + GROVE_FOUNDATION_USDS_GRANT,
             "foundation-usds-balance-not-increased"
         );
     }
@@ -415,16 +420,16 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     function test_ETHEREUM_subProxyUsdsNetDelta() public onChain(ChainIdUtils.Ethereum()) {
         IERC20 usds = IERC20(Ethereum.USDS);
 
-        uint256 subProxyUsdsBefore = usds.balanceOf(Ethereum.GROVE_PROXY);
+        uint256 subProxyUsdsStart = usds.balanceOf(Ethereum.GROVE_PROXY);
 
         executeAllPayloadsAndBridges();
 
-        // The PSM swap moves +1_102_056_359999 * 1e12 USDS into the SubProxy (USDC -> USDS via the Sky PSM, 0 fee).
-        // The treasury distribution moves -800_000e18 USDS out of the SubProxy (to the Grove Foundation).
+        // The PSM swap moves +SUBPROXY_PSM_SWAP_USDC * 1e12 USDS into the SubProxy (USDC -> USDS via the Sky PSM, 0 fee).
+        // The treasury distribution moves -GROVE_FOUNDATION_USDS_GRANT USDS out of the SubProxy (to the Grove Foundation).
         // The DPAU / Basin actions move no USDS through the SubProxy.
         assertEq(
             usds.balanceOf(Ethereum.GROVE_PROXY),
-            subProxyUsdsBefore + 1_102_056_359999 * 1e12 - 800_000e18,
+            subProxyUsdsStart + SUBPROXY_PSM_SWAP_USDC * 1e12 - GROVE_FOUNDATION_USDS_GRANT,
             "grove-proxy-usds-net-delta-mismatch"
         );
     }
@@ -434,33 +439,37 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     /// @dev Replays the vat/jug ilk wiring + vault/buffer ownership that Sky's
     ///      2026-06-18 spell performs for ALLOCATOR-GROVE-A, so the DPAU system can
     ///      draw USDS through the vault at this earlier fork. Mirrors AllocatorInit.initIlk.
-    function _simulateAllocatorGroveAInit() internal {
+    function _simulateAllocatorGroveAInit() private {
         if (ChainIdUtils.fromUint(block.chainid) != ChainIdUtils.Ethereum()) return;
 
         uint256 RAY = 1e27;
         uint256 RAD = 1e45;
 
-        uint256 ink  = 1_000_000_000_000 ether;  // locked collateral so debt ceiling (not collateral) binds
-        uint256 line = 100_000_000_000 * RAD;     // generous ilk debt ceiling
+        uint256 ink  = 1_000_000_000_000 ether;  // locked collateral so the debt ceiling (not collateral) binds
 
         bytes32 ilk = GROVE_PAU_ALLOCATOR_ILK;
 
-        IVatLike vat = IVatLike(Ethereum.VAT);
-        IJugLike jug = IJugLike(MCD_JUG);
+        IVatLike         vat      = IVatLike(Ethereum.VAT);
+        IJugLike         jug      = IJugLike(MCD_JUG);
+        IDssAutoLineLike autoLine = IDssAutoLineLike(Ethereum.AUTO_LINE);
 
         // (1) Wire the ilk into the Maker core as the Maker PauseProxy would.
         vm.startPrank(Ethereum.PAUSE_PROXY);
         ( , uint256 rate, , , ) = vat.ilks(ilk);
         if (rate == 0) vat.init(ilk);
         vat.file(ilk, "spot", RAY);
-        vat.file(ilk, "line", line);
-        vat.file("Line", vat.Line() + line);
+        // Onboard the ilk debt ceiling via the real DC-IAM (autoline) with the production
+        // ALLOCATOR-GROVE-A params: maxLine 5M, gap 1M, ttl 1 day, duty 0 (rate-limit-values.md).
+        autoLine.setIlk(ilk, 5_000_000 * RAD, 1_000_000 * RAD, 1 days);
         vat.slip(ilk, ALLOCATOR_GROVE_A_VAULT, int256(ink));
         vat.grab(ilk, ALLOCATOR_GROVE_A_VAULT, ALLOCATOR_GROVE_A_VAULT, address(0), int256(ink), 0);
 
         ( uint256 duty, ) = jug.ilks(ilk);
-        if (duty == 0) jug.init(ilk);
+        if (duty == 0) jug.init(ilk);  // jug.init sets duty = RAY, i.e. a 0% stability fee
         vm.stopPrank();
+
+        // exec() ramps the vat ilk line to the initial gap (1M) and bumps the global Line, as Sky's spell would.
+        autoLine.exec(ilk);
 
         // (2) Hand vault + buffer ownership to the Grove SubProxy (Sky's switchOwner step).
         //     Forced via storage because the pre-init ward is the Sky deployer (wards is slot 0).
