@@ -314,25 +314,25 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_onboardJtrsyBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _testBasinOnboarding(
-            JTRSY_GROVE_BASIN,
-            Ethereum.USDS,
-            Ethereum.USDC,
-            BASIN_DEPOSIT_TEST_AMOUNT,
-            JTRSY_BASIN_DEPOSIT_MAX,
-            JTRSY_BASIN_DEPOSIT_SLOPE
-        );
+        _testBasinOnboarding({
+            basin                 : JTRSY_GROVE_BASIN,
+            swapToken             : Ethereum.USDS,
+            collateralToken       : Ethereum.USDC,
+            expectedDepositAmount : BASIN_DEPOSIT_TEST_AMOUNT,
+            depositMax            : JTRSY_BASIN_DEPOSIT_MAX,
+            depositSlope          : JTRSY_BASIN_DEPOSIT_SLOPE
+        });
     }
 
     function test_ETHEREUM_onboardBuidlBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _testBasinOnboarding(
-            BUIDL_GROVE_BASIN,
-            Ethereum.USDS,
-            Ethereum.USDC,
-            BASIN_DEPOSIT_TEST_AMOUNT,
-            BUIDL_BASIN_DEPOSIT_MAX,
-            BUIDL_BASIN_DEPOSIT_SLOPE
-        );
+        _testBasinOnboarding({
+            basin                 : BUIDL_GROVE_BASIN,
+            swapToken             : Ethereum.USDS,
+            collateralToken       : Ethereum.USDC,
+            expectedDepositAmount : BASIN_DEPOSIT_TEST_AMOUNT,
+            depositMax            : BUIDL_BASIN_DEPOSIT_MAX,
+            depositSlope          : BUIDL_BASIN_DEPOSIT_SLOPE
+        });
     }
 
     function test_ETHEREUM_swapUsdcToUsdsViaPsm() public onChain(ChainIdUtils.Ethereum()) {
