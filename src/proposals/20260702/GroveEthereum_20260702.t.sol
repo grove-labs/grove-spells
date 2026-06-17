@@ -77,6 +77,13 @@ interface ILitePsmLike {
 
 contract GroveEthereum_20260702_Test is GroveTestBase {
 
+    // New Sky ALLOCATOR-GROVE-A instance (deployed by Sky's 2026-06-18 spell).
+    address internal constant ALLOCATOR_GROVE_A_VAULT  = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
+    address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
+
+    // MCD_JUG is not in grove-address-registry (Sky: MCD Jug on Etherscan).
+    address internal constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
+
     // New Diamond PAU (DPAU) system, onboarded in parallel to the legacy ALM system.
     address internal constant DPAU_PROXY                      = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
     address internal constant DPAU_CONTROLLER                 = 0xbf83F5974B932c7D842254042717D6A2706CE5eE;
@@ -90,13 +97,6 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     address internal constant DPAU_BASIN_FACET                = 0xC84825BCD13AEddc372400239499380376a44A39;
     address internal constant DPAU_PSM_FACET                  = 0xE4A5dAc768a310cc2316f258901b32E499653064;
     address internal constant DPAU_USDS_FACET                 = 0x1221CC4B85Ab260660aD21C2829e0EB516dffBc7;
-
-    // New Sky ALLOCATOR-GROVE-A instance (deployed by Sky's 2026-06-18 spell).
-    address internal constant ALLOCATOR_GROVE_A_VAULT  = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
-    address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
-
-    // MCD_JUG is not in grove-address-registry (Sky: MCD Jug on Etherscan).
-    address internal constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
 
     bytes32 internal constant DEFAULT_ADMIN_ROLE = 0x00;
 
