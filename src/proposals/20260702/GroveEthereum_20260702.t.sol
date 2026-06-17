@@ -389,10 +389,10 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         );
 
         // The corresponding SubProxy USDS inflow (+1_102_056_359999 * 1e12 at the current 0 PSM fee)
-        // is verified together with the Item 4 outflow in test_ETHEREUM_subProxyUsdsNetDelta().
+        // is verified together with the treasury-distribution outflow in test_ETHEREUM_subProxyUsdsNetDelta().
     }
 
-    function test_ETHEREUM_treasuryDistributionToGroveOperations() public onChain(ChainIdUtils.Ethereum()) {
+    function test_ETHEREUM_treasuryDistributionToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {
         IERC20 usds = IERC20(Ethereum.USDS);
 
         uint256 foundationBalanceBefore = usds.balanceOf(Ethereum.GROVE_FOUNDATION);
@@ -419,9 +419,9 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         executeAllPayloadsAndBridges();
 
-        // Item 3 moves +1_102_056_359999 * 1e12 USDS into the SubProxy (USDC -> USDS via the Sky PSM, 0 fee).
-        // Item 4 moves -800_000e18 USDS out of the SubProxy (Grove operations distribution).
-        // The DPAU / Basin items move no USDS through the SubProxy.
+        // The PSM swap moves +1_102_056_359999 * 1e12 USDS into the SubProxy (USDC -> USDS via the Sky PSM, 0 fee).
+        // The treasury distribution moves -800_000e18 USDS out of the SubProxy (to the Grove Foundation).
+        // The DPAU / Basin actions move no USDS through the SubProxy.
         assertEq(
             usds.balanceOf(Ethereum.GROVE_PROXY),
             subProxyUsdsBefore + 1_102_056_359999 * 1e12 - 800_000e18,
