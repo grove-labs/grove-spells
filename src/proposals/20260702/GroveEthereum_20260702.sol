@@ -32,12 +32,12 @@ interface IAllocatorBufferLike {
  */
 contract GroveEthereum_20260702 is GrovePayloadEthereum {
 
+    address internal constant ALLOCATOR_GROVE_A_VAULT  = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
+    address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
+
     address internal constant DPAU_PROXY       = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
     address internal constant DPAU_CONTROLLER  = 0xbf83F5974B932c7D842254042717D6A2706CE5eE;
     address internal constant DPAU_RATE_LIMITS = 0xE016Ae733A77Ba77E7907aAA749394Fc5e75C0e1;
-
-    address internal constant ALLOCATOR_GROVE_A_VAULT  = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
-    address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
 
     address internal constant JTRSY_GROVE_BASIN = 0xf08943f817e1F902dEbC884c7B19Ea5764594Ac9;
     address internal constant BUIDL_GROVE_BASIN = 0xCBa428fB052B365557DAf52b744DFfF20d5FbEdD;
@@ -47,11 +47,11 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
         //   Forum : TODO
         _initDpauSystem();
 
-        // [Ethereum] Add USDS mint/burn rate limits on the DPAU rate limits (and reduce the legacy ALM mint limit to keep the total constant)
+        // [Ethereum] Add USDS mint/burn rate limits on the DPAU rate limits
         //   Forum : TODO
         _onboardUsdsMintBurnRateLimits();
 
-        // [Ethereum] Add PSM USDS<>USDC swap rate limits (both directions) on the DPAU rate limits (and reduce the legacy ALM swap limit to keep the total constant)
+        // [Ethereum] Add PSM USDS<>USDC swap rate limits (both directions) on the DPAU rate limits
         //   Forum : TODO
         _onboardPsmSwapRateLimits();
 
@@ -87,14 +87,6 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
             burnMax    : 5_000_000e18,                   // BEFORE: 0
             burnSlope  : 5_000_000e18 / uint256(1 days)  // BEFORE: 0
         });
-
-        // Decrease the legacy ALM mint rate limit by the amount just assigned to DPAU, so the combined
-        // (ALM + DPAU) max and recharge rate stay constant. Mint/burn share one ALM key (mint decreases
-        // it, burn refills it). The legacy limit currently holds 500M max / 500M-per-day slope.
-        _setUSDSMintRateLimit({
-            maxAmount : 495_000_000e18,                  // BEFORE: 500_000_000e18
-            slope     : 495_000_000e18 / uint256(1 days) // BEFORE: 500_000_000e18/day
-        });
     }
 
     function _onboardPsmSwapRateLimits() internal {
@@ -104,14 +96,6 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
             usdsToUsdcSlope : 5_000_000e6 / uint256(1 days), // BEFORE: 0
             usdcToUsdsMax   : 5_000_000e6,                   // BEFORE: 0
             usdcToUsdsSlope : 5_000_000e6 / uint256(1 days)  // BEFORE: 0
-        });
-
-        // Decrease the legacy ALM swap rate limit by the amount just assigned to DPAU, so the combined
-        // (ALM + DPAU) max and recharge rate stay constant. Both swap directions share one ALM key
-        // (USDS->USDC decreases it, USDC->USDS refills it). The legacy limit currently holds 500M max / 500M-per-day slope.
-        _setUSDSToUSDCRateLimit({
-            maxAmount : 495_000_000e6,                  // BEFORE: 500_000_000e6
-            slope     : 495_000_000e6 / uint256(1 days) // BEFORE: 500_000_000e6/day
         });
     }
 

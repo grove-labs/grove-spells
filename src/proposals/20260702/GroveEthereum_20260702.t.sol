@@ -7,8 +7,6 @@ import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
-import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol";
-
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 import {
@@ -118,10 +116,6 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     uint256 internal constant USDS_TO_USDC_SLOPE = 5_000_000e6 / uint256(1 days);
     uint256 internal constant USDC_TO_USDS_MAX   = 5_000_000e6;
     uint256 internal constant USDC_TO_USDS_SLOPE = 5_000_000e6 / uint256(1 days);
-
-    // Legacy ALM controller rate-limit keys (shared mint/burn key, shared swap key).
-    bytes32 internal constant ALM_LIMIT_USDS_MINT    = keccak256("LIMIT_USDS_MINT");
-    bytes32 internal constant ALM_LIMIT_USDS_TO_USDC = keccak256("LIMIT_USDS_TO_USDC");
 
     address internal constant JTRSY_GROVE_BASIN = 0xf08943f817e1F902dEbC884c7B19Ea5764594Ac9;
     address internal constant BUIDL_GROVE_BASIN = 0xCBa428fB052B365557DAf52b744DFfF20d5FbEdD;
@@ -321,35 +315,6 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.usds_burn, (swapUsds)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart, "proxy-usds-not-burned");
-    }
-
-    function test_ETHEREUM_decreaseAlmRateLimitsReassignedToDpau() public onChain(ChainIdUtils.Ethereum()) {
-        IRateLimits almRateLimits = IRateLimits(Ethereum.ALM_RATE_LIMITS);
-
-        IRateLimits.RateLimitData memory mintBefore = almRateLimits.getRateLimitData(ALM_LIMIT_USDS_MINT);
-        IRateLimits.RateLimitData memory swapBefore = almRateLimits.getRateLimitData(ALM_LIMIT_USDS_TO_USDC);
-
-        // The spell writes absolute post-spell targets, so it assumes the legacy limits start at their
-        // documented 500M max / 500M-per-day slope. Pin that starting state so the reduction is real:
-        // if Sky changes the legacy limits before this executes, this fails loudly instead of silently
-        // landing on the wrong absolute values.
-        assertEq(mintBefore.maxAmount, 500_000_000e18,                   "alm-mint-max-before");
-        assertEq(mintBefore.slope,     500_000_000e18 / uint256(1 days), "alm-mint-slope-before");
-        assertEq(swapBefore.maxAmount, 500_000_000e6,                    "alm-swap-max-before");
-        assertEq(swapBefore.slope,     500_000_000e6 / uint256(1 days),  "alm-swap-slope-before");
-
-        executeAllPayloadsAndBridges();
-
-        IRateLimits.RateLimitData memory mintAfter = almRateLimits.getRateLimitData(ALM_LIMIT_USDS_MINT);
-        IRateLimits.RateLimitData memory swapAfter = almRateLimits.getRateLimitData(ALM_LIMIT_USDS_TO_USDC);
-
-        // Legacy ALM limits reduced to the post-spell targets, carving out the DPAU allocation so the
-        // bulk of the mint/swap capacity (and recharge rate) stays on the legacy controller. The DPAU
-        // side of the allocation is asserted in the onboard mint/burn and swap tests.
-        assertEq(mintAfter.maxAmount, 495_000_000e18,                   "alm-mint-max");
-        assertEq(mintAfter.slope,     495_000_000e18 / uint256(1 days), "alm-mint-slope");
-        assertEq(swapAfter.maxAmount, 495_000_000e6,                    "alm-swap-max");
-        assertEq(swapAfter.slope,     495_000_000e6 / uint256(1 days),  "alm-swap-slope");
     }
 
     function test_ETHEREUM_onboardJtrsyBasin() public onChain(ChainIdUtils.Ethereum()) {
