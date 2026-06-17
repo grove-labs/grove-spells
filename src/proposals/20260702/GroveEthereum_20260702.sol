@@ -14,7 +14,7 @@ interface IUsdsPsmWrapperLike {
     function sellGem(address usr, uint256 gemAmt) external returns (uint256 usdsOut);
 }
 
-interface IDiamondPauControllerLike {
+interface IPauControllerLike {
     function usds_setVault(address vault) external;
 }
 
@@ -35,23 +35,23 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     address internal constant ALLOCATOR_GROVE_A_VAULT  = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
     address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
 
-    address internal constant DPAU_PROXY       = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
-    address internal constant DPAU_CONTROLLER  = 0xbf83F5974B932c7D842254042717D6A2706CE5eE;
-    address internal constant DPAU_RATE_LIMITS = 0xE016Ae733A77Ba77E7907aAA749394Fc5e75C0e1;
+    address internal constant PAU_PROXY       = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
+    address internal constant PAU_CONTROLLER  = 0xbf83F5974B932c7D842254042717D6A2706CE5eE;
+    address internal constant PAU_RATE_LIMITS = 0xE016Ae733A77Ba77E7907aAA749394Fc5e75C0e1;
 
     address internal constant JTRSY_GROVE_BASIN = 0xf08943f817e1F902dEbC884c7B19Ea5764594Ac9;
     address internal constant BUIDL_GROVE_BASIN = 0xCBa428fB052B365557DAf52b744DFfF20d5FbEdD;
 
     function _execute() internal override {
-        // [Ethereum] Initialize the DPAU system: hook it up to the new ALLOCATOR-GROVE-A instance (USDS mint/burn)
+        // [Ethereum] Initialize the PAU system: hook it up to the new ALLOCATOR-GROVE-A instance (USDS mint/burn)
         //   Forum : TODO
-        _initDpauSystem();
+        _initPauSystem();
 
-        // [Ethereum] Add USDS mint/burn rate limits on the DPAU rate limits
+        // [Ethereum] Add USDS mint/burn rate limits on the PAU rate limits
         //   Forum : TODO
         _onboardUsdsMintBurnRateLimits();
 
-        // [Ethereum] Add PSM USDS<>USDC swap rate limits (both directions) on the DPAU rate limits
+        // [Ethereum] Add PSM USDS<>USDC swap rate limits (both directions) on the PAU rate limits
         //   Forum : TODO
         _onboardPsmSwapRateLimits();
 
@@ -72,16 +72,16 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
         _treasuryDistributionToGroveFoundation();
     }
 
-    function _initDpauSystem() internal {
-        IDiamondPauControllerLike(DPAU_CONTROLLER).usds_setVault(ALLOCATOR_GROVE_A_VAULT);
+    function _initPauSystem() internal {
+        IPauControllerLike(PAU_CONTROLLER).usds_setVault(ALLOCATOR_GROVE_A_VAULT);
 
-        IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).rely(DPAU_PROXY);
-        IAllocatorBufferLike(ALLOCATOR_GROVE_A_BUFFER).approve(Ethereum.USDS, DPAU_PROXY, type(uint256).max);
+        IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).rely(PAU_PROXY);
+        IAllocatorBufferLike(ALLOCATOR_GROVE_A_BUFFER).approve(Ethereum.USDS, PAU_PROXY, type(uint256).max);
     }
 
     function _onboardUsdsMintBurnRateLimits() internal {
-        _setUsdsMintBurnDpauRateLimits({
-            rateLimits : DPAU_RATE_LIMITS,
+        _setUsdsMintBurnPauRateLimits({
+            rateLimits : PAU_RATE_LIMITS,
             mintMax    : 5_000_000e18,                   // BEFORE: 0
             mintSlope  : 5_000_000e18 / uint256(1 days), // BEFORE: 0
             burnMax    : 5_000_000e18,                   // BEFORE: 0
@@ -90,8 +90,8 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     }
 
     function _onboardPsmSwapRateLimits() internal {
-        _setPsmSwapDpauRateLimits({
-            rateLimits      : DPAU_RATE_LIMITS,
+        _setPsmSwapPauRateLimits({
+            rateLimits      : PAU_RATE_LIMITS,
             usdsToUsdcMax   : 5_000_000e6,                   // BEFORE: 0
             usdsToUsdcSlope : 5_000_000e6 / uint256(1 days), // BEFORE: 0
             usdcToUsdsMax   : 5_000_000e6,                   // BEFORE: 0
@@ -100,8 +100,8 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     }
 
     function _onboardJtrsyBasin() internal {
-        _setBasinDpauRateLimits({
-            rateLimits   : DPAU_RATE_LIMITS,
+        _setBasinPauRateLimits({
+            rateLimits   : PAU_RATE_LIMITS,
             basin        : JTRSY_GROVE_BASIN,
             depositMax   : 5_000_000e18,                  // BEFORE: 0
             depositSlope : 5_000_000e18 / uint256(1 days) // BEFORE: 0
@@ -109,8 +109,8 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     }
 
     function _onboardBuidlBasin() internal {
-        _setBasinDpauRateLimits({
-            rateLimits   : DPAU_RATE_LIMITS,
+        _setBasinPauRateLimits({
+            rateLimits   : PAU_RATE_LIMITS,
             basin        : BUIDL_GROVE_BASIN,
             depositMax   : 5_000_000e18,                  // BEFORE: 0
             depositSlope : 5_000_000e18 / uint256(1 days) // BEFORE: 0

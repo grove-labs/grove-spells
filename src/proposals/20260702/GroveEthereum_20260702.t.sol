@@ -10,12 +10,12 @@ import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 import {
-    IPAUBaseControllerLike,
-    IPAUProxyLike,
-    IPAUAccessControlsLike,
-    IPAURateLimitsLike,
-    PAUContext
-} from "src/test-harness/CommonPAUTestBase.sol";
+    IPauBaseControllerLike,
+    IPauProxyLike,
+    IPauAccessControlsLike,
+    IPauRateLimitsLike,
+    PauContext
+} from "src/test-harness/CommonPauTestBase.sol";
 
 // --- Maker core (for simulating Sky's not-yet-executed ALLOCATOR-GROVE-A ilk init) ---
 
@@ -50,16 +50,11 @@ interface IAllocatorBufferLike {
     function wards(address usr) external view returns (uint256);
 }
 
-// --- New Diamond PAU (DPAU) controller facets ---
+// --- New PAU controller facets ---
 
-interface IPAUControllerLike is IPAUBaseControllerLike {
+interface IPauControllerLike is IPauBaseControllerLike {
     function basin_deposit(address basin, address asset, uint256 amount, uint256 minSharesOut)
         external returns (uint256 shares);
-}
-
-interface IDpauAccessControlsLike {
-    function hasRole(bytes32 role, address account) external view returns (bool);
-    function getRoleMemberCount(bytes32 role) external view returns (uint256);
 }
 
 interface IAdministeredAgentMembersLike {
@@ -84,19 +79,19 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     // MCD_JUG is not in grove-address-registry (Sky: MCD Jug on Etherscan).
     address internal constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
 
-    // New Diamond PAU (DPAU) system, onboarded in parallel to the legacy ALM system.
-    address internal constant DPAU_PROXY                      = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
-    address internal constant DPAU_CONTROLLER                 = 0xbf83F5974B932c7D842254042717D6A2706CE5eE;
-    address internal constant DPAU_ACCESS_CONTROLS            = 0x4F6d1704700cd494DD4cd9bF59c0C39DA1Bc9164;
-    address internal constant DPAU_RATE_LIMITS                = 0xE016Ae733A77Ba77E7907aAA749394Fc5e75C0e1;
-    address internal constant DPAU_ADMINISTERED_AGENT         = 0xdBD17832df0e57b1732cE1C84c652E820e549BAa;
-    address internal constant DPAU_BEACON                     = 0x829dC2b7E94B1954F0764E573f2E0d45Afa28199;
-    address internal constant DPAU_FACTORY                    = 0x69A5d548830AC2A4Ba90A44a2C75BDA71f97fc66;
-    address internal constant DPAU_ADMINISTERED_AGENT_FACTORY = 0x2968c3b5478cF93B70aB1e24255d4EDBBd27a089;
-    address internal constant DPAU_DEFAULT_ASSEMBLER          = 0xc812aAD3FaE2D3511C664374B601a9BeBFeCCa2E;
-    address internal constant DPAU_BASIN_FACET                = 0xC84825BCD13AEddc372400239499380376a44A39;
-    address internal constant DPAU_PSM_FACET                  = 0xE4A5dAc768a310cc2316f258901b32E499653064;
-    address internal constant DPAU_USDS_FACET                 = 0x1221CC4B85Ab260660aD21C2829e0EB516dffBc7;
+    // New PAU system, onboarded in parallel to the legacy ALM system.
+    address internal constant PAU_PROXY                      = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
+    address internal constant PAU_CONTROLLER                 = 0xbf83F5974B932c7D842254042717D6A2706CE5eE;
+    address internal constant PAU_ACCESS_CONTROLS            = 0x4F6d1704700cd494DD4cd9bF59c0C39DA1Bc9164;
+    address internal constant PAU_RATE_LIMITS                = 0xE016Ae733A77Ba77E7907aAA749394Fc5e75C0e1;
+    address internal constant PAU_ADMINISTERED_AGENT         = 0xdBD17832df0e57b1732cE1C84c652E820e549BAa;
+    address internal constant PAU_BEACON                     = 0x829dC2b7E94B1954F0764E573f2E0d45Afa28199;
+    address internal constant PAU_FACTORY                    = 0x69A5d548830AC2A4Ba90A44a2C75BDA71f97fc66;
+    address internal constant PAU_ADMINISTERED_AGENT_FACTORY = 0x2968c3b5478cF93B70aB1e24255d4EDBBd27a089;
+    address internal constant PAU_DEFAULT_ASSEMBLER          = 0xc812aAD3FaE2D3511C664374B601a9BeBFeCCa2E;
+    address internal constant PAU_BASIN_FACET                = 0xC84825BCD13AEddc372400239499380376a44A39;
+    address internal constant PAU_PSM_FACET                  = 0xE4A5dAc768a310cc2316f258901b32E499653064;
+    address internal constant PAU_USDS_FACET                 = 0x1221CC4B85Ab260660aD21C2829e0EB516dffBc7;
 
     bytes32 internal constant DEFAULT_ADMIN_ROLE = 0x00;
 
@@ -132,64 +127,64 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         setupDomains("2026-06-15T18:00:00Z");
         deployPayloads();
 
-        _setPAUContext(
+        _setPauContext(
             ChainIdUtils.Ethereum(),
-            PAUContext({
-                controller     : DPAU_CONTROLLER,
-                proxy          : IPAUProxyLike(DPAU_PROXY),
-                accessControls : IPAUAccessControlsLike(DPAU_ACCESS_CONTROLS),
-                rateLimits     : IPAURateLimitsLike(DPAU_RATE_LIMITS),
-                agent          : DPAU_ADMINISTERED_AGENT,
+            PauContext({
+                controller     : PAU_CONTROLLER,
+                proxy          : IPauProxyLike(PAU_PROXY),
+                accessControls : IPauAccessControlsLike(PAU_ACCESS_CONTROLS),
+                rateLimits     : IPauRateLimitsLike(PAU_RATE_LIMITS),
+                agent          : PAU_ADMINISTERED_AGENT,
                 actor          : Ethereum.ALM_RELAYER
             })
         );
 
-        // The DPAU system mints USDS through Sky's ALLOCATOR-GROVE-A instance, whose
+        // The PAU system mints USDS through Sky's ALLOCATOR-GROVE-A instance, whose
         // ilk init runs in Sky's 2026-06-18 spell (after this 2026-06-15 fork). Simulate
-        // that init (and the DPAU proxy's PSM whitelisting) so the spell's allocator hookup
+        // that init (and the PAU proxy's PSM whitelisting) so the spell's allocator hookup
         // and the operational mint/swap tests work.
         _simulateAllocatorGroveAInit();
     }
 
-    function test_ETHEREUM_dpauSystemPreconfiguration() public onChain(ChainIdUtils.Ethereum()) {
-        IPAUControllerLike      controller     = IPAUControllerLike(DPAU_CONTROLLER);
-        IDpauAccessControlsLike accessControls = IDpauAccessControlsLike(DPAU_ACCESS_CONTROLS);
-        IAdministeredAgentMembersLike agent    = IAdministeredAgentMembersLike(DPAU_ADMINISTERED_AGENT);
+    function test_ETHEREUM_pauSystemPreconfiguration() public onChain(ChainIdUtils.Ethereum()) {
+        IPauControllerLike      controller     = IPauControllerLike(PAU_CONTROLLER);
+        IPauAccessControlsLike accessControls = IPauAccessControlsLike(PAU_ACCESS_CONTROLS);
+        IAdministeredAgentMembersLike agent    = IAdministeredAgentMembersLike(PAU_ADMINISTERED_AGENT);
 
         // Deployments exist
-        assertGt(DPAU_CONTROLLER.code.length,                 0, "controller-not-deployed");
-        assertGt(DPAU_PROXY.code.length,                      0, "proxy-not-deployed");
-        assertGt(DPAU_ACCESS_CONTROLS.code.length,            0, "access-controls-not-deployed");
-        assertGt(DPAU_RATE_LIMITS.code.length,                0, "rate-limits-not-deployed");
-        assertGt(DPAU_ADMINISTERED_AGENT.code.length,         0, "administered-agent-not-deployed");
-        assertGt(DPAU_ADMINISTERED_AGENT_FACTORY.code.length, 0, "administered-agent-factory-not-deployed");
-        assertGt(DPAU_DEFAULT_ASSEMBLER.code.length,          0, "default-assembler-not-deployed");
-        assertGt(DPAU_BASIN_FACET.code.length,                0, "basin-facet-not-deployed");
-        assertGt(DPAU_PSM_FACET.code.length,                  0, "psm-facet-not-deployed");
-        assertGt(DPAU_USDS_FACET.code.length,                 0, "usds-facet-not-deployed");
+        assertGt(PAU_CONTROLLER.code.length,                 0, "controller-not-deployed");
+        assertGt(PAU_PROXY.code.length,                      0, "proxy-not-deployed");
+        assertGt(PAU_ACCESS_CONTROLS.code.length,            0, "access-controls-not-deployed");
+        assertGt(PAU_RATE_LIMITS.code.length,                0, "rate-limits-not-deployed");
+        assertGt(PAU_ADMINISTERED_AGENT.code.length,         0, "administered-agent-not-deployed");
+        assertGt(PAU_ADMINISTERED_AGENT_FACTORY.code.length, 0, "administered-agent-factory-not-deployed");
+        assertGt(PAU_DEFAULT_ASSEMBLER.code.length,          0, "default-assembler-not-deployed");
+        assertGt(PAU_BASIN_FACET.code.length,                0, "basin-facet-not-deployed");
+        assertGt(PAU_PSM_FACET.code.length,                  0, "psm-facet-not-deployed");
+        assertGt(PAU_USDS_FACET.code.length,                 0, "usds-facet-not-deployed");
 
-        // Controller wiring (now points at the new DPAU proxy / rate limits, not the legacy ALM system)
-        assertEq(controller.accessControls(), DPAU_ACCESS_CONTROLS, "controller-access-controls-mismatch");
-        assertEq(controller.beacon(),         DPAU_BEACON,          "controller-beacon-mismatch");
-        assertEq(controller.proxy(),          DPAU_PROXY,           "controller-proxy-mismatch");
-        assertEq(controller.rateLimits(),     DPAU_RATE_LIMITS,     "controller-rate-limits-mismatch");
+        // Controller wiring (now points at the new PAU proxy / rate limits, not the legacy ALM system)
+        assertEq(controller.accessControls(), PAU_ACCESS_CONTROLS, "controller-access-controls-mismatch");
+        assertEq(controller.beacon(),         PAU_BEACON,          "controller-beacon-mismatch");
+        assertEq(controller.proxy(),          PAU_PROXY,           "controller-proxy-mismatch");
+        assertEq(controller.rateLimits(),     PAU_RATE_LIMITS,     "controller-rate-limits-mismatch");
 
-        // The DPAU factory grants the controller the CONTROLLER role on its own proxy + rate limits
+        // The PAU factory grants the controller the CONTROLLER role on its own proxy + rate limits
         // at deployment, so the payload does not need to; the mint/swap/basin tests confirm it stays
         // operational after the spell.
-        assertTrue(IPAUProxyLike(DPAU_PROXY).hasRole(CONTROLLER, DPAU_CONTROLLER),            "controller-missing-proxy-role");
-        assertTrue(IPAURateLimitsLike(DPAU_RATE_LIMITS).hasRole(CONTROLLER, DPAU_CONTROLLER), "controller-missing-rate-limits-role");
+        assertTrue(IPauProxyLike(PAU_PROXY).hasRole(CONTROLLER, PAU_CONTROLLER),            "controller-missing-proxy-role");
+        assertTrue(IPauRateLimitsLike(PAU_RATE_LIMITS).hasRole(CONTROLLER, PAU_CONTROLLER), "controller-missing-rate-limits-role");
 
         // Facet dispatch wiring
-        assertEq(controller.getDispatch(IPAUControllerLike.basin_deposit.selector).facet,    DPAU_BASIN_FACET, "basin-facet-not-wired");
-        assertEq(controller.getDispatch(IPAUBaseControllerLike.usds_mint.selector).facet,         DPAU_USDS_FACET,  "usds-facet-not-wired");
-        assertEq(controller.getDispatch(IPAUBaseControllerLike.psm_swapUSDSToUSDC.selector).facet, DPAU_PSM_FACET,  "psm-facet-not-wired");
+        assertEq(controller.getDispatch(IPauControllerLike.basin_deposit.selector).facet,    PAU_BASIN_FACET, "basin-facet-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_mint.selector).facet,         PAU_USDS_FACET,  "usds-facet-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_swapUSDSToUSDC.selector).facet, PAU_PSM_FACET,  "psm-facet-not-wired");
 
         // Access controls: the Grove SubProxy is the sole admin; the agent is an allocator
         assertTrue(accessControls.hasRole(DEFAULT_ADMIN_ROLE, Ethereum.GROVE_PROXY), "subproxy-missing-admin-role");
         assertEq(accessControls.getRoleMemberCount(DEFAULT_ADMIN_ROLE), 1,           "admin-role-member-count");
-        assertFalse(accessControls.hasRole(DEFAULT_ADMIN_ROLE, DPAU_FACTORY),        "factory-still-admin");
-        assertTrue(accessControls.hasRole(ALLOCATOR_ROLE, DPAU_ADMINISTERED_AGENT),  "agent-missing-allocator-role");
+        assertFalse(accessControls.hasRole(DEFAULT_ADMIN_ROLE, PAU_FACTORY),        "factory-still-admin");
+        assertTrue(accessControls.hasRole(ALLOCATOR_ROLE, PAU_ADMINISTERED_AGENT),  "agent-missing-allocator-role");
 
         // Agent membership (same as the legacy ALM relayer set)
         assertEq(agent.adminCount(),   1, "agent-admin-count");
@@ -203,44 +198,44 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(agent.getRevoker(0), Ethereum.ALM_FREEZER,                      "agent-revoker-0");
     }
 
-    function test_ETHEREUM_initDpauSystem() public onChain(ChainIdUtils.Ethereum()) {
+    function test_ETHEREUM_initPauSystem() public onChain(ChainIdUtils.Ethereum()) {
         IAllocatorVaultLike vault      = IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT);
         IERC20              usds       = IERC20(Ethereum.USDS);
-        IPAUControllerLike controller = IPAUControllerLike(DPAU_CONTROLLER);
+        IPauControllerLike controller = IPauControllerLike(PAU_CONTROLLER);
 
         assertEq(vault.buffer(),          ALLOCATOR_GROVE_A_BUFFER, "vault-buffer-mismatch");
         assertEq(controller.usds_vault(), address(0),               "controller-already-has-vault");
 
-        assertEq(vault.wards(DPAU_PROXY),                              0, "proxy-already-vault-ward");
-        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, DPAU_PROXY), 0, "proxy-already-has-buffer-allowance");
+        assertEq(vault.wards(PAU_PROXY),                              0, "proxy-already-vault-ward");
+        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, PAU_PROXY), 0, "proxy-already-has-buffer-allowance");
 
         executeAllPayloadsAndBridges();
 
         assertEq(vault.buffer(),          ALLOCATOR_GROVE_A_BUFFER, "vault-buffer-mismatch");
         assertEq(controller.usds_vault(), ALLOCATOR_GROVE_A_VAULT,  "controller-vault-not-set");
 
-        assertEq(vault.wards(DPAU_PROXY),                              1,                 "proxy-not-vault-ward");
-        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, DPAU_PROXY), type(uint256).max, "proxy-missing-buffer-allowance");
+        assertEq(vault.wards(PAU_PROXY),                              1,                 "proxy-not-vault-ward");
+        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, PAU_PROXY), type(uint256).max, "proxy-missing-buffer-allowance");
     }
 
-    function test_ETHEREUM_onboardUsdsMintBurnToDpau() public onChain(ChainIdUtils.Ethereum()) {
-        IPAUControllerLike controller = IPAUControllerLike(DPAU_CONTROLLER);
+    function test_ETHEREUM_onboardUsdsMintBurnToPau() public onChain(ChainIdUtils.Ethereum()) {
+        IPauControllerLike controller = IPauControllerLike(PAU_CONTROLLER);
 
         bytes32 mintKey = controller.usds_mintRateLimitKey();
         bytes32 burnKey = controller.usds_burnRateLimitKey();
 
         // --- Before: mint + burn limits unset. ---
-        _assertPAUZeroRateLimit(mintKey);
-        _assertPAUZeroRateLimit(burnKey);
+        _assertPauZeroRateLimit(mintKey);
+        _assertPauZeroRateLimit(burnKey);
 
         executeAllPayloadsAndBridges();
 
         // --- After: mint + burn limits set to the onboarded values. ---
-        _assertPAURateLimit(mintKey, USDS_MINT_MAX, USDS_MINT_SLOPE);
-        _assertPAURateLimit(burnKey, USDS_BURN_MAX, USDS_BURN_SLOPE);
+        _assertPauRateLimit(mintKey, USDS_MINT_MAX, USDS_MINT_SLOPE);
+        _assertPauRateLimit(burnKey, USDS_BURN_MAX, USDS_BURN_SLOPE);
 
         // --- Operational: mint USDS through ALLOCATOR-GROVE-A, then burn it back. ---
-        PAUContext memory ctx  = _getPAUContext();
+        PauContext memory ctx  = _getPauContext();
         IERC20            usds = IERC20(Ethereum.USDS);
 
         uint256 proxyUsdsStart = usds.balanceOf(address(ctx.proxy));
@@ -249,35 +244,35 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(mintKey), USDS_MINT_MAX, "mint-rate-limit-not-full");
         assertEq(ctx.rateLimits.getCurrentRateLimit(burnKey), USDS_BURN_MAX, "burn-rate-limit-not-full");
 
-        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_mint, (amount)));
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.usds_mint, (amount)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsStart + amount, "proxy-usds-not-minted");
         assertEq(ctx.rateLimits.getCurrentRateLimit(mintKey), USDS_MINT_MAX - amount,  "mint-rate-limit-not-decreased");
 
-        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_burn, (amount)));
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.usds_burn, (amount)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsStart,         "proxy-usds-not-burned");
         assertEq(ctx.rateLimits.getCurrentRateLimit(burnKey), USDS_BURN_MAX - amount, "burn-rate-limit-not-decreased");
     }
 
-    function test_ETHEREUM_onboardPsmSwapToDpau() public onChain(ChainIdUtils.Ethereum()) {
-        IPAUControllerLike controller = IPAUControllerLike(DPAU_CONTROLLER);
+    function test_ETHEREUM_onboardPsmSwapToPau() public onChain(ChainIdUtils.Ethereum()) {
+        IPauControllerLike controller = IPauControllerLike(PAU_CONTROLLER);
 
         bytes32 usdsToUsdcKey = controller.psm_usdsToUSDCSwapRateLimitKey();
         bytes32 usdcToUsdsKey = controller.psm_usdcToUSDSSwapRateLimitKey();
 
         // --- Before: both swap limits unset. ---
-        _assertPAUZeroRateLimit(usdsToUsdcKey);
-        _assertPAUZeroRateLimit(usdcToUsdsKey);
+        _assertPauZeroRateLimit(usdsToUsdcKey);
+        _assertPauZeroRateLimit(usdcToUsdsKey);
 
         executeAllPayloadsAndBridges();
 
         // --- After: both swap limits set to the onboarded values. ---
-        _assertPAURateLimit(usdsToUsdcKey, USDS_TO_USDC_MAX, USDS_TO_USDC_SLOPE);
-        _assertPAURateLimit(usdcToUsdsKey, USDC_TO_USDS_MAX, USDC_TO_USDS_SLOPE);
+        _assertPauRateLimit(usdsToUsdcKey, USDS_TO_USDC_MAX, USDS_TO_USDC_SLOPE);
+        _assertPauRateLimit(usdcToUsdsKey, USDC_TO_USDS_MAX, USDC_TO_USDS_SLOPE);
 
         // --- Operational: mint USDS, swap it to USDC and back through the PSM, then burn it. ---
-        PAUContext memory ctx  = _getPAUContext();
+        PauContext memory ctx  = _getPauContext();
         IERC20            usds = IERC20(Ethereum.USDS);
         IERC20            usdc = IERC20(Ethereum.USDC);
 
@@ -286,13 +281,13 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         uint256 swapUsdc       = 1_000_000e6;      // 1M USDC
         uint256 swapUsds       = swapUsdc * 1e12;  // 1M USDS equivalent (0 PSM fee)
 
-        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_mint, (swapUsds)));
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.usds_mint, (swapUsds)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart + swapUsds, "proxy-usds-not-minted");
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart,            "proxy-usdc-changed-by-mint");
 
         // Forward: USDS -> USDC (decreases the usds-to-usdc limit).
-        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.psm_swapUSDSToUSDC, (swapUsdc)));
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.psm_swapUSDSToUSDC, (swapUsdc)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart,            "proxy-usds-not-spent");
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart + swapUsdc, "proxy-usdc-not-received");
@@ -300,7 +295,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcToUsdsKey), USDC_TO_USDS_MAX,            "usdc-to-usds-limit-changed-on-forward");
 
         // Reverse: USDC -> USDS (refills the usds-to-usdc limit, decreases the usdc-to-usds limit).
-        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.psm_swapUSDCToUSDS, (swapUsdc)));
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.psm_swapUSDCToUSDS, (swapUsdc)));
 
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart,            "proxy-usdc-not-spent");
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart + swapUsds, "proxy-usds-not-returned");
@@ -308,7 +303,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcToUsdsKey), USDC_TO_USDS_MAX - swapUsdc, "usdc-to-usds-limit-not-decreased");
 
         // Burn the round-tripped USDS, closing out the position.
-        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_burn, (swapUsds)));
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.usds_burn, (swapUsds)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart, "proxy-usds-not-burned");
     }
@@ -387,7 +382,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         // The PSM swap moves +SUBPROXY_PSM_SWAP_USDC * 1e12 USDS into the SubProxy (USDC -> USDS via the Sky PSM, 0 fee).
         // The treasury distribution moves -GROVE_FOUNDATION_USDS_GRANT USDS out of the SubProxy (to the Grove Foundation).
-        // The DPAU / Basin actions move no USDS through the SubProxy.
+        // The PAU / Basin actions move no USDS through the SubProxy.
         assertEq(
             usds.balanceOf(Ethereum.GROVE_PROXY),
             subProxyUsdsStart + SUBPROXY_PSM_SWAP_USDC * 1e12 - GROVE_FOUNDATION_USDS_GRANT,
@@ -398,7 +393,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     // --- helpers ---
 
     /// @dev Replays the vat/jug ilk wiring + vault/buffer ownership that Sky's
-    ///      2026-06-18 spell performs for ALLOCATOR-GROVE-A, so the DPAU system can
+    ///      2026-06-18 spell performs for ALLOCATOR-GROVE-A, so the PAU system can
     ///      draw USDS through the vault at this earlier fork. Mirrors AllocatorInit.initIlk.
     function _simulateAllocatorGroveAInit() private {
         if (ChainIdUtils.fromUint(block.chainid) != ChainIdUtils.Ethereum()) return;
@@ -443,11 +438,11 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         IAllocatorBufferLike(ALLOCATOR_GROVE_A_BUFFER).approve(Ethereum.USDS, ALLOCATOR_GROVE_A_VAULT, type(uint256).max);
         vm.stopPrank();
 
-        // (4) Whitelist the DPAU proxy on the Sky Lite PSM's no-fee buyGem/sellGem path (`bud`),
+        // (4) Whitelist the PAU proxy on the Sky Lite PSM's no-fee buyGem/sellGem path (`bud`),
         //     as the old ALM proxy already is, so the PSM swaps are operational. Sky kisses it
         //     separately, so replay that kiss here.
         vm.prank(Ethereum.PAUSE_PROXY);
-        ILitePsmLike(Ethereum.PSM).kiss(DPAU_PROXY);
+        ILitePsmLike(Ethereum.PSM).kiss(PAU_PROXY);
     }
 
 }

@@ -15,7 +15,7 @@ import { OptimismForwarder }      from "xchain-helpers/forwarders/OptimismForwar
 import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
-import { GrovePAUHelpers }            from "../helpers/GrovePAUHelpers.sol";
+import { GrovePauHelpers }            from "../helpers/GrovePauHelpers.sol";
 import { UniswapV3Helpers }           from "../helpers/UniswapV3Helpers.sol";
 
 interface IStarSpellLike {
@@ -214,14 +214,14 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    function _setUsdsMintBurnDpauRateLimits(
+    function _setUsdsMintBurnPauRateLimits(
         address rateLimits,
         uint256 mintMax,
         uint256 mintSlope,
         uint256 burnMax,
         uint256 burnSlope
     ) internal {
-        GrovePAUHelpers.setUsdsMintBurnRateLimit(
+        GrovePauHelpers.setUsdsMintBurnRateLimit(
             rateLimits,
             mintMax,
             mintSlope,
@@ -230,14 +230,14 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    function _setPsmSwapDpauRateLimits(
+    function _setPsmSwapPauRateLimits(
         address rateLimits,
         uint256 usdsToUsdcMax,
         uint256 usdsToUsdcSlope,
         uint256 usdcToUsdsMax,
         uint256 usdcToUsdsSlope
     ) internal {
-        GrovePAUHelpers.setPsmSwapRateLimit(
+        GrovePauHelpers.setPsmSwapRateLimit(
             rateLimits,
             usdsToUsdcMax,
             usdsToUsdcSlope,
@@ -246,13 +246,13 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    function _setBasinDpauRateLimits(
+    function _setBasinPauRateLimits(
         address rateLimits,
         address basin,
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
-        GrovePAUHelpers.setBasinRateLimit(
+        GrovePauHelpers.setBasinRateLimit(
             rateLimits,
             basin,
             Ethereum.USDS,

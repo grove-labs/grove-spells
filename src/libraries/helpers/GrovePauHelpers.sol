@@ -8,7 +8,7 @@ import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol
 /**
  * @notice Helper functions for the Grove Parallelized Allocation Unit (PAU)
  */
-library GrovePAUHelpers {
+library GrovePauHelpers {
 
     /**********************************************************************************************/
     /*** Constants                                                                              ***/

@@ -6,10 +6,10 @@ import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 import { CommonTestBase } from "./CommonTestBase.sol";
 
 /// @dev System-agnostic spell tests that apply to every spell regardless of
-/// which ALM system (legacy ALM controller or DPAU controller) it touches:
+/// which ALM system (legacy ALM controller or PAU controller) it touches:
 /// payload bytecode verification and execution cost.
 /// Controller-system-specific tests live in CommonALMSpellTests and
-/// CommonPAUSpellTests.
+/// CommonPauSpellTests.
 abstract contract CommonSpellTests is CommonTestBase {
 
     /**********************************************************************************************/
