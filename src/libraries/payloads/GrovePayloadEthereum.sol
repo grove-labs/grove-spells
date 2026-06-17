@@ -14,9 +14,9 @@ import { OptimismForwarder }      from "xchain-helpers/forwarders/OptimismForwar
 
 import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
-import { GroveLiquidityLayerHelpers }             from "../helpers/GroveLiquidityLayerHelpers.sol";
-import { GroveParallelizedAllocationUnitHelpers } from "../helpers/GroveParallelizedAllocationUnitHelpers.sol";
-import { UniswapV3Helpers }                       from "../helpers/UniswapV3Helpers.sol";
+import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
+import { GrovePAUHelpers }            from "../helpers/GrovePAUHelpers.sol";
+import { UniswapV3Helpers }           from "../helpers/UniswapV3Helpers.sol";
 
 interface IStarSpellLike {
 
@@ -214,14 +214,14 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    function _onboardUsdsMintBurnDpau(
+    function _setUsdsMintBurnDpauRateLimits(
         address rateLimits,
         uint256 mintMax,
         uint256 mintSlope,
         uint256 burnMax,
         uint256 burnSlope
     ) internal {
-        GroveParallelizedAllocationUnitHelpers.onboardUsdsMintBurn(
+        GrovePAUHelpers.setUsdsMintBurnRateLimit(
             rateLimits,
             mintMax,
             mintSlope,
@@ -230,14 +230,14 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    function _onboardPsmSwapDpau(
+    function _setPsmSwapDpauRateLimits(
         address rateLimits,
         uint256 usdsToUsdcMax,
         uint256 usdsToUsdcSlope,
         uint256 usdcToUsdsMax,
         uint256 usdcToUsdsSlope
     ) internal {
-        GroveParallelizedAllocationUnitHelpers.onboardPsmSwap(
+        GrovePAUHelpers.setPsmSwapRateLimit(
             rateLimits,
             usdsToUsdcMax,
             usdsToUsdcSlope,
@@ -246,8 +246,13 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    function _onboardBasinDpau(address rateLimits, address basin, uint256 depositMax, uint256 depositSlope) internal {
-        GroveParallelizedAllocationUnitHelpers.onboardBasin(
+    function _setBasinDpauRateLimits(
+        address rateLimits,
+        address basin,
+        uint256 depositMax,
+        uint256 depositSlope
+    ) internal {
+        GrovePAUHelpers.setBasinRateLimit(
             rateLimits,
             basin,
             Ethereum.USDS,

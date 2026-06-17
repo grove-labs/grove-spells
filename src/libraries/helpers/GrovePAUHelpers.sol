@@ -8,7 +8,7 @@ import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol
 /**
  * @notice Helper functions for the Grove Parallelized Allocation Unit (PAU)
  */
-library GroveParallelizedAllocationUnitHelpers {
+library GrovePAUHelpers {
 
     /**********************************************************************************************/
     /*** Constants                                                                              ***/
@@ -27,9 +27,9 @@ library GroveParallelizedAllocationUnitHelpers {
     /**********************************************************************************************/
 
     /**
-     * @notice Onboard the USDS mint and burn rate limits
+     * @notice Set the USDS mint and burn rate limits
      */
-    function onboardUsdsMintBurn(
+    function setUsdsMintBurnRateLimit(
         address rateLimits,
         uint256 mintMax,
         uint256 mintSlope,
@@ -45,11 +45,11 @@ library GroveParallelizedAllocationUnitHelpers {
     /**********************************************************************************************/
 
     /**
-     * @notice Onboard the PSM USDS<>USDC swap rate limits (both directions)
-     * @dev Both directions must be onboarded: swapUSDCToUSDS decreases the usdcToUSDS key
+     * @notice Set the PSM USDS<>USDC swap rate limits (both directions)
+     * @dev Both directions must be set: swapUSDCToUSDS decreases the usdcToUSDS key
      *      (while refilling the usdsToUSDC key), so it reverts on an unset usdcToUSDS limit.
      */
-    function onboardPsmSwap(
+    function setPsmSwapRateLimit(
         address rateLimits,
         uint256 usdsToUsdcMax,
         uint256 usdsToUsdcSlope,
@@ -65,13 +65,13 @@ library GroveParallelizedAllocationUnitHelpers {
     /**********************************************************************************************/
 
     /**
-     * @notice Onboard a Grove Basin
-     * @dev Deposits are rate-limited on the deposited asset (USDS). Withdrawals are onboarded as
+     * @notice Set a Grove Basin's deposit and withdrawal rate limits
+     * @dev Deposits are rate-limited on the deposited asset (USDS). Withdrawals are set as
      *      unlimited for both stable legs the basin pays out: the deposited asset (USDS) and the
      *      collateral its credit token redeems into (USDC), so the relayer can pull liquidity back
      *      out whichever side the pocket holds. The credit / RWA token is not withdrawable.
      */
-    function onboardBasin(
+    function setBasinRateLimit(
         address rateLimits,
         address basin,
         address depositAsset,

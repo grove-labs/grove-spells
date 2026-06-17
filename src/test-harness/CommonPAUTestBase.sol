@@ -17,12 +17,25 @@ struct PAUDispatch {
     bytes4  delegateSelector;
 }
 
-interface IPAUControllerLike {
+// Shared controller surface most facet tests need: the controller admin views
+// plus the base facet entrypoints/getters (USDS mint/burn via Sky's allocator
+// instance, PSM USDS<>USDC swaps). Per-facet *ControllerLike interfaces inherit
+// this so these are declared once, not in every <Facet>TestingBase.sol.
+interface IPAUBaseControllerLike {
     function accessControls() external view returns (address);
     function beacon() external view returns (address);
     function getDispatch(bytes4 callSelector) external view returns (PAUDispatch memory dispatch);
     function proxy() external view returns (address);
     function rateLimits() external view returns (address);
+    function usds_mint(uint256 usdsAmount) external returns (uint256);
+    function usds_burn(uint256 usdsAmount) external returns (uint256);
+    function psm_swapUSDSToUSDC(uint256 usdcAmount) external returns (uint256);
+    function psm_swapUSDCToUSDS(uint256 usdcAmount) external returns (uint256);
+    function usds_vault() external view returns (address);
+    function usds_mintRateLimitKey() external view returns (bytes32);
+    function usds_burnRateLimitKey() external view returns (bytes32);
+    function psm_usdsToUSDCSwapRateLimitKey() external view returns (bytes32);
+    function psm_usdcToUSDSSwapRateLimitKey() external view returns (bytes32);
 }
 
 interface IPAUAccessControlsLike {
@@ -80,7 +93,7 @@ abstract contract CommonPAUTestBase is CommonTestBase {
         // cross-check against the controller's own references to catch typos.
         // Only this variant validates: block.chainid guarantees the active
         // fork matches the context being checked.
-        IPAUControllerLike controller = IPAUControllerLike(ctx.controller);
+        IPAUBaseControllerLike controller = IPAUBaseControllerLike(ctx.controller);
         require(controller.proxy()          == address(ctx.proxy),          "PAU context proxy mismatch");
         require(controller.rateLimits()     == address(ctx.rateLimits),     "PAU context rateLimits mismatch");
         require(controller.accessControls() == address(ctx.accessControls), "PAU context accessControls mismatch");

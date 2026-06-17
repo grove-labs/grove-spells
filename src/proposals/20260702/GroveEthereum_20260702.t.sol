@@ -10,14 +10,12 @@ import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 import {
-    IPAUControllerLike,
+    IPAUBaseControllerLike,
     IPAUProxyLike,
     IPAUAccessControlsLike,
     IPAURateLimitsLike,
     PAUContext
 } from "src/test-harness/CommonPAUTestBase.sol";
-
-import { IBasinControllerLike } from "src/test-harness/test-bases/BasinTestingBase.sol";
 
 // --- Maker core (for simulating Sky's not-yet-executed ALLOCATOR-GROVE-A ilk init) ---
 
@@ -44,6 +42,7 @@ interface IDssAutoLineLike {
 interface IAllocatorVaultLike {
     function file(bytes32 what, address data) external;
     function wards(address usr) external view returns (uint256);
+    function buffer() external view returns (address);
 }
 
 interface IAllocatorBufferLike {
@@ -53,16 +52,9 @@ interface IAllocatorBufferLike {
 
 // --- New Diamond PAU (DPAU) controller facets ---
 
-interface IDpauControllerLike {
-    function usds_mint(uint256 usdsAmount) external returns (uint256);
-    function usds_burn(uint256 usdsAmount) external returns (uint256);
-    function usds_vault() external view returns (address);
-    function usds_mintRateLimitKey() external view returns (bytes32);
-    function usds_burnRateLimitKey() external view returns (bytes32);
-    function psm_swapUSDSToUSDC(uint256 usdcAmount) external returns (uint256);
-    function psm_swapUSDCToUSDS(uint256 usdcAmount) external returns (uint256);
-    function psm_usdsToUSDCSwapRateLimitKey() external view returns (bytes32);
-    function psm_usdcToUSDSSwapRateLimitKey() external view returns (bytes32);
+interface IPAUControllerLike is IPAUBaseControllerLike {
+    function basin_deposit(address basin, address asset, uint256 amount, uint256 minSharesOut)
+        external returns (uint256 shares);
 }
 
 interface IDpauAccessControlsLike {
@@ -189,9 +181,9 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertTrue(IPAURateLimitsLike(DPAU_RATE_LIMITS).hasRole(CONTROLLER, DPAU_CONTROLLER), "controller-missing-rate-limits-role");
 
         // Facet dispatch wiring
-        assertEq(controller.getDispatch(IBasinControllerLike.basin_deposit.selector).facet,    DPAU_BASIN_FACET, "basin-facet-not-wired");
-        assertEq(controller.getDispatch(IDpauControllerLike.usds_mint.selector).facet,         DPAU_USDS_FACET,  "usds-facet-not-wired");
-        assertEq(controller.getDispatch(IDpauControllerLike.psm_swapUSDSToUSDC.selector).facet, DPAU_PSM_FACET,  "psm-facet-not-wired");
+        assertEq(controller.getDispatch(IPAUControllerLike.basin_deposit.selector).facet,    DPAU_BASIN_FACET, "basin-facet-not-wired");
+        assertEq(controller.getDispatch(IPAUBaseControllerLike.usds_mint.selector).facet,         DPAU_USDS_FACET,  "usds-facet-not-wired");
+        assertEq(controller.getDispatch(IPAUBaseControllerLike.psm_swapUSDSToUSDC.selector).facet, DPAU_PSM_FACET,  "psm-facet-not-wired");
 
         // Access controls: the Grove SubProxy is the sole admin; the agent is an allocator
         assertTrue(accessControls.hasRole(DEFAULT_ADMIN_ROLE, Ethereum.GROVE_PROXY), "subproxy-missing-admin-role");
@@ -214,21 +206,25 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     function test_ETHEREUM_initDpauSystem() public onChain(ChainIdUtils.Ethereum()) {
         IAllocatorVaultLike vault      = IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT);
         IERC20              usds       = IERC20(Ethereum.USDS);
-        IDpauControllerLike controller = IDpauControllerLike(DPAU_CONTROLLER);
+        IPAUControllerLike controller = IPAUControllerLike(DPAU_CONTROLLER);
 
-        assertEq(controller.usds_vault(),                              address(0), "controller-already-has-vault");
-        assertEq(vault.wards(DPAU_PROXY),                              0,          "proxy-already-vault-ward");
-        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, DPAU_PROXY), 0,          "proxy-already-has-buffer-allowance");
+        assertEq(vault.buffer(),          ALLOCATOR_GROVE_A_BUFFER, "vault-buffer-mismatch");
+        assertEq(controller.usds_vault(), address(0),               "controller-already-has-vault");
+
+        assertEq(vault.wards(DPAU_PROXY),                              0, "proxy-already-vault-ward");
+        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, DPAU_PROXY), 0, "proxy-already-has-buffer-allowance");
 
         executeAllPayloadsAndBridges();
 
-        assertEq(controller.usds_vault(),                              ALLOCATOR_GROVE_A_VAULT, "controller-vault-not-set");
-        assertEq(vault.wards(DPAU_PROXY),                              1,                       "proxy-not-vault-ward");
-        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, DPAU_PROXY), type(uint256).max,       "proxy-missing-buffer-allowance");
+        assertEq(vault.buffer(),          ALLOCATOR_GROVE_A_BUFFER, "vault-buffer-mismatch");
+        assertEq(controller.usds_vault(), ALLOCATOR_GROVE_A_VAULT,  "controller-vault-not-set");
+
+        assertEq(vault.wards(DPAU_PROXY),                              1,                 "proxy-not-vault-ward");
+        assertEq(usds.allowance(ALLOCATOR_GROVE_A_BUFFER, DPAU_PROXY), type(uint256).max, "proxy-missing-buffer-allowance");
     }
 
     function test_ETHEREUM_onboardUsdsMintBurnToDpau() public onChain(ChainIdUtils.Ethereum()) {
-        IDpauControllerLike controller = IDpauControllerLike(DPAU_CONTROLLER);
+        IPAUControllerLike controller = IPAUControllerLike(DPAU_CONTROLLER);
 
         bytes32 mintKey = controller.usds_mintRateLimitKey();
         bytes32 burnKey = controller.usds_burnRateLimitKey();
@@ -253,19 +249,19 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(mintKey), USDS_MINT_MAX, "mint-rate-limit-not-full");
         assertEq(ctx.rateLimits.getCurrentRateLimit(burnKey), USDS_BURN_MAX, "burn-rate-limit-not-full");
 
-        _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.usds_mint, (amount)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_mint, (amount)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsStart + amount, "proxy-usds-not-minted");
         assertEq(ctx.rateLimits.getCurrentRateLimit(mintKey), USDS_MINT_MAX - amount,  "mint-rate-limit-not-decreased");
 
-        _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.usds_burn, (amount)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_burn, (amount)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)),          proxyUsdsStart,         "proxy-usds-not-burned");
         assertEq(ctx.rateLimits.getCurrentRateLimit(burnKey), USDS_BURN_MAX - amount, "burn-rate-limit-not-decreased");
     }
 
     function test_ETHEREUM_onboardPsmSwapToDpau() public onChain(ChainIdUtils.Ethereum()) {
-        IDpauControllerLike controller = IDpauControllerLike(DPAU_CONTROLLER);
+        IPAUControllerLike controller = IPAUControllerLike(DPAU_CONTROLLER);
 
         bytes32 usdsToUsdcKey = controller.psm_usdsToUSDCSwapRateLimitKey();
         bytes32 usdcToUsdsKey = controller.psm_usdcToUSDSSwapRateLimitKey();
@@ -290,13 +286,13 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         uint256 swapUsdc       = 1_000_000e6;      // 1M USDC
         uint256 swapUsds       = swapUsdc * 1e12;  // 1M USDS equivalent (0 PSM fee)
 
-        _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.usds_mint, (swapUsds)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_mint, (swapUsds)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart + swapUsds, "proxy-usds-not-minted");
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart,            "proxy-usdc-changed-by-mint");
 
         // Forward: USDS -> USDC (decreases the usds-to-usdc limit).
-        _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.psm_swapUSDSToUSDC, (swapUsdc)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.psm_swapUSDSToUSDC, (swapUsdc)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart,            "proxy-usds-not-spent");
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart + swapUsdc, "proxy-usdc-not-received");
@@ -304,7 +300,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcToUsdsKey), USDC_TO_USDS_MAX,            "usdc-to-usds-limit-changed-on-forward");
 
         // Reverse: USDC -> USDS (refills the usds-to-usdc limit, decreases the usdc-to-usds limit).
-        _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.psm_swapUSDCToUSDS, (swapUsdc)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.psm_swapUSDCToUSDS, (swapUsdc)));
 
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart,            "proxy-usdc-not-spent");
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart + swapUsds, "proxy-usds-not-returned");
@@ -312,7 +308,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcToUsdsKey), USDC_TO_USDS_MAX - swapUsdc, "usdc-to-usds-limit-not-decreased");
 
         // Burn the round-tripped USDS, closing out the position.
-        _callAsPAUActor(ctx, abi.encodeCall(IDpauControllerLike.usds_burn, (swapUsds)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_burn, (swapUsds)));
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart, "proxy-usds-not-burned");
     }

@@ -3,21 +3,18 @@ pragma solidity ^0.8.0;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { IPAUControllerLike, PAUContext, CommonPAUTestBase } from "../CommonPAUTestBase.sol";
+import { IPAUBaseControllerLike, PAUContext, CommonPAUTestBase } from "../CommonPAUTestBase.sol";
 
 // The controller dispatches namespaced call selectors (basin_*) to the
 // BasinFacet's internal deposit/withdraw delegate selectors, so callers
 // must encode the namespaced form (see IMainnetControllerFull in diamond-pau).
-// Also exposes the USDS mint/burn (via Sky's ALLOCATOR-GROVE-A) and Sky PSM
-// USDC->USDS swap entrypoints the basin lifecycle drives directly.
-interface IBasinControllerLike {
+// Inherits the shared USDS mint/burn + PSM swap entrypoints (IPAUBaseControllerLike)
+// the basin lifecycle also drives directly.
+interface IBasinControllerLike is IPAUBaseControllerLike {
     function basin_deposit(address basin, address asset, uint256 amount, uint256 minSharesOut)
         external returns (uint256 shares);
     function basin_withdraw(address basin, address asset, uint256 maxAmount, uint256 minConversionRate)
         external returns (uint256 assetsWithdrawn);
-    function usds_mint(uint256 usdsAmount) external returns (uint256);
-    function usds_burn(uint256 usdsAmount) external returns (uint256);
-    function psm_swapUSDCToUSDS(uint256 usdcAmount) external returns (uint256);
 }
 
 interface IBasinLike {
@@ -62,14 +59,17 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         // Derive the concrete revert reason from onchain state so a wrong revert (e.g. a selector
         // typo) cannot slip through a catch-all expectRevert.
         bytes4 depositSelector = IBasinControllerLike.basin_deposit.selector;
-        if (IPAUControllerLike(ctx.controller).getDispatch(depositSelector).facet == address(0)) {
+        if (IPAUBaseControllerLike(ctx.controller).getDispatch(depositSelector).facet == address(0)) {
             vm.expectRevert(abi.encodeWithSignature("CallSelectorNotWired(bytes4)", depositSelector));
         } else if (!ctx.accessControls.hasRole(ALLOCATOR_ROLE, ctx.agent)) {
             vm.expectRevert(abi.encodeWithSignature("AccessControlUnauthorizedAccount(address,bytes32)", ctx.agent, ALLOCATOR_ROLE));
         } else {
             vm.expectRevert("RateLimits/zero-maxAmount");
         }
-        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.basin_deposit, (basin, swapToken, expectedDepositAmount, 0)));
+        _callAsPAUActor(ctx, abi.encodeCall(
+            IBasinControllerLike.basin_deposit,
+            (basin, swapToken, expectedDepositAmount, 0)
+        ));
 
         executeAllPayloadsAndBridges();
 
@@ -80,7 +80,10 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
 
         // Deposits above the cap revert.
         vm.expectRevert("RateLimits/rate-limit-exceeded");
-        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.basin_deposit, (basin, swapToken, depositMax + 1, 0)));
+        _callAsPAUActor(ctx, abi.encodeCall(
+            IBasinControllerLike.basin_deposit,
+            (basin, swapToken, depositMax + 1, 0)
+        ));
 
         // --- Whole flow: mint -> deposit -> swap + redemption -> withdraw collateral -> PSM -> burn. ---
         _runBasinLifecycle(ctx, basin, swapToken, collateralToken, expectedDepositAmount, depositMax);
@@ -105,7 +108,7 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         uint256 proxyCollateralTokenStart = IERC20(collateralToken).balanceOf(proxy);
 
         // 1. Mint USDS through Sky's ALLOCATOR-GROVE-A instance.
-        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.usds_mint, (amount)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_mint, (amount)));
         assertEq(IERC20(swapToken).balanceOf(proxy), proxySwapTokenStart + amount, "basin-lifecycle-mint");
 
         // 2. Deposit the minted USDS into the basin (pocket gains USDS, proxy gains shares).
@@ -134,12 +137,12 @@ abstract contract BasinTestingBase is CommonPAUTestBase {
         assertEq(ctx.rateLimits.getCurrentRateLimit(_basinWithdrawKey(basin, collateralToken)), type(uint256).max, "basin-lifecycle-withdraw-unlimited");
 
         // 5. Swap the withdrawn USDC back to USDS through the PSM (0 fee).
-        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.psm_swapUSDCToUSDS, (collateralOut)));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.psm_swapUSDCToUSDS, (collateralOut)));
         assertEq(IERC20(collateralToken).balanceOf(proxy), proxyCollateralTokenStart,                  "basin-lifecycle-psm-collateral");
         assertEq(IERC20(swapToken).balanceOf(proxy),       proxySwapTokenStart + collateralOut * _collateralScale(swapToken, collateralToken), "basin-lifecycle-psm-asset");
 
         // 6. Burn the round-tripped USDS, closing out the position.
-        _callAsPAUActor(ctx, abi.encodeCall(IBasinControllerLike.usds_burn, (collateralOut * _collateralScale(swapToken, collateralToken))));
+        _callAsPAUActor(ctx, abi.encodeCall(IPAUBaseControllerLike.usds_burn, (collateralOut * _collateralScale(swapToken, collateralToken))));
         assertEq(IERC20(swapToken).balanceOf(proxy), proxySwapTokenStart, "basin-lifecycle-burn");
     }
 

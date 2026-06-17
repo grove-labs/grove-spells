@@ -80,7 +80,7 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     }
 
     function _onboardUsdsMintBurnRateLimits() internal {
-        _onboardUsdsMintBurnDpau({
+        _setUsdsMintBurnDpauRateLimits({
             rateLimits : DPAU_RATE_LIMITS,
             mintMax    : 5_000_000e18,                   // BEFORE: 0
             mintSlope  : 5_000_000e18 / uint256(1 days), // BEFORE: 0
@@ -90,7 +90,7 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     }
 
     function _onboardPsmSwapRateLimits() internal {
-        _onboardPsmSwapDpau({
+        _setPsmSwapDpauRateLimits({
             rateLimits      : DPAU_RATE_LIMITS,
             usdsToUsdcMax   : 5_000_000e6,                   // BEFORE: 0
             usdsToUsdcSlope : 5_000_000e6 / uint256(1 days), // BEFORE: 0
@@ -100,7 +100,7 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     }
 
     function _onboardJtrsyBasin() internal {
-        _onboardBasinDpau({
+        _setBasinDpauRateLimits({
             rateLimits   : DPAU_RATE_LIMITS,
             basin        : JTRSY_GROVE_BASIN,
             depositMax   : 5_000_000e18,                  // BEFORE: 0
@@ -109,7 +109,7 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
     }
 
     function _onboardBuidlBasin() internal {
-        _onboardBasinDpau({
+        _setBasinDpauRateLimits({
             rateLimits   : DPAU_RATE_LIMITS,
             basin        : BUIDL_GROVE_BASIN,
             depositMax   : 5_000_000e18,                  // BEFORE: 0
