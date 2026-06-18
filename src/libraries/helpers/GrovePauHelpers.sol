@@ -61,8 +61,8 @@ library GrovePauHelpers {
 
     /**
      * @notice Set the PSM USDS<>USDC swap rate limits (both directions)
-     * @dev Both directions must be set: swapUSDCToUSDS decreases the usdcToUSDS key
-     *      (while refilling the usdsToUSDC key), so it reverts on an unset usdcToUSDS limit.
+     * @dev Both directions must be set: swapUSDCToUSDS decreases the LIMIT_USDC_TO_USDS key
+     *      (while refilling the LIMIT_USDS_TO_USDC key), so it reverts on an unset LIMIT_USDC_TO_USDS.
      */
     function setPsmSwapRateLimit(
         address rateLimits,
