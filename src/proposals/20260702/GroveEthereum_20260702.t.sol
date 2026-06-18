@@ -176,7 +176,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertTrue(IPauRateLimitsLike(PAU_RATE_LIMITS).hasRole(CONTROLLER, PAU_CONTROLLER), "controller-missing-rate-limits-role");
 
         // Facet dispatch wiring
-        assertEq(controller.getDispatch(IPauControllerLike.basin_deposit.selector).facet,    PAU_BASIN_FACET, "basin-facet-not-wired");
+        assertEq(controller.getDispatch(IPauControllerLike.basin_deposit.selector).facet,        PAU_BASIN_FACET, "basin-facet-not-wired");
         assertEq(controller.getDispatch(IPauBaseControllerLike.usds_mint.selector).facet,         PAU_USDS_FACET,  "usds-facet-not-wired");
         assertEq(controller.getDispatch(IPauBaseControllerLike.psm_swapUSDSToUSDC.selector).facet, PAU_PSM_FACET,  "psm-facet-not-wired");
 
