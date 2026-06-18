@@ -45,13 +45,13 @@ abstract contract BasinTestingBase is CommonPauTestBase {
     ) internal {
         PauContext memory ctx = _getPauContext();
 
-        bytes32 depositKey            = _basinDepositKey(basin, swapToken);
-        bytes32 withdrawKey           = _basinWithdrawKey(basin, swapToken);
+        bytes32 swapDepositKey        = _basinDepositKey(basin, swapToken);
+        bytes32 swapWithdrawKey       = _basinWithdrawKey(basin, swapToken);
         bytes32 collateralWithdrawKey = _basinWithdrawKey(basin, collateralToken);
 
         // --- Before the spell: deposit + both withdraw limits unset, and deposits are gated. ---
-        _assertPauZeroRateLimit(depositKey);
-        _assertPauZeroRateLimit(withdrawKey);
+        _assertPauZeroRateLimit(swapDepositKey);
+        _assertPauZeroRateLimit(swapWithdrawKey);
         _assertPauZeroRateLimit(collateralWithdrawKey);
 
         deal2(swapToken, address(ctx.proxy), expectedDepositAmount);
@@ -74,8 +74,8 @@ abstract contract BasinTestingBase is CommonPauTestBase {
         executeAllPayloadsAndBridges();
 
         // --- After the spell: deposit limit set; both USDS + USDC withdraws unlimited. ---
-        _assertPauRateLimit(depositKey, depositMax, depositSlope);
-        _assertPauUnlimitedRateLimit(withdrawKey);
+        _assertPauRateLimit(swapDepositKey, depositMax, depositSlope);
+        _assertPauUnlimitedRateLimit(swapWithdrawKey);
         _assertPauUnlimitedRateLimit(collateralWithdrawKey);
 
         // Deposits above the cap revert.
