@@ -12,7 +12,8 @@ interface IPauRateLimitsLike {
     function setUnlimitedRateLimitData(bytes32 key) external;
 }
 
-/// @dev Mirrors the subset of diamond-pau's RateLimitHelpers used here.
+/// @dev Mirrors the subset of diamond-pau's RateLimitHelpers for local use.
+///            https://github.com/sky-ecosystem/diamond-pau/blob/5c5ad6ae174bf467081ca82342ced2bd42a5c732/src/libraries/RateLimitHelpers.sol#L8-L10
 library RateLimitHelpers {
     function makeAddressAddressKey(bytes32 key, address a, address b) internal pure returns (bytes32) {
         return keccak256(abi.encode(key, a, b));
