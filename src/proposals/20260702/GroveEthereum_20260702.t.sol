@@ -292,6 +292,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart,            "proxy-usds-not-spent");
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart + swapUsdc, "proxy-usdc-not-received");
+        
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdsToUsdcKey), USDS_TO_USDC_MAX - swapUsdc, "usds-to-usdc-limit-not-decreased");
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcToUsdsKey), USDC_TO_USDS_MAX,            "usdc-to-usds-limit-changed-on-forward");
 
@@ -300,6 +301,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         assertEq(usdc.balanceOf(address(ctx.proxy)), proxyUsdcStart,            "proxy-usdc-not-spent");
         assertEq(usds.balanceOf(address(ctx.proxy)), proxyUsdsStart + swapUsds, "proxy-usds-not-returned");
+        
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdsToUsdcKey), USDS_TO_USDC_MAX,            "usds-to-usdc-limit-not-refilled");
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcToUsdsKey), USDC_TO_USDS_MAX - swapUsdc, "usdc-to-usds-limit-not-decreased");
 
