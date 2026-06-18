@@ -278,6 +278,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         uint256 proxyUsdsStart = usds.balanceOf(address(ctx.proxy));
         uint256 proxyUsdcStart = usdc.balanceOf(address(ctx.proxy));
+        
         uint256 swapUsdc       = 1_000_000e6;      // 1M USDC
         uint256 swapUsds       = swapUsdc * 1e12;  // 1M USDS equivalent (0 PSM fee)
 
