@@ -29,11 +29,11 @@ interface IPauBaseControllerLike {
     function rateLimits() external view returns (address);
     function usds_mint(uint256 usdsAmount) external returns (uint256);
     function usds_burn(uint256 usdsAmount) external returns (uint256);
-    function psm_swapUSDSToUSDC(uint256 usdcAmount) external returns (uint256);
-    function psm_swapUSDCToUSDS(uint256 usdcAmount) external returns (uint256);
     function usds_vault() external view returns (address);
     function usds_mintRateLimitKey() external view returns (bytes32);
     function usds_burnRateLimitKey() external view returns (bytes32);
+    function psm_swapUSDSToUSDC(uint256 usdcAmount) external returns (uint256);
+    function psm_swapUSDCToUSDS(uint256 usdcAmount) external returns (uint256);
     function psm_usdsToUSDCSwapRateLimitKey() external view returns (bytes32);
     function psm_usdcToUSDSSwapRateLimitKey() external view returns (bytes32);
 }
