@@ -183,8 +183,8 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         // Access controls: the Grove SubProxy is the sole admin; the agent is an allocator
         assertTrue(accessControls.hasRole(DEFAULT_ADMIN_ROLE, Ethereum.GROVE_PROXY), "subproxy-missing-admin-role");
         assertEq(accessControls.getRoleMemberCount(DEFAULT_ADMIN_ROLE), 1,           "admin-role-member-count");
-        assertFalse(accessControls.hasRole(DEFAULT_ADMIN_ROLE, PAU_FACTORY),        "factory-still-admin");
-        assertTrue(accessControls.hasRole(ALLOCATOR_ROLE, PAU_ADMINISTERED_AGENT),  "agent-missing-allocator-role");
+        assertFalse(accessControls.hasRole(DEFAULT_ADMIN_ROLE, PAU_FACTORY),         "factory-still-admin");
+        assertTrue(accessControls.hasRole(ALLOCATOR_ROLE, PAU_ADMINISTERED_AGENT),   "agent-missing-allocator-role");
 
         // Agent membership (same as the legacy ALM relayer set)
         assertEq(agent.adminCount(),   1, "agent-admin-count");
