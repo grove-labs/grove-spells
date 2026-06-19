@@ -1,9 +1,16 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+
 import { ChainIdUtils, ChainId } from "src/libraries/helpers/ChainId.sol";
 
 import { CommonTestBase } from "./CommonTestBase.sol";
+
+interface IPsmFeesLike {
+    function tin() external view returns (uint256);
+    function tout() external view returns (uint256);
+}
 
 /// @dev System-agnostic spell tests that apply to every spell regardless of
 /// which ALM system (legacy ALM controller or PAU controller) it touches:
@@ -42,6 +49,18 @@ abstract contract CommonSpellTests is CommonTestBase {
 
         // Fail if deploy is too expensive
         assertLe(totalGas, MAX_EXECUTION_COST, "CommonTest/spell-deploy-cost-too-high");
+    }
+
+    function test_ETHEREUM_PsmFeesAreZero() public onChain(ChainIdUtils.Ethereum()) {
+        IPsmFeesLike psm = IPsmFeesLike(Ethereum.PSM);
+
+        assertEq(psm.tin(),  0, "CommonTest/psm-tin-not-zero");
+        assertEq(psm.tout(), 0, "CommonTest/psm-tout-not-zero");
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(psm.tin(),  0, "CommonTest/psm-tin-not-zero-after-spell");
+        assertEq(psm.tout(), 0, "CommonTest/psm-tout-not-zero-after-spell");
     }
 
     function test_AVALANCHE_PayloadBytecodeMatches() public {
