@@ -44,31 +44,31 @@ contract GroveEthereum_20260702 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Initialize the PAU system: hook it up to the new ALLOCATOR-GROVE-A instance (USDS mint/burn)
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/july-2-2026-proposed-changes-to-grove-for-upcoming-spell/27976
         _initPauSystem();
 
         // [Ethereum] Add USDS mint/burn rate limits on the PAU rate limits
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/july-2-2026-proposed-changes-to-grove-for-upcoming-spell/27976
         _onboardUsdsMintBurnRateLimits();
 
         // [Ethereum] Add PSM USDS<>USDC swap rate limits (both directions) on the PAU rate limits
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/july-2-2026-proposed-changes-to-grove-for-upcoming-spell/27976
         _onboardPsmSwapRateLimits();
 
         // [Ethereum] Add New Rate Limits for JTRSY Basin (relayer-driven USDS deposits + unlimited withdrawals)
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/july-2-2026-proposed-changes-to-grove-for-upcoming-spell/27976
         _onboardJtrsyBasin();
 
         // [Ethereum] Add New Rate Limits for BUIDL Basin (relayer-driven USDS deposits + unlimited withdrawals)
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/july-2-2026-proposed-changes-to-grove-for-upcoming-spell/27976
         _onboardBuidlBasin();
 
         // [Ethereum] Swap USDC to USDS in Grove SubProxy
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/july-2-2026-proposed-changes-to-grove-for-upcoming-spell/27976
         _swapUsdcToUsdsViaPsm();
 
         // [Ethereum] Treasury Distribution to Grove Foundation
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/july-2-2026-proposed-changes-to-grove-for-upcoming-spell/27976
         _treasuryDistributionToGroveFoundation();
     }
 
