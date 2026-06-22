@@ -17,12 +17,25 @@ import {
     PauContext
 } from "src/test-harness/CommonPauTestBase.sol";
 
-// --- Sky allocator instance (dss-allocator) ---
+// --- Sky core + allocator instance (dss-allocator) ---
 
 interface IAllocatorVaultLike {
     function wards(address usr) external view returns (uint256);
     function buffer() external view returns (address);
     function ilk() external view returns (bytes32);
+    function jug() external view returns (address);
+}
+
+interface IAllocatorBufferLike {
+    function wards(address usr) external view returns (uint256);
+}
+
+interface IVatLike {
+    function ilks(bytes32 ilk) external view returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
+}
+
+interface IDssAutoLineLike {
+    function ilks(bytes32 ilk) external view returns (uint256 maxLine, uint256 gap, uint48 ttl, uint48 last, uint48 lastInc);
 }
 
 // --- New PAU controller facets ---
@@ -57,6 +70,9 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     // ALLOCATOR_GROVE_A_VAULT is inherited from CommonPauSpellTests.
     address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
 
+    // MCD_JUG is not in grove-address-registry (Sky: MCD Jug on Etherscan).
+    address internal constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
+
     // New PAU system, onboarded in parallel to the legacy ALM system.
     address internal constant PAU_PROXY                      = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
     address internal constant PAU_CONTROLLER                 = 0xbf83F5974B932c7D842254042717D6A2706CE5eE;
@@ -72,6 +88,10 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     address internal constant PAU_USDS_FACET                 = 0x1221CC4B85Ab260660aD21C2829e0EB516dffBc7;
 
     bytes32 internal constant DEFAULT_ADMIN_ROLE = 0x00;
+
+    // Maker fixed-point units.
+    uint256 internal constant RAY = 1e27;
+    uint256 internal constant RAD = 1e45;
 
     uint256 internal constant USDS_MINT_MAX      = 5_000_000e18;
     uint256 internal constant USDS_MINT_SLOPE    = 5_000_000e18 / uint256(1 days);
@@ -218,13 +238,38 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(agent.getRevoker(0), Ethereum.ALM_FREEZER,                      "agent-revoker-0");
     }
 
+    function test_ETHEREUM_allocatorGroveAPreconditions() public onChain(ChainIdUtils.Ethereum()) {
+        ( , uint256 rate, uint256 spot, uint256 line, ) = IVatLike(Ethereum.VAT).ilks(GROVE_PAU_ALLOCATOR_ILK);
+        assertEq(rate, RAY,             "ilk-rate-not-initialised");
+        assertEq(spot, RAY,             "ilk-spot-not-set");
+        assertEq(line, 1_000_000 * RAD, "ilk-line-not-ramped-to-gap");
+
+        ( uint256 maxLine, uint256 gap, uint48 ttl, , ) = IDssAutoLineLike(Ethereum.AUTO_LINE).ilks(GROVE_PAU_ALLOCATOR_ILK);
+        assertEq(maxLine,      5_000_000 * RAD, "autoline-maxLine-incorrect");
+        assertEq(gap,          1_000_000 * RAD, "autoline-gap-incorrect");
+        assertEq(uint256(ttl), 1 days,          "autoline-ttl-incorrect");
+
+        assertEq(IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).ilk(),    GROVE_PAU_ALLOCATOR_ILK,  "vault-ilk-mismatch");
+        assertEq(IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).buffer(), ALLOCATOR_GROVE_A_BUFFER, "vault-buffer-mismatch");
+
+        assertEq(IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).wards(Ethereum.GROVE_PROXY),   1, "vault-subproxy-not-ward");
+        assertEq(IAllocatorBufferLike(ALLOCATOR_GROVE_A_BUFFER).wards(Ethereum.GROVE_PROXY), 1, "buffer-subproxy-not-ward");
+        assertEq(IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).wards(Ethereum.PAUSE_PROXY),   0, "vault-pauseproxy-still-ward");
+        assertEq(IAllocatorBufferLike(ALLOCATOR_GROVE_A_BUFFER).wards(Ethereum.PAUSE_PROXY), 0, "buffer-pauseproxy-still-ward");
+
+        assertEq(IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).jug(), MCD_JUG, "vault-jug-not-set");
+        assertEq(
+            IERC20(Ethereum.USDS).allowance(ALLOCATOR_GROVE_A_BUFFER, ALLOCATOR_GROVE_A_VAULT),
+            type(uint256).max,
+            "buffer-vault-allowance-not-set"
+        );
+    }
+
     function test_ETHEREUM_initPauSystem() public onChain(ChainIdUtils.Ethereum()) {
         IAllocatorVaultLike vault     = IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT);
         IERC20              usds      = IERC20(Ethereum.USDS);
         IPauControllerLike controller = IPauControllerLike(PAU_CONTROLLER);
 
-        assertEq(vault.ilk(),             GROVE_PAU_ALLOCATOR_ILK,  "vault-ilk-mismatch");
-        assertEq(vault.buffer(),          ALLOCATOR_GROVE_A_BUFFER, "vault-buffer-mismatch");
         assertEq(controller.usds_vault(), address(0),               "controller-already-has-vault");
 
         assertEq(vault.wards(PAU_PROXY),                              0, "proxy-already-vault-ward");
@@ -232,8 +277,6 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         executeAllPayloadsAndBridges();
 
-        assertEq(vault.ilk(),             GROVE_PAU_ALLOCATOR_ILK,  "vault-ilk-mismatch");
-        assertEq(vault.buffer(),          ALLOCATOR_GROVE_A_BUFFER, "vault-buffer-mismatch");
         assertEq(controller.usds_vault(), ALLOCATOR_GROVE_A_VAULT,  "controller-vault-not-set");
 
         assertEq(vault.wards(PAU_PROXY),                              1,                 "proxy-not-vault-ward");
