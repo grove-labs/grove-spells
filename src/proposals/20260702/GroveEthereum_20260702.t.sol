@@ -36,6 +36,7 @@ interface IAdministeredAgentMembersLike {
     function adminCount() external view returns (uint256);
     function actorCount() external view returns (uint256);
     function revokerCount() external view returns (uint256);
+    function grantorCount() external view returns (uint256);
     function getAdmin(uint256 index) external view returns (address);
     function getActor(uint256 index) external view returns (address);
     function getRevoker(uint256 index) external view returns (address);
@@ -48,7 +49,7 @@ interface ILitePsmLike {
 contract GroveEthereum_20260702_Test is GroveTestBase {
 
     // New Sky ALLOCATOR-GROVE-A instance (deployed by Sky's 2026-06-18 spell).
-    address internal constant ALLOCATOR_GROVE_A_VAULT  = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
+    // ALLOCATOR_GROVE_A_VAULT is inherited from CommonPauSpellTests.
     address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
 
     // New PAU system, onboarded in parallel to the legacy ALM system.
@@ -162,6 +163,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertEq(agent.adminCount(),   1, "agent-admin-count");
         assertEq(agent.actorCount(),   3, "agent-actor-count");
         assertEq(agent.revokerCount(), 1, "agent-revoker-count");
+        assertEq(agent.grantorCount(), 0, "agent-grantor-count");
 
         assertEq(agent.getAdmin(0),   Ethereum.GROVE_PROXY,                      "agent-admin-0");
         assertEq(agent.getActor(0),   Ethereum.ALM_RELAYER,                      "agent-actor-0");
