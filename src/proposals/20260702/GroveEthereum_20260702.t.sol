@@ -17,38 +17,12 @@ import {
     PauContext
 } from "src/test-harness/CommonPauTestBase.sol";
 
-// --- Maker core (for simulating Sky's not-yet-executed ALLOCATOR-GROVE-A ilk init) ---
-
-interface IVatLike {
-    function ilks(bytes32 ilk) external view returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
-    function init(bytes32 ilk) external;
-    function file(bytes32 ilk, bytes32 what, uint256 data) external;
-    function slip(bytes32 ilk, address usr, int256 wad) external;
-    function grab(bytes32 i, address u, address v, address w, int256 dink, int256 dart) external;
-}
-
-interface IJugLike {
-    function ilks(bytes32 ilk) external view returns (uint256 duty, uint256 rho);
-    function init(bytes32 ilk) external;
-}
-
-interface IDssAutoLineLike {
-    function setIlk(bytes32 ilk, uint256 line, uint256 gap, uint256 ttl) external;
-    function exec(bytes32 ilk) external returns (uint256);
-}
-
 // --- Sky allocator instance (dss-allocator) ---
 
 interface IAllocatorVaultLike {
-    function file(bytes32 what, address data) external;
     function wards(address usr) external view returns (uint256);
     function buffer() external view returns (address);
     function ilk() external view returns (bytes32);
-}
-
-interface IAllocatorBufferLike {
-    function approve(address asset, address spender, uint256 amount) external;
-    function wards(address usr) external view returns (uint256);
 }
 
 // --- New PAU controller facets ---
@@ -76,9 +50,6 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     // New Sky ALLOCATOR-GROVE-A instance (deployed by Sky's 2026-06-18 spell).
     address internal constant ALLOCATOR_GROVE_A_VAULT  = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
     address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
-
-    // MCD_JUG is not in grove-address-registry (Sky: MCD Jug on Etherscan).
-    address internal constant MCD_JUG = 0x19c0976f590D67707E62397C87829d896Dc0f1F1;
 
     // New PAU system, onboarded in parallel to the legacy ALM system.
     address internal constant PAU_PROXY                      = 0x0DcD9298e163dFD3c0B5b00F0d9093C36e40A153;
@@ -125,7 +96,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-06-22T11:30:00Z");
+        setupDomains("2026-06-22T14:35:00Z");
         deployPayloads();
 
         _setPauContext(
@@ -140,17 +111,17 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
             })
         );
 
-        // The PAU system mints USDS through Sky's ALLOCATOR-GROVE-A instance, whose
-        // ilk init runs in Sky's 2026-06-18 spell (after this 2026-06-15 fork). Simulate
-        // that init (and the PAU proxy's PSM whitelisting) so the spell's allocator hookup
-        // and the operational mint/swap tests work.
-        _simulateAllocatorGroveAInit();
+        // The ALLOCATOR-GROVE-A ilk init is already live on-chain (Sky's 2026-06-18 spell).
+        // Only the PAU proxy's Lite PSM whitelisting is still pending (Sky's 2026-07-02 Core
+        // spell), so replay just that here to make the operational swap tests work.
+        vm.prank(Ethereum.PAUSE_PROXY);
+        ILitePsmLike(Ethereum.PSM).kiss(PAU_PROXY);
     }
 
     function test_ETHEREUM_pauSystemPreconfiguration() public onChain(ChainIdUtils.Ethereum()) {
-        IPauControllerLike      controller     = IPauControllerLike(PAU_CONTROLLER);
+        IPauControllerLike      controller    = IPauControllerLike(PAU_CONTROLLER);
         IPauAccessControlsLike accessControls = IPauAccessControlsLike(PAU_ACCESS_CONTROLS);
-        IAdministeredAgentMembersLike agent    = IAdministeredAgentMembersLike(PAU_ADMINISTERED_AGENT);
+        IAdministeredAgentMembersLike agent   = IAdministeredAgentMembersLike(PAU_ADMINISTERED_AGENT);
 
         // Deployments exist
         assertGt(PAU_CONTROLLER.code.length,                 0, "controller-not-deployed");
@@ -177,9 +148,9 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertTrue(IPauRateLimitsLike(PAU_RATE_LIMITS).hasRole(CONTROLLER, PAU_CONTROLLER), "controller-missing-rate-limits-role");
 
         // Facet dispatch wiring
-        assertEq(controller.getDispatch(IPauControllerLike.basin_deposit.selector).facet,        PAU_BASIN_FACET, "basin-facet-not-wired");
-        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_mint.selector).facet,         PAU_USDS_FACET,  "usds-facet-not-wired");
-        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_swapUSDSToUSDC.selector).facet, PAU_PSM_FACET,  "psm-facet-not-wired");
+        assertEq(controller.getDispatch(IPauControllerLike.basin_deposit.selector).facet,          PAU_BASIN_FACET, "basin-facet-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_mint.selector).facet,          PAU_USDS_FACET,  "usds-facet-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_swapUSDSToUSDC.selector).facet, PAU_PSM_FACET,   "psm-facet-not-wired");
 
         // Access controls: the Grove SubProxy is the sole admin; the agent is an allocator
         assertTrue(accessControls.hasRole(DEFAULT_ADMIN_ROLE, Ethereum.GROVE_PROXY), "subproxy-missing-admin-role");
@@ -200,8 +171,8 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_initPauSystem() public onChain(ChainIdUtils.Ethereum()) {
-        IAllocatorVaultLike vault      = IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT);
-        IERC20              usds       = IERC20(Ethereum.USDS);
+        IAllocatorVaultLike vault     = IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT);
+        IERC20              usds      = IERC20(Ethereum.USDS);
         IPauControllerLike controller = IPauControllerLike(PAU_CONTROLLER);
 
         assertEq(vault.ilk(),             GROVE_PAU_ALLOCATOR_ILK,  "vault-ilk-mismatch");
@@ -282,8 +253,8 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         uint256 proxyUsdsStart = usds.balanceOf(address(ctx.proxy));
         uint256 proxyUsdcStart = usdc.balanceOf(address(ctx.proxy));
 
-        uint256 swapUsdc       = 1_000_000e6;      // 1M USDC
-        uint256 swapUsds       = swapUsdc * 1e12;  // 1M USDS equivalent (0 PSM fee)
+        uint256 swapUsdc = 1_000_000e6;      // 1M USDC
+        uint256 swapUsds = swapUsdc * 1e12;  // 1M USDS equivalent (0 PSM fee)
 
         _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.usds_mint, (swapUsds)));
 
@@ -394,61 +365,6 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
             subProxyUsdsStart + SUBPROXY_PSM_SWAP_USDC * 1e12 - GROVE_FOUNDATION_USDS_GRANT,
             "grove-proxy-usds-net-delta-mismatch"
         );
-    }
-
-    // --- helpers ---
-
-    /// @dev Replays the vat/jug ilk wiring + vault/buffer ownership that Sky's
-    ///      2026-06-18 spell performs for ALLOCATOR-GROVE-A, so the PAU system can
-    ///      draw USDS through the vault at this earlier fork. Mirrors AllocatorInit.initIlk.
-    function _simulateAllocatorGroveAInit() private {
-        if (ChainIdUtils.fromUint(block.chainid) != ChainIdUtils.Ethereum()) return;
-
-        uint256 RAY = 1e27;
-        uint256 RAD = 1e45;
-
-        uint256 ink  = 1_000_000_000_000 ether;  // locked collateral so the debt ceiling (not collateral) binds
-
-        bytes32 ilk = GROVE_PAU_ALLOCATOR_ILK;
-
-        IVatLike         vat      = IVatLike(Ethereum.VAT);
-        IJugLike         jug      = IJugLike(MCD_JUG);
-        IDssAutoLineLike autoLine = IDssAutoLineLike(Ethereum.AUTO_LINE);
-
-        // (1) Wire the ilk into the Maker core as the Maker PauseProxy would.
-        vm.startPrank(Ethereum.PAUSE_PROXY);
-        ( , uint256 rate, , , ) = vat.ilks(ilk);
-        if (rate == 0) vat.init(ilk);
-        vat.file(ilk, "spot", RAY);
-        // Onboard the ilk debt ceiling via the real DC-IAM (autoline) with the production
-        // ALLOCATOR-GROVE-A params: maxLine 5M, gap 1M, ttl 1 day, duty 0 (rate-limit-values.md).
-        autoLine.setIlk(ilk, 5_000_000 * RAD, 1_000_000 * RAD, 1 days);
-        vat.slip(ilk, ALLOCATOR_GROVE_A_VAULT, int256(ink));
-        vat.grab(ilk, ALLOCATOR_GROVE_A_VAULT, ALLOCATOR_GROVE_A_VAULT, address(0), int256(ink), 0);
-
-        ( uint256 duty, ) = jug.ilks(ilk);
-        if (duty == 0) jug.init(ilk);  // jug.init sets duty = RAY, i.e. a 0% stability fee
-        vm.stopPrank();
-
-        // exec() ramps the vat ilk line to the initial gap (1M) and bumps the global Line, as Sky's spell would.
-        autoLine.exec(ilk);
-
-        // (2) Hand vault + buffer ownership to the Grove SubProxy (Sky's switchOwner step).
-        //     Forced via storage because the pre-init ward is the Sky deployer (wards is slot 0).
-        vm.store(ALLOCATOR_GROVE_A_VAULT,  keccak256(abi.encode(Ethereum.GROVE_PROXY, uint256(0))), bytes32(uint256(1)));
-        vm.store(ALLOCATOR_GROVE_A_BUFFER, keccak256(abi.encode(Ethereum.GROVE_PROXY, uint256(0))), bytes32(uint256(1)));
-
-        // (3) Point the vault at the jug and let the vault pull USDS from the buffer (for wipe).
-        vm.startPrank(Ethereum.GROVE_PROXY);
-        IAllocatorVaultLike(ALLOCATOR_GROVE_A_VAULT).file("jug", MCD_JUG);
-        IAllocatorBufferLike(ALLOCATOR_GROVE_A_BUFFER).approve(Ethereum.USDS, ALLOCATOR_GROVE_A_VAULT, type(uint256).max);
-        vm.stopPrank();
-
-        // (4) Whitelist the PAU proxy on the Sky Lite PSM's no-fee buyGem/sellGem path (`bud`),
-        //     as the old ALM proxy already is, so the PSM swaps are operational. Sky kisses it
-        //     separately, so replay that kiss here.
-        vm.prank(Ethereum.PAUSE_PROXY);
-        ILitePsmLike(Ethereum.PSM).kiss(PAU_PROXY);
     }
 
 }
