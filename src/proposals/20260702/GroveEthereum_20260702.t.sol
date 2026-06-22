@@ -125,7 +125,7 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-06-15T18:00:00Z");
+        setupDomains("2026-06-22T11:30:00Z");
         deployPayloads();
 
         _setPauContext(
