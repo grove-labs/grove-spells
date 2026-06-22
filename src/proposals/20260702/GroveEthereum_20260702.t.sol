@@ -28,8 +28,13 @@ interface IAllocatorVaultLike {
 // --- New PAU controller facets ---
 
 interface IPauControllerLike is IPauBaseControllerLike {
+    function basin_VERSION() external view returns (string memory);
     function basin_deposit(address basin, address asset, uint256 amount, uint256 minSharesOut)
         external returns (uint256 shares);
+    function basin_withdraw(address basin, address asset, uint256 maxAmount, uint256 minConversionRate)
+        external returns (uint256 assetsWithdrawn);
+    function basin_getDepositRateLimitKey(address basin, address asset) external view returns (bytes32);
+    function basin_getWithdrawRateLimitKey(address basin, address asset) external view returns (bytes32);
 }
 
 interface IAdministeredAgentMembersLike {
@@ -148,16 +153,57 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
         assertTrue(IPauProxyLike(PAU_PROXY).hasRole(CONTROLLER, PAU_CONTROLLER),            "controller-missing-proxy-role");
         assertTrue(IPauRateLimitsLike(PAU_RATE_LIMITS).hasRole(CONTROLLER, PAU_CONTROLLER), "controller-missing-rate-limits-role");
 
-        // Facet dispatch wiring
-        assertEq(controller.getDispatch(IPauControllerLike.basin_deposit.selector).facet,          PAU_BASIN_FACET, "basin-facet-not-wired");
-        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_mint.selector).facet,          PAU_USDS_FACET,  "usds-facet-not-wired");
-        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_swapUSDSToUSDC.selector).facet, PAU_PSM_FACET,   "psm-facet-not-wired");
+        // Facet immutables resolve to the expected Sky core addresses
+        assertEq(controller.usds_usds(),   Ethereum.USDS,     "controller-usds-mismatch");
+        assertEq(controller.psm_dai(),     Ethereum.DAI,      "psm-dai-mismatch");
+        assertEq(controller.psm_daiUSDS(), Ethereum.DAI_USDS, "psm-dai-usds-mismatch");
+        assertEq(controller.psm_psm(),     Ethereum.PSM,      "psm-psm-mismatch");
+        assertEq(controller.psm_usdc(),    Ethereum.USDC,     "psm-usdc-mismatch");
+        assertEq(controller.psm_usds(),    Ethereum.USDS,     "psm-usds-mismatch");
+
+        // Facet dispatch wiring (every call selector routes to its facet)
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_VERSION.selector).facet,          PAU_USDS_FACET, "usds-version-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_usds.selector).facet,             PAU_USDS_FACET, "usds-usds-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_setVault.selector).facet,         PAU_USDS_FACET, "usds-set-vault-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_mint.selector).facet,             PAU_USDS_FACET, "usds-mint-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_burn.selector).facet,             PAU_USDS_FACET, "usds-burn-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_vault.selector).facet,            PAU_USDS_FACET, "usds-vault-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_mintRateLimitKey.selector).facet, PAU_USDS_FACET, "usds-mint-key-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.usds_burnRateLimitKey.selector).facet, PAU_USDS_FACET, "usds-burn-key-not-wired");
+
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_VERSION.selector).facet,                    PAU_PSM_FACET, "psm-version-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_dai.selector).facet,                        PAU_PSM_FACET, "psm-dai-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_daiUSDS.selector).facet,                    PAU_PSM_FACET, "psm-dai-usds-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_psm.selector).facet,                        PAU_PSM_FACET, "psm-psm-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_usdc.selector).facet,                       PAU_PSM_FACET, "psm-usdc-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_usds.selector).facet,                       PAU_PSM_FACET, "psm-usds-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_to18ConversionFactor.selector).facet,       PAU_PSM_FACET, "psm-to18-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_swapUSDSToUSDC.selector).facet,             PAU_PSM_FACET, "psm-swap-usds-usdc-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_swapUSDCToUSDS.selector).facet,             PAU_PSM_FACET, "psm-swap-usdc-usds-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_usdsToUSDCSwapRateLimitKey.selector).facet, PAU_PSM_FACET, "psm-usds-usdc-key-not-wired");
+        assertEq(controller.getDispatch(IPauBaseControllerLike.psm_usdcToUSDSSwapRateLimitKey.selector).facet, PAU_PSM_FACET, "psm-usdc-usds-key-not-wired");
+
+        assertEq(controller.getDispatch(IPauControllerLike.basin_VERSION.selector).facet,                 PAU_BASIN_FACET, "basin-version-not-wired");
+        assertEq(controller.getDispatch(IPauControllerLike.basin_deposit.selector).facet,                 PAU_BASIN_FACET, "basin-deposit-not-wired");
+        assertEq(controller.getDispatch(IPauControllerLike.basin_withdraw.selector).facet,                PAU_BASIN_FACET, "basin-withdraw-not-wired");
+        assertEq(controller.getDispatch(IPauControllerLike.basin_getDepositRateLimitKey.selector).facet,  PAU_BASIN_FACET, "basin-deposit-key-not-wired");
+        assertEq(controller.getDispatch(IPauControllerLike.basin_getWithdrawRateLimitKey.selector).facet, PAU_BASIN_FACET, "basin-withdraw-key-not-wired");
 
         // Access controls: the Grove SubProxy is the sole admin; the agent is an allocator
         assertTrue(accessControls.hasRole(DEFAULT_ADMIN_ROLE, Ethereum.GROVE_PROXY), "subproxy-missing-admin-role");
         assertEq(accessControls.getRoleMemberCount(DEFAULT_ADMIN_ROLE), 1,           "admin-role-member-count");
         assertFalse(accessControls.hasRole(DEFAULT_ADMIN_ROLE, PAU_FACTORY),         "factory-still-admin");
         assertTrue(accessControls.hasRole(ALLOCATOR_ROLE, PAU_ADMINISTERED_AGENT),   "agent-missing-allocator-role");
+        assertEq(accessControls.getRoleMemberCount(ALLOCATOR_ROLE), 1,               "allocator-role-member-count");
+
+        // Proxy + rate limits are admined by the Grove SubProxy, not the deployer/assembler
+        assertTrue(IPauProxyLike(PAU_PROXY).hasRole(DEFAULT_ADMIN_ROLE, Ethereum.GROVE_PROXY),              "subproxy-missing-proxy-admin");
+        assertFalse(IPauProxyLike(PAU_PROXY).hasRole(DEFAULT_ADMIN_ROLE, PAU_DEFAULT_ASSEMBLER),            "assembler-still-proxy-admin");
+        assertTrue(IPauRateLimitsLike(PAU_RATE_LIMITS).hasRole(DEFAULT_ADMIN_ROLE, Ethereum.GROVE_PROXY),   "subproxy-missing-rate-limits-admin");
+        assertFalse(IPauRateLimitsLike(PAU_RATE_LIMITS).hasRole(DEFAULT_ADMIN_ROLE, PAU_DEFAULT_ASSEMBLER), "assembler-still-rate-limits-admin");
+
+        // The shared beacon stays under Sky's PauseProxy
+        assertTrue(IPauAccessControlsLike(PAU_BEACON).hasRole(DEFAULT_ADMIN_ROLE, Ethereum.PAUSE_PROXY), "beacon-admin-mismatch");
 
         // Agent membership (same as the legacy ALM relayer set)
         assertEq(agent.adminCount(),   1, "agent-admin-count");

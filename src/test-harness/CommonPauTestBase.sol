@@ -27,11 +27,23 @@ interface IPauBaseControllerLike {
     function getDispatch(bytes4 callSelector) external view returns (PauDispatch memory dispatch);
     function proxy() external view returns (address);
     function rateLimits() external view returns (address);
+
+    function usds_VERSION() external view returns (string memory);
+    function usds_usds() external view returns (address);
+    function usds_setVault(address vault) external;
     function usds_mint(uint256 usdsAmount) external returns (uint256);
     function usds_burn(uint256 usdsAmount) external returns (uint256);
     function usds_vault() external view returns (address);
     function usds_mintRateLimitKey() external view returns (bytes32);
     function usds_burnRateLimitKey() external view returns (bytes32);
+
+    function psm_VERSION() external view returns (string memory);
+    function psm_dai() external view returns (address);
+    function psm_daiUSDS() external view returns (address);
+    function psm_psm() external view returns (address);
+    function psm_usdc() external view returns (address);
+    function psm_usds() external view returns (address);
+    function psm_to18ConversionFactor() external view returns (uint256);
     function psm_swapUSDSToUSDC(uint256 usdcAmount) external returns (uint256);
     function psm_swapUSDCToUSDS(uint256 usdcAmount) external returns (uint256);
     function psm_usdsToUSDCSwapRateLimitKey() external view returns (bytes32);
