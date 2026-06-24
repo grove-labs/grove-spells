@@ -66,6 +66,8 @@ interface ILitePsmLike {
 
 contract GroveEthereum_20260702_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0xa21d2E301D50AfF797143deb5a7C400482E9122C;
+
     // New Sky ALLOCATOR-GROVE-A instance (deployed by Sky's 2026-06-18 spell).
     // ALLOCATOR_GROVE_A_VAULT is inherited from CommonPauSpellTests.
     address internal constant ALLOCATOR_GROVE_A_BUFFER = 0x436DABce608f73BeA2b75fba35bffe72739697d5;
@@ -122,8 +124,9 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-06-22T14:35:00Z");
-        deployPayloads();
+        setupDomains("2026-06-24T14:45:00Z");
+
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
 
         _setPauContext(
             ChainIdUtils.Ethereum(),
