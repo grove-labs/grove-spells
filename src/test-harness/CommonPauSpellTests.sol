@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
 import { CommonPauTestBase } from "./CommonPauTestBase.sol";
@@ -24,7 +26,7 @@ abstract contract CommonPauSpellTests is CommonSpellTests, CommonPauTestBase {
     bytes32 internal constant GROVE_PAU_ALLOCATOR_ILK = "ALLOCATOR-GROVE-A";
 
     // The Sky ALLOCATOR-GROVE-A vault the PAU system mints USDS through.
-    address internal constant ALLOCATOR_GROVE_A_VAULT = 0xf739a30c74927dc6cFA3B67E4933872a1FC5F4EB;
+    address internal constant ALLOCATOR_GROVE_A_VAULT = Ethereum.ALLOCATOR_GROVE_A_VAULT;
 
     /// @dev The PAU mint/burn path draws debt against the ALLOCATOR-GROVE-A ilk and assumes a
     ///      0% stability fee, so assert the ilk duty is RAY (1e27) on the live jug.
