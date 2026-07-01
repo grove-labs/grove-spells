@@ -77,6 +77,13 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
             _executor : ROBINHOOD_GROVE_EXECUTOR,
             _receiver : ROBINHOOD_GROVE_RECEIVER
         });
+
+        _verifyForeignDomainExecutorDeployment({
+            _executor      : ROBINHOOD_GROVE_EXECUTOR,
+            _receiver      : ROBINHOOD_GROVE_RECEIVER,
+            _deployer      : ROBINHOOD_DEPLOYER,
+            _expectedDelay : 1 days
+        });
     }
 
     function test_ROBINHOOD_almSystemInitialization() public onChain(ChainIdUtils.Robinhood()) {
@@ -104,7 +111,10 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
     }
 
     function test_ROBINHOOD_onboardGroveXSteakhouseUsdgVault() public onChain(ChainIdUtils.Robinhood()) {
-        // TODO: enable once the vault accepts deposits (maxDeposit is 0 at the pinned fork block).
+        // groveUSDG is a Morpho Vault V2 with unconfigured deposit caps: absoluteCap/relativeCap are 0 at
+        // every block, so maxDeposit is 0 for all receivers and the real depositERC4626 in
+        // _testERC4626Onboarding reverts. Raising the caps requires a curator submit + 7-day timelock, so
+        // this cannot run on the fork yet. Re-enable once the vault caps are configured on Robinhood.
         vm.skip(true);
 
         _testERC4626Onboarding({
