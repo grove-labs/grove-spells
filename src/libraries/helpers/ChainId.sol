@@ -31,6 +31,7 @@ library ChainIdUtils {
         else if (id == 10)    return ChainId.wrap(id); // Optimism
         else if (id == 9745)  return ChainId.wrap(id); // Plasma
         else if (id == 98866) return ChainId.wrap(id); // Plume
+        else if (id == 4663)  return ChainId.wrap(id); // Robinhood
         else if (id == 130)   return ChainId.wrap(id); // Unichain
         require(false, "ChainIdUtils/invalid-chain-id");
     }
@@ -44,6 +45,7 @@ library ChainIdUtils {
         else if (ChainId.unwrap(id) == 10)    return "Optimism";
         else if (ChainId.unwrap(id) == 9745)  return "Plasma";
         else if (ChainId.unwrap(id) == 98866) return "Plume";
+        else if (ChainId.unwrap(id) == 4663)  return "Robinhood";
         else if (ChainId.unwrap(id) == 130)   return "Unichain";
         require(false, "ChainIdUtils/invalid-chain-id");
     }
@@ -78,6 +80,10 @@ library ChainIdUtils {
 
     function Plume() internal pure returns (ChainId) {
         return ChainId.wrap(98866);
+    }
+
+    function Robinhood() internal pure returns (ChainId) {
+        return ChainId.wrap(4663);
     }
 
     function Unichain() internal pure returns (ChainId) {

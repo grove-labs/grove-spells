@@ -3,8 +3,6 @@ pragma solidity ^0.8.0;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
-
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
@@ -93,7 +91,7 @@ abstract contract ERC20TestingBase is CommonALMTestBase {
         bool unlimitedDeposit = depositMax == type(uint256).max;
 
         bytes32 depositKey = RateLimitHelpers.makeAssetDestinationKey(
-            MainnetController(Ethereum.ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
+            MainnetController(ctx.controller).LIMIT_ASSET_TRANSFER(),
             token,
             destination
         );

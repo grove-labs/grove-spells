@@ -8,6 +8,7 @@ import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
+import { ArbitrumForwarder }      from "xchain-helpers/forwarders/ArbitrumForwarder.sol";
 import { ArbitrumERC20Forwarder } from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
 import { CCTPv2Forwarder }        from "xchain-helpers/forwarders/CCTPv2Forwarder.sol";
 import { OptimismForwarder }      from "xchain-helpers/forwarders/OptimismForwarder.sol";
@@ -47,6 +48,7 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_BASE;
     address public immutable PAYLOAD_PLUME;
+    address public immutable PAYLOAD_ROBINHOOD;
 
     function isExecutable() external view virtual returns (bool result) {
         return true;
@@ -78,6 +80,20 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
                 l1CrossDomain : ArbitrumERC20Forwarder.L1_CROSS_DOMAIN_PLUME,
                 target        : Plume.GROVE_RECEIVER,
                 message       : _encodePayloadQueue(PAYLOAD_PLUME),
+                gasLimit      : 1_000_0000,
+                maxFeePerGas  : 5_000e9,
+                baseFee       : block.basefee
+            });
+        }
+
+        if (PAYLOAD_ROBINHOOD != address(0)) {
+            // Robinhood is an Arbitrum Orbit L2 (chain ID 4663); the governance relay uses the Arbitrum
+            // native bridge. Reuses the library ArbitrumForwarder, supplying the Robinhood L1 bridge inbox.
+            // TODO Replace with library addresses
+            ArbitrumForwarder.sendMessageL1toL2({
+                l1CrossDomain : 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D, // Robinhood L1 bridge (Delayed Inbox) on Ethereum
+                target        : 0xa02eC279eEA9E56F4E14449a07C5ca5FDAAdc51d, // Arbitrum-native ArbitrumReceiver
+                message       : _encodePayloadQueue(PAYLOAD_ROBINHOOD),
                 gasLimit      : 1_000_0000,
                 maxFeePerGas  : 5_000e9,
                 baseFee       : block.basefee

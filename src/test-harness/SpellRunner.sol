@@ -155,6 +155,12 @@ abstract contract SpellRunner is Test {
             chainId : 98866
         }));
 
+        setChain("robinhood", ChainData({
+            name    : "Robinhood",
+            rpcUrl  : vm.envString("ROBINHOOD_RPC_URL"),
+            chainId : 4663
+        }));
+
         ChainId[] memory chainIds = new ChainId[](3);
         chainIds[0] = ChainIdUtils.Ethereum();
         chainIds[1] = ChainIdUtils.Avalanche();
@@ -166,15 +172,18 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Avalanche()].domain = getChain("avalanche").createFork(blocks[1]);
         chainData[ChainIdUtils.Base()].domain      = getChain("base").createFork(blocks[2]);
 
-        uint256[] memory hardcodedBlocks = new uint256[](1);
+        uint256[] memory hardcodedBlocks = new uint256[](2);
         hardcodedBlocks[0] = 42727304; // Plume
+        hardcodedBlocks[1] = 499800;   // Robinhood
 
-        chainData[ChainIdUtils.Plume()].domain = getChain("plume").createFork(hardcodedBlocks[0]);
+        chainData[ChainIdUtils.Plume()].domain     = getChain("plume").createFork(hardcodedBlocks[0]);
+        chainData[ChainIdUtils.Robinhood()].domain = getChain("robinhood").createFork(hardcodedBlocks[1]);
 
         console.log("   Mainnet block:", blocks[0]);
         console.log(" Avalanche block:", blocks[1]);
         console.log("      Base block:", blocks[2]);
         console.log("     Plume block:", hardcodedBlocks[0]);
+        console.log(" Robinhood block:", hardcodedBlocks[1]);
     }
 
     /// @dev to be called in setUp
@@ -199,6 +208,12 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Plume()].executor       = IExecutor(Plume.GROVE_EXECUTOR);
         chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
         chainData[ChainIdUtils.Plume()].newController  = Plume.ALM_CONTROLLER;
+
+        // Robinhood addresses inlined as local literals
+        // TODO: swap for Robinhood registry refs in the archive PR
+        chainData[ChainIdUtils.Robinhood()].executor       = IExecutor(0x5ff98717a18833de1A49e11B498866d6Fa1c9296); // GROVE_EXECUTOR
+        chainData[ChainIdUtils.Robinhood()].prevController = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER
+        chainData[ChainIdUtils.Robinhood()].newController  = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER
 
         // Avalanche
         chainData[ChainIdUtils.Avalanche()].bridges.push(
@@ -260,10 +275,26 @@ abstract contract SpellRunner is Test {
             )
         );
 
+        // Robinhood. Built via init(Bridge{...}) rather than createNativeBridge(...) so the Robinhood L1
+        // bridge inbox is supplied directly, leaving ArbitrumBridgeTesting unchanged.
+        chainData[ChainIdUtils.Robinhood()].bridges.push(
+            ArbitrumBridgeTesting.init(Bridge({
+                bridgeType                     : BridgeType.ARBITRUM,
+                source                         : chainData[ChainIdUtils.Ethereum()].domain,
+                destination                    : chainData[ChainIdUtils.Robinhood()].domain,
+                sourceCrossChainMessenger      : 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D, // Robinhood L1 bridge (Delayed Inbox)
+                destinationCrossChainMessenger : 0x0000000000000000000000000000000000000064, // ArbSys precompile
+                lastSourceLogIndex             : 0,
+                lastDestinationLogIndex        : 0,
+                extraData                      : ""
+            }))
+        );
+
         allChains.push(ChainIdUtils.Ethereum());
         allChains.push(ChainIdUtils.Avalanche());
         allChains.push(ChainIdUtils.Base());
         allChains.push(ChainIdUtils.Plume());
+        allChains.push(ChainIdUtils.Robinhood());
     }
 
     function spellIdentifier(ChainId chainId) private view returns(string memory) {
@@ -375,6 +406,7 @@ abstract contract SpellRunner is Test {
         if (chainId == ChainIdUtils.Avalanche()) return spell.PAYLOAD_AVALANCHE();
         if (chainId == ChainIdUtils.Base())      return spell.PAYLOAD_BASE();
         if (chainId == ChainIdUtils.Plume())     return spell.PAYLOAD_PLUME();
+        if (chainId == ChainIdUtils.Robinhood()) return spell.PAYLOAD_ROBINHOOD();
 
         revert("Unsupported chainId");
     }
