@@ -9,15 +9,15 @@
     "rev": "ca0351644f9ba52c7d90a6183042617ff8b75579"
   },
   "lib/grove-alm-controller": {
-    "rev": "d2378c794cddda99b85d6f4d7387a5a5efd35486"
+    "rev": "2c6e3d4297d5f244894d05f3dbbe47bcada34712"
   },
   "lib/grove-gov-relay": {
     "rev": "f314e2480204f4ab897ba757886b7af45d61b746"
   },
   "lib/spark-address-registry": {
-    "rev": "7970fef921881720179967e5fa8b7305e59cf61e"
+    "rev": "d3247083428eb9f7ebe797fd47758463401d1c26"
   },
   "lib/xchain-helpers": {
-    "rev": "c93404800dbcaafec4af068b04ce7df6df7c95fa"
+    "rev": "53f6ced11ae4828e7bd55ba7a6a713c97f2b19c4"
   }
 }
