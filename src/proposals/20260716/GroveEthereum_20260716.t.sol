@@ -23,9 +23,9 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
     address internal constant ROBINHOOD_USDG       = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
     address internal constant ROBINHOOD_USDG_VAULT = 0xBEEff039907422219Fb367e525954DDC092854d9;
 
-    // TODO: placeholder (0xdeadbeef) Paxos destinations; must match the payloads.
-    address internal constant ETHEREUM_PAXOS_USDC_DEPOSIT_WALLET   = 0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF;
-    address internal constant ROBINHOOD_PAXOS_USDG_DEPOSIT_WALLET  = 0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF;
+    // Paxos deposit wallets; must match the payloads.
+    address internal constant ETHEREUM_PAXOS_USDC_DEPOSIT_WALLET   = 0x8C0A9E5939B97979f85d9aDA3d983C6E713Cc2dB;
+    address internal constant ROBINHOOD_PAXOS_USDG_DEPOSIT_WALLET  = 0xfC0a7Ed7C5146B26eB38FA92c71F434A7178b06e;
 
     constructor() {
         id = "20260716";

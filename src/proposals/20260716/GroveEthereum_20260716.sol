@@ -16,8 +16,8 @@ import { GrovePayloadEthereum } from "src/libraries/payloads/GrovePayloadEthereu
  */
 contract GroveEthereum_20260716 is GrovePayloadEthereum {
 
-    // TODO: placeholder (0xdeadbeef) Paxos USDC deposit wallet on Mainnet (Item 1c, Mainnet -> Robinhood).
-    address internal constant PAXOS_USDC_DEPOSIT_WALLET = 0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF;
+    // Paxos-controlled USDC deposit wallet on Mainnet (Item 1c, Mainnet -> Robinhood).
+    address internal constant PAXOS_USDC_DEPOSIT_WALLET = 0x8C0A9E5939B97979f85d9aDA3d983C6E713Cc2dB;
 
     constructor() {
         // TODO: deployed GroveRobinhood_20260716 address.

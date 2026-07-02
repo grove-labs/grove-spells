@@ -26,8 +26,8 @@ contract GroveRobinhood_20260716 is GrovePayloadRobinhood {
     address internal constant USDG                          = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
     address internal constant GROVE_X_STEAKHOUSE_USDG_VAULT = 0xBEEff039907422219Fb367e525954DDC092854d9;
 
-    // TODO: placeholder (0xdeadbeef) Paxos USDG deposit wallet on Robinhood (Item 1c, Robinhood -> Mainnet).
-    address internal constant PAXOS_USDG_DEPOSIT_WALLET = 0xDeaDbeefdEAdbeefdEadbEEFdeadbeEFdEaDbeeF;
+    // Paxos-controlled USDG deposit wallet on Robinhood (Item 1c, Robinhood -> Mainnet).
+    address internal constant PAXOS_USDG_DEPOSIT_WALLET = 0xfC0a7Ed7C5146B26eB38FA92c71F434A7178b06e;
 
     function execute() external {
         // [Robinhood] Item 1b: activate the Robinhood ForeignController (ForeignControllerInit.initAlmSystem).
