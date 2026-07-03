@@ -1,7 +1,12 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+
+import { Ethereum }                  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
+
+import { IALMProxy } from "lib/grove-alm-controller/src/interfaces/IALMProxy.sol";
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
@@ -28,6 +33,10 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
     address internal constant ETHEREUM_PAXOS_USDC_DEPOSIT_WALLET   = 0x8C0A9E5939B97979f85d9aDA3d983C6E713Cc2dB;
     address internal constant ROBINHOOD_PAXOS_USDG_DEPOSIT_WALLET  = 0xfC0a7Ed7C5146B26eB38FA92c71F434A7178b06e;
 
+    // syrupUSDC balances pinned to the deterministic mainnet fork block (6 decimals).
+    uint256 internal constant GROVE_SYRUP_USDC_BALANCE = 85_943_747.637271e6;
+    uint256 internal constant SPARK_SYRUP_USDC_BALANCE = 89_909_706.064423e6;
+
     constructor() {
         id = "20260716";
     }
@@ -45,6 +54,26 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
             depositMax            : 50_000_000e6,
             depositSlope          : 50_000_000e6 / uint256(1 days)
         });
+    }
+
+    function test_ETHEREUM_transferSyrupUsdcToSpark() public onChain(ChainIdUtils.Ethereum()) {
+        IERC20    syrupUsdc = IERC20(Ethereum.MAPLE_SYRUP_USDC);
+        IALMProxy almProxy  = IALMProxy(Ethereum.ALM_PROXY);
+
+        bytes32 controllerRole = almProxy.CONTROLLER();
+
+        assertEq(syrupUsdc.balanceOf(Ethereum.ALM_PROXY),       GROVE_SYRUP_USDC_BALANCE);
+        assertEq(syrupUsdc.balanceOf(SparkContracts.ALM_PROXY), SPARK_SYRUP_USDC_BALANCE);
+
+        assertEq(almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY), false);
+
+        executeAllPayloadsAndBridges();
+
+        assertEq(syrupUsdc.balanceOf(Ethereum.ALM_PROXY),       0);
+        assertEq(syrupUsdc.balanceOf(SparkContracts.ALM_PROXY), SPARK_SYRUP_USDC_BALANCE + GROVE_SYRUP_USDC_BALANCE);
+
+        // Role hygiene: the atomic grant/revoke must not leave the SubProxy holding CONTROLLER
+        assertEq(almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY), false);
     }
 
     function test_ROBINHOOD_almSystemDeployment() public onChain(ChainIdUtils.Robinhood()) {

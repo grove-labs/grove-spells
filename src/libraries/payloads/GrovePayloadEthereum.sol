@@ -6,6 +6,10 @@ import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
+import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+
+import { IALMProxy } from "lib/grove-alm-controller/src/interfaces/IALMProxy.sol";
+
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
 import { ArbitrumForwarder }      from "xchain-helpers/forwarders/ArbitrumForwarder.sol";
@@ -154,6 +158,29 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         GroveLiquidityLayerHelpers.offboardERC7540Vault(
             Ethereum.ALM_RATE_LIMITS,
             vault
+        );
+    }
+
+    /// @dev Transfers `amount` of `asset` held by the Grove ALM Proxy to `destination`.
+    ///      Mirrors SparkPayloadEthereum._transferAssetFromAlmProxy (Spark 2025-09-04 spell):
+    ///      the executing SubProxy grants itself the CONTROLLER role on the ALM Proxy,
+    ///      performs the transfer via ALMProxy.doCall, then revokes the role, atomically.
+    function _transferAssetFromAlmProxy(address asset, address destination, uint256 amount) internal {
+        // Grant controller role to Grove Proxy
+        IALMProxy(Ethereum.ALM_PROXY).grantRole(
+            IALMProxy(Ethereum.ALM_PROXY).CONTROLLER(),
+            Ethereum.GROVE_PROXY
+        );
+
+        IALMProxy(Ethereum.ALM_PROXY).doCall(
+            asset,
+            abi.encodeCall(IERC20(asset).transfer, (destination, amount))
+        );
+
+        // Revoke controller role from Grove Proxy
+        IALMProxy(Ethereum.ALM_PROXY).revokeRole(
+            IALMProxy(Ethereum.ALM_PROXY).CONTROLLER(),
+            Ethereum.GROVE_PROXY
         );
     }
 
