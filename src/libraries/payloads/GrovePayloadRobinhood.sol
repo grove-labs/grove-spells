@@ -16,12 +16,13 @@ import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelper
  */
 abstract contract GrovePayloadRobinhood {
 
-    // TODO: swap for Robinhood.* registry refs in the archive PR
+    address internal constant ALM_CONTROLLER  = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;
+    address internal constant ALM_RATE_LIMITS = 0xC13e5ff7993c5df911aE562a7736B0eBA12b2010;
 
     function _onboardERC4626Vault(address vault, uint256 depositMax, uint256 depositSlope, uint256 shareUnit, uint256 maxAssetsPerShare) internal {
         GroveLiquidityLayerHelpers.onboardERC4626Vault(
-            0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf,
-            0xC13e5ff7993c5df911aE562a7736B0eBA12b2010,
+            ALM_CONTROLLER,
+            ALM_RATE_LIMITS,
             vault,
             depositMax,
             depositSlope,
@@ -32,12 +33,12 @@ abstract contract GrovePayloadRobinhood {
 
     function _onboardAssetTransfer(address asset, address destination, uint256 maxAmount, uint256 slope) internal {
         bytes32 transferKey = RateLimitHelpers.makeAssetDestinationKey(
-            ForeignController(0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf).LIMIT_ASSET_TRANSFER(),
+            ForeignController(ALM_CONTROLLER).LIMIT_ASSET_TRANSFER(),
             asset,
             destination
         );
 
-        IRateLimits(0xC13e5ff7993c5df911aE562a7736B0eBA12b2010).setRateLimitData(transferKey, maxAmount, slope);
+        IRateLimits(ALM_RATE_LIMITS).setRateLimitData(transferKey, maxAmount, slope);
     }
 
 }

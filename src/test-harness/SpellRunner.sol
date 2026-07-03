@@ -209,8 +209,8 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
         chainData[ChainIdUtils.Plume()].newController  = Plume.ALM_CONTROLLER;
 
-        // Robinhood addresses inlined as local literals
-        // TODO: swap for Robinhood registry refs in the archive PR
+        // Robinhood addresses inlined as local literals until grove-address-registry
+        // exposes Robinhood.* references (swapped in the archive PR)
         chainData[ChainIdUtils.Robinhood()].executor       = IExecutor(0x5ff98717a18833de1A49e11B498866d6Fa1c9296); // GROVE_EXECUTOR
         chainData[ChainIdUtils.Robinhood()].prevController = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER
         chainData[ChainIdUtils.Robinhood()].newController  = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER

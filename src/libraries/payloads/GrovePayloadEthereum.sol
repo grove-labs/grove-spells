@@ -50,6 +50,11 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
     address public immutable PAYLOAD_PLUME;
     address public immutable PAYLOAD_ROBINHOOD;
 
+    // Robinhood relay addresses; local constants until grove-address-registry exposes
+    // Robinhood.* references (swapped in the archive PR).
+    address internal constant ROBINHOOD_DELAYED_INBOX  = 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D; // Robinhood L1 bridge (Delayed Inbox) on Ethereum
+    address internal constant ROBINHOOD_GROVE_RECEIVER = 0xa02eC279eEA9E56F4E14449a07C5ca5FDAAdc51d; // Arbitrum-native ArbitrumReceiver on Robinhood
+
     function isExecutable() external view virtual returns (bool result) {
         return true;
     }
@@ -89,13 +94,12 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         if (PAYLOAD_ROBINHOOD != address(0)) {
             // Robinhood is an Arbitrum Orbit L2 (chain ID 4663); the governance relay uses the Arbitrum
             // native bridge. Reuses the library ArbitrumForwarder, supplying the Robinhood L1 bridge inbox.
-            // TODO Replace with library addresses
             ArbitrumForwarder.sendMessageL1toL2({
-                l1CrossDomain : 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D, // Robinhood L1 bridge (Delayed Inbox) on Ethereum
-                target        : 0xa02eC279eEA9E56F4E14449a07C5ca5FDAAdc51d, // Arbitrum-native ArbitrumReceiver
+                l1CrossDomain : ROBINHOOD_DELAYED_INBOX,
+                target        : ROBINHOOD_GROVE_RECEIVER,
                 message       : _encodePayloadQueue(PAYLOAD_ROBINHOOD),
-                gasLimit      : 1_000_0000,
-                maxFeePerGas  : 5_000e9,
+                gasLimit      : 1_000_000,
+                maxFeePerGas  : 50e9,
                 baseFee       : block.basefee
             });
         }

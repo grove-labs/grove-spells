@@ -72,8 +72,8 @@ abstract contract CommonALMTestBase is CommonTestBase {
               Plume.ALM_FREEZER
           );
       } else if (chain == ChainIdUtils.Robinhood()) {
-          // Robinhood addresses inlined as local literals
-          // TODO: swap for Robinhood registry refs in the archive PR
+          // Robinhood addresses inlined as local literals until grove-address-registry
+          // exposes Robinhood.* references (swapped in the archive PR)
           ctx = GroveLiquidityLayerContext(
               0x5ff98717a18833de1A49e11B498866d6Fa1c9296,             // GROVE_EXECUTOR
               controller,

@@ -13,7 +13,8 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
     address internal constant ROBINHOOD_ALM_CONTROLLER  = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;
     address internal constant ROBINHOOD_ALM_RATE_LIMITS = 0xC13e5ff7993c5df911aE562a7736B0eBA12b2010;
     address internal constant ROBINHOOD_ALM_FREEZER     = 0xB0113804960345fd0a245788b3423319c86940e5;
-    // TODO Confirm that correct relayers are onboarded and relayers are correctly deployed and configured
+    // Same Relayer Safes as Ethereum.ALM_RELAYER / Ethereum.GROVE_SECONDARY_RELAYER_OPERATOR,
+    // deployed deterministically to the same addresses on Robinhood (forum post, Pre-deployed contracts §5.1).
     address internal constant ROBINHOOD_ALM_RELAYER     = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
     address internal constant ROBINHOOD_ALM_RELAYER_2   = 0x9187807e07112359C481870feB58f0c117a29179;
     address internal constant ROBINHOOD_GROVE_EXECUTOR  = 0x5ff98717a18833de1A49e11B498866d6Fa1c9296;
@@ -111,12 +112,9 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
     }
 
     function test_ROBINHOOD_onboardGroveXSteakhouseUsdgVault() public onChain(ChainIdUtils.Robinhood()) {
-        // groveUSDG is a Morpho Vault V2 with unconfigured deposit caps: absoluteCap/relativeCap are 0 at
-        // every block, so maxDeposit is 0 for all receivers and the real depositERC4626 in
-        // _testERC4626Onboarding reverts. Raising the caps requires a curator submit + 7-day timelock, so
-        // this cannot run on the fork yet. Re-enable once the vault caps are configured on Robinhood.
-        vm.skip(true);
-
+        // groveUSDG is a Morpho Vault V2: maxDeposit() is hard-coded to 0 by design, but real deposits
+        // work within the curator caps configured at vault deployment. _testERC4626Onboarding performs
+        // real deposits/withdrawals and never consults maxDeposit, so it runs against the fork as-is.
         _testERC4626Onboarding({
             vault                 : ROBINHOOD_USDG_VAULT,
             expectedDepositAmount : 50_000_000e6,
