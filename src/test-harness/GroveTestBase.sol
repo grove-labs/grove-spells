@@ -12,13 +12,13 @@ import { InitializationTestingBase } from "./test-bases/InitializationTestingBas
 import { UniswapV3TestingBase }      from "./test-bases/UniswapV3TestingBase.sol";
 
 import { CommonALMSpellTests } from "./CommonALMSpellTests.sol";
-import { CommonPAUSpellTests } from "./CommonPAUSpellTests.sol";
+import { CommonPauSpellTests } from "./CommonPauSpellTests.sol";
 
 /// @dev convenience contract meant to be the single point of entry for all
 /// spell-specific test contracts
 abstract contract GroveTestBase is
     CommonALMSpellTests,
-    CommonPAUSpellTests,
+    CommonPauSpellTests,
     AaveTestingBase,
     BasinTestingBase,
     CentrifugeTestingBase,

@@ -15,6 +15,7 @@ import { OptimismForwarder }      from "xchain-helpers/forwarders/OptimismForwar
 import { OptionsBuilder } from "lib/xchain-helpers/lib/devtools/packages/oapp-evm/contracts/oapp/libs/OptionsBuilder.sol";
 
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
+import { GrovePauHelpers }            from "../helpers/GrovePauHelpers.sol";
 import { UniswapV3Helpers }           from "../helpers/UniswapV3Helpers.sol";
 
 interface IStarSpellLike {
@@ -210,6 +211,54 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
             poolParams,
             token0Params,
             token1Params
+        );
+    }
+
+    function _setUsdsMintBurnPauRateLimits(
+        address rateLimits,
+        uint256 mintMax,
+        uint256 mintSlope,
+        uint256 burnMax,
+        uint256 burnSlope
+    ) internal {
+        GrovePauHelpers.setUsdsMintBurnRateLimit(
+            rateLimits,
+            mintMax,
+            mintSlope,
+            burnMax,
+            burnSlope
+        );
+    }
+
+    function _setPsmSwapPauRateLimits(
+        address rateLimits,
+        uint256 usdsToUsdcMax,
+        uint256 usdsToUsdcSlope,
+        uint256 usdcToUsdsMax,
+        uint256 usdcToUsdsSlope
+    ) internal {
+        GrovePauHelpers.setPsmSwapRateLimit(
+            rateLimits,
+            usdsToUsdcMax,
+            usdsToUsdcSlope,
+            usdcToUsdsMax,
+            usdcToUsdsSlope
+        );
+    }
+
+    function _setBasinPauRateLimits(
+        address rateLimits,
+        address basin,
+        uint256 depositMax,
+        uint256 depositSlope
+    ) internal {
+        GrovePauHelpers.setBasinRateLimit(
+            rateLimits,
+            basin,
+            Ethereum.USDS,
+            Ethereum.USDC,
+            depositMax,
+            depositSlope
         );
     }
 
