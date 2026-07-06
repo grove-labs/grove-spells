@@ -8,6 +8,13 @@ import { IRateLimits } from "grove-alm-controller/src/interfaces/IRateLimits.sol
 
 import { IUniswapV3PoolLike, UniswapV3Helpers } from "./UniswapV3Helpers.sol";
 
+/// @dev Minimal interface for the admin function shared with an identical signature by
+///      MainnetController and ForeignController; `controller` is a MainnetController on
+///      Ethereum and a ForeignController on foreign domains (e.g. Base, Robinhood).
+interface IALMControllerLike {
+    function setMaxExchangeRate(address token, uint256 shares, uint256 maxExpectedAssets) external;
+}
+
 /**
  * @notice Helper functions for Grove Liquidity Layer
  */
@@ -60,7 +67,7 @@ library GroveLiquidityLayerHelpers {
         uint256 shareUnit,
         uint256 maxAssetsPerShare
     ) internal {
-        MainnetController(controller).setMaxExchangeRate(vault, shareUnit, maxAssetsPerShare);
+        IALMControllerLike(controller).setMaxExchangeRate(vault, shareUnit, maxAssetsPerShare);
 
         bytes32 depositKey = RateLimitHelpers.makeAssetKey(
             LIMIT_4626_DEPOSIT,
