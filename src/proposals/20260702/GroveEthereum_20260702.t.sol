@@ -128,18 +128,6 @@ contract GroveEthereum_20260702_Test is GroveTestBase {
 
         chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
 
-        _setPauContext(
-            ChainIdUtils.Ethereum(),
-            PauContext({
-                controller     : PAU_CONTROLLER,
-                proxy          : IPauProxyLike(PAU_PROXY),
-                accessControls : IPauAccessControlsLike(PAU_ACCESS_CONTROLS),
-                rateLimits     : IPauRateLimitsLike(PAU_RATE_LIMITS),
-                agent          : PAU_ADMINISTERED_AGENT,
-                actor          : Ethereum.ALM_RELAYER
-            })
-        );
-
         // The ALLOCATOR-GROVE-A ilk init is already live on-chain (Sky's 2026-06-18 spell).
         // Only the PAU proxy's Lite PSM whitelisting is still pending (Sky's 2026-07-02 Core
         // spell), so replay just that here to make the operational swap tests work.
