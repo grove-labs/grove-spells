@@ -377,11 +377,12 @@ abstract contract SpellRunner is Test {
                 // We assume the payload has been queued in the executor (will revert otherwise)
                 chainData[chainId].domain.selectFork();
                 uint256 actionsSetId = executor.actionsSetCount() - 1;
-                uint256 prevTimestamp = block.timestamp;
+                // Stay at executionTime afterwards: warping back would put rate limits set during
+                // execution (lastUpdated = executionTime) in the future of a delayed executor's
+                // fork, underflowing getCurrentRateLimit(); no-op for zero-delay executors.
                 vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
                 executor.execute(actionsSetId);
                 chainData[chainId].spellExecuted = true;
-                vm.warp(prevTimestamp);
             } else {
                 // We will simulate execution until the real spell is deployed in the mainnet spell
                 address payload = chainData[chainId].payload;
