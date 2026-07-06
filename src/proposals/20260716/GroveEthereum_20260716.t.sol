@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
+import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
 import { Ethereum }                  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
@@ -217,6 +218,12 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
     }
 
     function test_ROBINHOOD_onboardGroveXSteakhouseUsdgVault() public onChain(ChainIdUtils.Robinhood()) {
+        // The vault's underlying and the token/share decimals must match the spell's units
+        // (25_000_000e6 deposit limits, 1e18 shareUnit, 1.15e6 maxAssetsPerShare).
+        assertEq(IERC4626(ROBINHOOD_USDG_VAULT).asset(),  ROBINHOOD_USDG, "vault-asset-is-not-usdg");
+        assertEq(IERC20(ROBINHOOD_USDG).decimals(),       6,              "usdg-decimals-not-6");
+        assertEq(IERC20(ROBINHOOD_USDG_VAULT).decimals(), 18,             "vault-share-decimals-not-18");
+
         // groveUSDG is a Morpho Vault V2: maxDeposit() is hard-coded to 0 by design, but real deposits
         // work within the curator caps configured at vault deployment. _testERC4626Onboarding performs
         // real deposits/withdrawals and never consults maxDeposit, so it runs against the fork as-is.
