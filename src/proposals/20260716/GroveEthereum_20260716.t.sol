@@ -8,6 +8,8 @@ import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ether
 
 import { IALMProxy } from "lib/grove-alm-controller/src/interfaces/IALMProxy.sol";
 
+import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
+
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
@@ -76,6 +78,19 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         assertEq(almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY), false);
     }
 
+    function test_ETHEREUM_groveProxyCanFundRobinhoodBridge() public onChain(ChainIdUtils.Ethereum()) {
+        // The Robinhood relay leg (GrovePayloadEthereum.execute) escrows
+        // gasLimit * maxFeePerGas = 1_000_000 * 50e9 = 0.05 ETH per retryable ticket, paid from
+        // GROVE_PROXY during delegatecall execution. 0.001 ether of headroom covers the inbox
+        // submission fee, (1400 + 6 * dataLength) * baseFee = 4880 * baseFee for the 580-byte
+        // queue message, up to a ~200 gwei L1 basefee.
+        assertGe(
+            Ethereum.GROVE_PROXY.balance,
+            1_000_000 * 50e9 + 0.001 ether,
+            "grove-proxy-cannot-fund-robinhood-bridge"
+        );
+    }
+
     function test_ROBINHOOD_almSystemDeployment() public onChain(ChainIdUtils.Robinhood()) {
         address[] memory relayers = new address[](2);
         relayers[0] = ROBINHOOD_ALM_RELAYER;
@@ -127,6 +142,67 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
                 freezer  : ROBINHOOD_ALM_FREEZER,
                 relayers : relayers
             })
+        );
+    }
+
+    function test_ROBINHOOD_bridgedDeliveryAndExecution() public onChain(ChainIdUtils.Robinhood()) {
+        IExecutor executor = IExecutor(ROBINHOOD_GROVE_EXECUTOR);
+        address   payload  = chainData[ChainIdUtils.Robinhood()].payload;
+
+        assertTrue(payload != address(0), "robinhood-payload-not-deployed");
+
+        // Mirrors GrovePayloadEthereum._encodePayloadQueue: the exact message the mainnet spell
+        // relays through the Robinhood Delayed Inbox once PAYLOAD_ROBINHOOD is wired in.
+        address[] memory targets           = new address[](1);
+        uint256[] memory values            = new uint256[](1);
+        string[]  memory signatures        = new string[](1);
+        bytes[]   memory calldatas         = new bytes[](1);
+        bool[]    memory withDelegatecalls = new bool[](1);
+
+        targets[0]           = payload;
+        values[0]            = 0;
+        signatures[0]        = "execute()";
+        calldatas[0]         = "";
+        withDelegatecalls[0] = true;
+
+        bytes memory message = abi.encodeCall(IExecutor.queue, (
+            targets,
+            values,
+            signatures,
+            calldatas,
+            withDelegatecalls
+        ));
+
+        // The Delayed Inbox delivers L1-contract-originated messages from the aliased sender;
+        // ArbitrumReceiver._getL1MessageSender subtracts the offset to recover GROVE_PROXY.
+        address aliasedGroveProxy;
+        unchecked {
+            aliasedGroveProxy = address(uint160(Ethereum.GROVE_PROXY) + uint160(0x1111000000000000000000000000000000001111));
+        }
+
+        uint256 countBefore = executor.actionsSetCount();
+
+        // Deliver under the exact gasLimit the mainnet spell buys for the retryable ticket
+        // (GrovePayloadEthereum.execute, Robinhood leg); a live delivery consumed ~288k gas.
+        vm.prank(aliasedGroveProxy);
+        (bool ok, ) = ROBINHOOD_GROVE_RECEIVER.call{gas: 1_000_000}(message);
+
+        assertTrue(ok,                                        "robinhood-delivery-failed-within-gas-limit");
+        assertEq(executor.actionsSetCount(), countBefore + 1, "robinhood-actions-set-not-queued");
+
+        uint256 actionsSetId = executor.actionsSetCount() - 1;
+
+        vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
+        executor.execute(actionsSetId);
+
+        assertTrue(executor.getActionsSetById(actionsSetId).executed, "robinhood-actions-set-not-executed");
+
+        // End-to-end effect: the delegatecalled payload really ran initAlmSystem,
+        // which grants the ALM Proxy CONTROLLER role to the controller.
+        IALMProxy almProxy = IALMProxy(ROBINHOOD_ALM_PROXY);
+        assertTrue(
+            almProxy.hasRole(almProxy.CONTROLLER(), ROBINHOOD_ALM_CONTROLLER),
+            "robinhood-payload-effects-missing"
         );
     }
 
