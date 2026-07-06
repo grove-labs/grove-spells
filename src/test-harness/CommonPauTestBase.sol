@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
+
 import { ChainId, ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
 import { CommonTestBase } from "./CommonTestBase.sol";
@@ -84,28 +86,28 @@ abstract contract CommonPauTestBase is CommonTestBase {
     bytes32 internal constant ALLOCATOR_ROLE = keccak256("ALLOCATOR_ROLE");
     bytes32 internal constant CONTROLLER     = keccak256("CONTROLLER");
 
-    // No PAU addresses exist in grove-address-registry yet, so spell tests
-    // configure the context in setUp via _setPauContext. Once registry
-    // constants land, this can resolve them directly like
-    // _getGroveLiquidityLayerContext does for the legacy ALM system.
-    mapping(ChainId => PauContext) private pauContext;
+    /// @dev Resolves the PAU controller-system context from the address registry.
+    ///      PAU is an Ethereum-only system today, mirroring the legacy ALM
+    ///      system's _getGroveLiquidityLayerContext.
+    function _getPauContext(ChainId chain) internal pure returns (PauContext memory ctx) {
+        require(chain == ChainIdUtils.Ethereum(), "Chain not supported by PauContext");
 
-    function _setPauContext(ChainId chain, PauContext memory ctx) internal {
-        pauContext[chain] = ctx;
-    }
-
-    function _getPauContext(ChainId chain) internal view returns (PauContext memory ctx) {
-        ctx = pauContext[chain];
-        require(ctx.controller != address(0), "PAU context not configured for chain");
+        ctx = PauContext({
+            controller     : Ethereum.PAU_CONTROLLER,
+            proxy          : IPauProxyLike(Ethereum.PAU_PROXY),
+            accessControls : IPauAccessControlsLike(Ethereum.PAU_ACCESS_CONTROLS),
+            rateLimits     : IPauRateLimitsLike(Ethereum.PAU_RATE_LIMITS),
+            agent          : Ethereum.PAU_ADMINISTERED_AGENT,
+            actor          : Ethereum.ALM_RELAYER
+        });
     }
 
     function _getPauContext() internal view returns (PauContext memory ctx) {
         ctx = _getPauContext(ChainIdUtils.fromUint(block.chainid));
 
-        // Contexts are hand-configured until registry constants land, so
-        // cross-check against the controller's own references to catch typos.
-        // Only this variant validates: block.chainid guarantees the active
-        // fork matches the context being checked.
+        // Cross-check the registry-resolved context against the controller's own
+        // references to catch registry/controller drift. Only this variant
+        // validates: block.chainid guarantees the active fork matches the context.
         IPauBaseControllerLike controller = IPauBaseControllerLike(ctx.controller);
         require(controller.proxy()          == address(ctx.proxy),          "PAU context proxy mismatch");
         require(controller.rateLimits()     == address(ctx.rateLimits),     "PAU context rateLimits mismatch");
