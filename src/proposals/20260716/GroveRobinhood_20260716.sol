@@ -76,16 +76,16 @@ contract GroveRobinhood_20260716 is GrovePayloadRobinhood {
         _onboardAssetTransfer({
             asset       : USDG,
             destination : PAXOS_USDG_DEPOSIT_WALLET,
-            maxAmount   : 50_000_000e6,                   // BEFORE: 0
-            slope       : 50_000_000e6 / uint256(1 days)  // BEFORE: 0
+            maxAmount   : 25_000_000e6,                   // BEFORE: 0
+            slope       : 25_000_000e6 / uint256(1 days)  // BEFORE: 0
         });
     }
 
     function _onboardGroveXSteakhouseUsdgVault() internal {
         _onboardERC4626Vault({
             vault             : GROVE_X_STEAKHOUSE_USDG_VAULT,
-            depositMax        : 50_000_000e6,                    // BEFORE: 0
-            depositSlope      : 50_000_000e6 / uint256(1 days),  // BEFORE: 0
+            depositMax        : 25_000_000e6,                    // BEFORE: 0
+            depositSlope      : 25_000_000e6 / uint256(1 days),  // BEFORE: 0
             shareUnit         : 1e18,                            // BEFORE: 0
             maxAssetsPerShare : 1.15e6                           // BEFORE: 0 (~15% headroom over the current rate of ~1.00 USDG/share)
         });

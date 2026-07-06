@@ -50,9 +50,9 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         _testDirectUsdcTransferOnboarding({
             usdc                  : Ethereum.USDC,
             destination           : ETHEREUM_PAXOS_USDC_DEPOSIT_WALLET,
-            expectedDepositAmount : 50_000_000e6,
-            depositMax            : 50_000_000e6,
-            depositSlope          : 50_000_000e6 / uint256(1 days)
+            expectedDepositAmount : 25_000_000e6,
+            depositMax            : 25_000_000e6,
+            depositSlope          : 25_000_000e6 / uint256(1 days)
         });
     }
 
@@ -134,9 +134,9 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         _testDirectTokenTransferOnboarding({
             token                 : ROBINHOOD_USDG,
             destination           : ROBINHOOD_PAXOS_USDG_DEPOSIT_WALLET,
-            expectedDepositAmount : 50_000_000e6,
-            depositMax            : 50_000_000e6,
-            depositSlope          : 50_000_000e6 / uint256(1 days)
+            expectedDepositAmount : 25_000_000e6,
+            depositMax            : 25_000_000e6,
+            depositSlope          : 25_000_000e6 / uint256(1 days)
         });
     }
 
@@ -146,9 +146,9 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         // real deposits/withdrawals and never consults maxDeposit, so it runs against the fork as-is.
         _testERC4626Onboarding({
             vault                 : ROBINHOOD_USDG_VAULT,
-            expectedDepositAmount : 50_000_000e6,
-            depositMax            : 50_000_000e6,
-            depositSlope          : 50_000_000e6 / uint256(1 days),
+            expectedDepositAmount : 25_000_000e6,
+            depositMax            : 25_000_000e6,
+            depositSlope          : 25_000_000e6 / uint256(1 days),
             shareUnit             : 1e18,
             maxAssetsPerShare     : 1.15e6
         });
