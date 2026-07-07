@@ -9,10 +9,8 @@ import { IRateLimits } from "lib/grove-alm-controller/src/interfaces/IRateLimits
 import { GroveLiquidityLayerHelpers } from "../helpers/GroveLiquidityLayerHelpers.sol";
 
 /**
- * @dev    Base smart contract for Robinhood (Arbitrum Orbit L2, chain ID 4663).
+ * @dev    Base smart contract for Robinhood.
  * @author Steakhouse Financial
- * @notice ALM addresses are local constants until grove-address-registry exposes Robinhood.* references
- *         (swapped in the archive PR).
  */
 abstract contract GrovePayloadRobinhood {
 

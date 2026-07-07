@@ -54,8 +54,6 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
     address public immutable PAYLOAD_PLUME;
     address public immutable PAYLOAD_ROBINHOOD;
 
-    // Robinhood relay addresses; local constants until grove-address-registry exposes
-    // Robinhood.* references (swapped in the archive PR).
     address internal constant ROBINHOOD_DELAYED_INBOX  = 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D; // Robinhood L1 bridge (Delayed Inbox) on Ethereum
     address internal constant ROBINHOOD_GROVE_RECEIVER = 0xa02eC279eEA9E56F4E14449a07C5ca5FDAAdc51d; // Arbitrum-native ArbitrumReceiver on Robinhood
 
@@ -96,8 +94,6 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         }
 
         if (PAYLOAD_ROBINHOOD != address(0)) {
-            // Robinhood is an Arbitrum Orbit L2 (chain ID 4663); the governance relay uses the Arbitrum
-            // native bridge. Reuses the library ArbitrumForwarder, supplying the Robinhood L1 bridge inbox.
             ArbitrumForwarder.sendMessageL1toL2({
                 l1CrossDomain : ROBINHOOD_DELAYED_INBOX,
                 target        : ROBINHOOD_GROVE_RECEIVER,
@@ -161,10 +157,6 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
-    /// @dev Transfers `amount` of `asset` held by the Grove ALM Proxy to `destination`.
-    ///      Mirrors SparkPayloadEthereum._transferAssetFromAlmProxy (Spark 2025-09-04 spell):
-    ///      the executing SubProxy grants itself the CONTROLLER role on the ALM Proxy,
-    ///      performs the transfer via ALMProxy.doCall, then revokes the role, atomically.
     function _transferAssetFromAlmProxy(address asset, address destination, uint256 amount) internal {
         // Grant controller role to Grove Proxy
         IALMProxy(Ethereum.ALM_PROXY).grantRole(

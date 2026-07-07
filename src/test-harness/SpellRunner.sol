@@ -209,8 +209,6 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
         chainData[ChainIdUtils.Plume()].newController  = Plume.ALM_CONTROLLER;
 
-        // Robinhood addresses inlined as local literals until grove-address-registry
-        // exposes Robinhood.* references (swapped in the archive PR)
         chainData[ChainIdUtils.Robinhood()].executor       = IExecutor(0x5ff98717a18833de1A49e11B498866d6Fa1c9296); // GROVE_EXECUTOR
         chainData[ChainIdUtils.Robinhood()].prevController = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER
         chainData[ChainIdUtils.Robinhood()].newController  = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER
@@ -275,8 +273,7 @@ abstract contract SpellRunner is Test {
             )
         );
 
-        // Robinhood. Built via init(Bridge{...}) rather than createNativeBridge(...) so the Robinhood L1
-        // bridge inbox is supplied directly, leaving ArbitrumBridgeTesting unchanged.
+        // Robinhood
         chainData[ChainIdUtils.Robinhood()].bridges.push(
             ArbitrumBridgeTesting.init(Bridge({
                 bridgeType                     : BridgeType.ARBITRUM,
@@ -377,12 +374,11 @@ abstract contract SpellRunner is Test {
                 // We assume the payload has been queued in the executor (will revert otherwise)
                 chainData[chainId].domain.selectFork();
                 uint256 actionsSetId = executor.actionsSetCount() - 1;
-                // Stay at executionTime afterwards: warping back would put rate limits set during
-                // execution (lastUpdated = executionTime) in the future of a delayed executor's
-                // fork, underflowing getCurrentRateLimit(); no-op for zero-delay executors.
+                uint256 prevTimestamp = block.timestamp;
                 vm.warp(executor.getActionsSetById(actionsSetId).executionTime);
                 executor.execute(actionsSetId);
                 chainData[chainId].spellExecuted = true;
+                vm.warp(prevTimestamp);
             } else {
                 // We will simulate execution until the real spell is deployed in the mainnet spell
                 address payload = chainData[chainId].payload;

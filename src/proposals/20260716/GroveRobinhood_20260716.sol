@@ -8,15 +8,11 @@ import { GrovePayloadRobinhood } from "src/libraries/payloads/GrovePayloadRobinh
 /**
  * @title  July 16, 2026 Grove Robinhood Proposal
  * @author Grove Labs
- * @notice Executed on Robinhood (Arbitrum Orbit L2, chain ID 4663) via the Mainnet -> Robinhood
- *         Arbitrum-native governance relay (GroveEthereum_20260716.PAYLOAD_ROBINHOOD).
  */
 contract GroveRobinhood_20260716 is GrovePayloadRobinhood {
 
     address internal constant ALM_PROXY       = 0x29626c2d8Ca49A51E4dECEEc5499e52983c42BD5;
     address internal constant ALM_FREEZER     = 0xB0113804960345fd0a245788b3423319c86940e5;
-    // Same Relayer Safes as Ethereum.ALM_RELAYER / Ethereum.GROVE_SECONDARY_RELAYER_OPERATOR,
-    // deployed deterministically to the same addresses on Robinhood (forum post, Pre-deployed contracts §5.1).
     address internal constant ALM_RELAYER     = 0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f;
     address internal constant ALM_RELAYER_2   = 0x9187807e07112359C481870feB58f0c117a29179;
     address internal constant GROVE_EXECUTOR  = 0x5ff98717a18833de1A49e11B498866d6Fa1c9296;

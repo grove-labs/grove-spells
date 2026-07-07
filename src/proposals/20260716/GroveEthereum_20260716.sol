@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity 0.8.25;
 
-import { Ethereum }                  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Ethereum }                   from "lib/grove-address-registry/src/Ethereum.sol";
 import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
