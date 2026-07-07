@@ -41,8 +41,8 @@ contract GroveEthereum_20260716 is GrovePayloadEthereum {
 
         IRateLimits(Ethereum.ALM_RATE_LIMITS).setRateLimitData(
             transferKey,
-            25_000_000e6,                   // BEFORE: 0
-            25_000_000e6 / uint256(1 days)  // BEFORE: 0
+            50_000_000e6,                   // BEFORE: 0
+            50_000_000e6 / uint256(1 days)  // BEFORE: 0
         );
     }
 

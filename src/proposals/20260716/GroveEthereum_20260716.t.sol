@@ -53,9 +53,9 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         _testDirectUsdcTransferOnboarding({
             usdc                  : Ethereum.USDC,
             destination           : ETHEREUM_PAXOS_USDC_DEPOSIT_WALLET,
-            expectedDepositAmount : 25_000_000e6,
-            depositMax            : 25_000_000e6,
-            depositSlope          : 25_000_000e6 / uint256(1 days)
+            expectedDepositAmount : 50_000_000e6,
+            depositMax            : 50_000_000e6,
+            depositSlope          : 50_000_000e6 / uint256(1 days)
         });
     }
 
@@ -211,15 +211,15 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         _testDirectTokenTransferOnboarding({
             token                 : ROBINHOOD_USDG,
             destination           : ROBINHOOD_PAXOS_USDG_DEPOSIT_WALLET,
-            expectedDepositAmount : 25_000_000e6,
-            depositMax            : 25_000_000e6,
-            depositSlope          : 25_000_000e6 / uint256(1 days)
+            expectedDepositAmount : 50_000_000e6,
+            depositMax            : 50_000_000e6,
+            depositSlope          : 50_000_000e6 / uint256(1 days)
         });
     }
 
     function test_ROBINHOOD_onboardGroveXSteakhouseUsdgVault() public onChain(ChainIdUtils.Robinhood()) {
         // The vault's underlying and the token/share decimals must match the spell's units
-        // (25_000_000e6 deposit limits, 1e18 shareUnit, 1.15e6 maxAssetsPerShare).
+        // (50_000_000e6 deposit limits, 1e18 shareUnit, 1.15e6 maxAssetsPerShare).
         assertEq(IERC4626(ROBINHOOD_USDG_VAULT).asset(),  ROBINHOOD_USDG, "vault-asset-is-not-usdg");
         assertEq(IERC20(ROBINHOOD_USDG).decimals(),       6,              "usdg-decimals-not-6");
         assertEq(IERC20(ROBINHOOD_USDG_VAULT).decimals(), 18,             "vault-share-decimals-not-18");
@@ -229,9 +229,9 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         // real deposits/withdrawals and never consults maxDeposit, so it runs against the fork as-is.
         _testERC4626Onboarding({
             vault                 : ROBINHOOD_USDG_VAULT,
-            expectedDepositAmount : 25_000_000e6,
-            depositMax            : 25_000_000e6,
-            depositSlope          : 25_000_000e6 / uint256(1 days),
+            expectedDepositAmount : 50_000_000e6,
+            depositMax            : 50_000_000e6,
+            depositSlope          : 50_000_000e6 / uint256(1 days),
             shareUnit             : 1e18,
             maxAssetsPerShare     : 1.15e6
         });
