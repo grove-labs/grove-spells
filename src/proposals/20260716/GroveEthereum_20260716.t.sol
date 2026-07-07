@@ -4,7 +4,7 @@ pragma solidity 0.8.25;
 import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
-import { Ethereum }                  from "lib/grove-address-registry/src/Ethereum.sol";
+import { Ethereum }                   from "lib/grove-address-registry/src/Ethereum.sol";
 import { Ethereum as SparkContracts } from "lib/spark-address-registry/src/Ethereum.sol";
 
 import { IALMProxy } from "lib/grove-alm-controller/src/interfaces/IALMProxy.sol";
@@ -32,20 +32,20 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
     address internal constant ROBINHOOD_USDG       = 0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168;
     address internal constant ROBINHOOD_USDG_VAULT = 0xBEEff039907422219Fb367e525954DDC092854d9;
 
-    // Paxos deposit wallets; must match the payloads.
+    // Paxos deposit wallets, must equal the addresses hardcoded in the 20260716 payloads.
     address internal constant ETHEREUM_PAXOS_USDC_DEPOSIT_WALLET   = 0x8C0A9E5939B97979f85d9aDA3d983C6E713Cc2dB;
     address internal constant ROBINHOOD_PAXOS_USDG_DEPOSIT_WALLET  = 0xfC0a7Ed7C5146B26eB38FA92c71F434A7178b06e;
 
     // syrupUSDC balances pinned to the deterministic mainnet fork block (6 decimals).
     uint256 internal constant GROVE_SYRUP_USDC_BALANCE = 85_943_747.637271e6;
-    uint256 internal constant SPARK_SYRUP_USDC_BALANCE = 89_909_706.064423e6;
+    uint256 internal constant SPARK_SYRUP_USDC_BALANCE = 89_829_171.020922e6;
 
     constructor() {
         id = "20260716";
     }
 
     function setUp() public {
-        setupDomains("2026-06-29T20:11:00Z");
+        setupDomains("2026-07-06T20:11:00Z");
         deployPayloads();
     }
 
@@ -75,7 +75,6 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         assertEq(syrupUsdc.balanceOf(Ethereum.ALM_PROXY),       0);
         assertEq(syrupUsdc.balanceOf(SparkContracts.ALM_PROXY), SPARK_SYRUP_USDC_BALANCE + GROVE_SYRUP_USDC_BALANCE);
 
-        // Role hygiene: the atomic grant/revoke must not leave the SubProxy holding CONTROLLER
         assertEq(almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY), false);
     }
 
@@ -152,8 +151,6 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
 
         assertTrue(payload != address(0), "robinhood-payload-not-deployed");
 
-        // Mirrors GrovePayloadEthereum._encodePayloadQueue: the exact message the mainnet spell
-        // relays through the Robinhood Delayed Inbox once PAYLOAD_ROBINHOOD is wired in.
         address[] memory targets           = new address[](1);
         uint256[] memory values            = new uint256[](1);
         string[]  memory signatures        = new string[](1);
@@ -183,8 +180,6 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
 
         uint256 countBefore = executor.actionsSetCount();
 
-        // Deliver under the exact gasLimit the mainnet spell buys for the retryable ticket
-        // (GrovePayloadEthereum.execute, Robinhood leg); a live delivery consumed ~288k gas.
         vm.prank(aliasedGroveProxy);
         (bool ok, ) = ROBINHOOD_GROVE_RECEIVER.call{gas: 1_000_000}(message);
 
@@ -198,8 +193,6 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
 
         assertTrue(executor.getActionsSetById(actionsSetId).executed, "robinhood-actions-set-not-executed");
 
-        // End-to-end effect: the delegatecalled payload really ran initAlmSystem,
-        // which grants the ALM Proxy CONTROLLER role to the controller.
         IALMProxy almProxy = IALMProxy(ROBINHOOD_ALM_PROXY);
         assertTrue(
             almProxy.hasRole(almProxy.CONTROLLER(), ROBINHOOD_ALM_CONTROLLER),
@@ -224,9 +217,6 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
         assertEq(IERC20(ROBINHOOD_USDG).decimals(),       6,              "usdg-decimals-not-6");
         assertEq(IERC20(ROBINHOOD_USDG_VAULT).decimals(), 18,             "vault-share-decimals-not-18");
 
-        // groveUSDG is a Morpho Vault V2: maxDeposit() is hard-coded to 0 by design, but real deposits
-        // work within the curator caps configured at vault deployment. _testERC4626Onboarding performs
-        // real deposits/withdrawals and never consults maxDeposit, so it runs against the fork as-is.
         _testERC4626Onboarding({
             vault                 : ROBINHOOD_USDG_VAULT,
             expectedDepositAmount : 50_000_000e6,
