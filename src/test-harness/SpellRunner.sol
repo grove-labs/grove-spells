@@ -174,7 +174,7 @@ abstract contract SpellRunner is Test {
 
         uint256[] memory hardcodedBlocks = new uint256[](2);
         hardcodedBlocks[0] = 42727304; // Plume
-        hardcodedBlocks[1] = 3309170;  // Robinhood
+        hardcodedBlocks[1] = 4502920;  // Robinhood
 
         chainData[ChainIdUtils.Plume()].domain     = getChain("plume").createFork(hardcodedBlocks[0]);
         chainData[ChainIdUtils.Robinhood()].domain = getChain("robinhood").createFork(hardcodedBlocks[1]);

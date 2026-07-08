@@ -17,6 +17,9 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260716_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM  = 0x4f1318bC0490dC7C7F8230F1dd91A4A2e4694134;
+    address internal constant PAYLOAD_ROBINHOOD = 0x247B2766780Ee746650Dea7a2D449BBB56498eac;
+
     address internal constant ROBINHOOD_ALM_PROXY       = 0x29626c2d8Ca49A51E4dECEEc5499e52983c42BD5;
     address internal constant ROBINHOOD_ALM_CONTROLLER  = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;
     address internal constant ROBINHOOD_ALM_RATE_LIMITS = 0xC13e5ff7993c5df911aE562a7736B0eBA12b2010;
@@ -38,15 +41,17 @@ contract GroveEthereum_20260716_Test is GroveTestBase {
 
     // syrupUSDC balances pinned to the deterministic mainnet fork block (6 decimals).
     uint256 internal constant GROVE_SYRUP_USDC_BALANCE = 85_943_747.637271e6;
-    uint256 internal constant SPARK_SYRUP_USDC_BALANCE = 89_829_171.020922e6;
+    uint256 internal constant SPARK_SYRUP_USDC_BALANCE = 89_804_808.864153e6;
 
     constructor() {
         id = "20260716";
     }
 
     function setUp() public {
-        setupDomains("2026-07-06T20:11:00Z");
-        deployPayloads();
+        setupDomains("2026-07-08T16:35:00Z");
+
+        chainData[ChainIdUtils.Ethereum()].payload  = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Robinhood()].payload = PAYLOAD_ROBINHOOD;
     }
 
     function test_ETHEREUM_onboardPaxosUsdcBridgeRateLimit() public onChain(ChainIdUtils.Ethereum()) {

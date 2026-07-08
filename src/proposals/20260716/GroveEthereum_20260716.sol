@@ -23,8 +23,7 @@ contract GroveEthereum_20260716 is GrovePayloadEthereum {
     address internal constant PAXOS_USDC_DEPOSIT_WALLET = 0x8C0A9E5939B97979f85d9aDA3d983C6E713Cc2dB;
 
     constructor() {
-        // Deployed and Blockscout-verified GroveRobinhood_20260716.
-        PAYLOAD_ROBINHOOD = 0x098CA6cD01Ae121a2592e4e154108272ecc694d6;
+        PAYLOAD_ROBINHOOD = 0x247B2766780Ee746650Dea7a2D449BBB56498eac;
     }
 
     function _execute() internal override {
