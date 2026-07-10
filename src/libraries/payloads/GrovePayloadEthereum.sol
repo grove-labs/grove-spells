@@ -5,6 +5,7 @@ import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
+import { Robinhood } from "lib/grove-address-registry/src/Robinhood.sol";
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
@@ -55,7 +56,6 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
     address public immutable PAYLOAD_ROBINHOOD;
 
     address internal constant ROBINHOOD_DELAYED_INBOX  = 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D; // Robinhood L1 bridge (Delayed Inbox) on Ethereum
-    address internal constant ROBINHOOD_GROVE_RECEIVER = 0xa02eC279eEA9E56F4E14449a07C5ca5FDAAdc51d; // Arbitrum-native ArbitrumReceiver on Robinhood
 
     function isExecutable() external view virtual returns (bool result) {
         return true;
@@ -96,7 +96,7 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         if (PAYLOAD_ROBINHOOD != address(0)) {
             ArbitrumForwarder.sendMessageL1toL2({
                 l1CrossDomain : ROBINHOOD_DELAYED_INBOX,
-                target        : ROBINHOOD_GROVE_RECEIVER,
+                target        : Robinhood.GROVE_RECEIVER,
                 message       : _encodePayloadQueue(PAYLOAD_ROBINHOOD),
                 gasLimit      : 1_000_000,
                 maxFeePerGas  : 50e9,

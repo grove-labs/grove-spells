@@ -5,6 +5,7 @@ import { Ethereum }  from "lib/grove-address-registry/src/Ethereum.sol";
 import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
+import { Robinhood } from "lib/grove-address-registry/src/Robinhood.sol";
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
 
@@ -73,12 +74,12 @@ abstract contract CommonALMTestBase is CommonTestBase {
           );
       } else if (chain == ChainIdUtils.Robinhood()) {
           ctx = GroveLiquidityLayerContext(
-              0x5ff98717a18833de1A49e11B498866d6Fa1c9296,              // GROVE_EXECUTOR
+              Robinhood.GROVE_EXECUTOR,
               controller,
-              IALMProxy(0x29626c2d8Ca49A51E4dECEEc5499e52983c42BD5),   // ALM_PROXY
-              IRateLimits(0xC13e5ff7993c5df911aE562a7736B0eBA12b2010), // ALM_RATE_LIMITS
-              0x0eEC86649E756a23CBc68d9EFEd756f16aD5F85f,              // ALM_RELAYER
-              0xB0113804960345fd0a245788b3423319c86940e5               // ALM_FREEZER
+              IALMProxy(Robinhood.ALM_PROXY),
+              IRateLimits(Robinhood.ALM_RATE_LIMITS),
+              Robinhood.ALM_RELAYER,
+              Robinhood.ALM_FREEZER
           );
       } else {
           revert("Chain not supported by GroveLiquidityLayerContext");
