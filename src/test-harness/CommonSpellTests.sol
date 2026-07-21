@@ -75,6 +75,10 @@ abstract contract CommonSpellTests is CommonTestBase {
         _assertPayloadBytecodeMatches(ChainIdUtils.Plume());
     }
 
+    function test_ROBINHOOD_PayloadBytecodeMatches() public {
+        _assertPayloadBytecodeMatches(ChainIdUtils.Robinhood());
+    }
+
     /**********************************************************************************************/
     /*** Helper Functions                                                                      ***/
     /**********************************************************************************************/

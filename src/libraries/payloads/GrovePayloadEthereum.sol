@@ -6,8 +6,13 @@ import { Avalanche } from "lib/grove-address-registry/src/Avalanche.sol";
 import { Base }      from "lib/grove-address-registry/src/Base.sol";
 import { Plume }     from "lib/grove-address-registry/src/Plume.sol";
 
+import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+
+import { IALMProxy } from "lib/grove-alm-controller/src/interfaces/IALMProxy.sol";
+
 import { IExecutor } from "lib/grove-gov-relay/src/interfaces/IExecutor.sol";
 
+import { ArbitrumForwarder }      from "xchain-helpers/forwarders/ArbitrumForwarder.sol";
 import { ArbitrumERC20Forwarder } from "xchain-helpers/forwarders/ArbitrumERC20Forwarder.sol";
 import { CCTPv2Forwarder }        from "xchain-helpers/forwarders/CCTPv2Forwarder.sol";
 import { OptimismForwarder }      from "xchain-helpers/forwarders/OptimismForwarder.sol";
@@ -47,6 +52,10 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
     address public immutable PAYLOAD_AVALANCHE;
     address public immutable PAYLOAD_BASE;
     address public immutable PAYLOAD_PLUME;
+    address public immutable PAYLOAD_ROBINHOOD;
+
+    address internal constant ROBINHOOD_DELAYED_INBOX  = 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D; // Robinhood L1 bridge (Delayed Inbox) on Ethereum
+    address internal constant ROBINHOOD_GROVE_RECEIVER = 0xa02eC279eEA9E56F4E14449a07C5ca5FDAAdc51d; // Arbitrum-native ArbitrumReceiver on Robinhood
 
     function isExecutable() external view virtual returns (bool result) {
         return true;
@@ -80,6 +89,17 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
                 message       : _encodePayloadQueue(PAYLOAD_PLUME),
                 gasLimit      : 1_000_0000,
                 maxFeePerGas  : 5_000e9,
+                baseFee       : block.basefee
+            });
+        }
+
+        if (PAYLOAD_ROBINHOOD != address(0)) {
+            ArbitrumForwarder.sendMessageL1toL2({
+                l1CrossDomain : ROBINHOOD_DELAYED_INBOX,
+                target        : ROBINHOOD_GROVE_RECEIVER,
+                message       : _encodePayloadQueue(PAYLOAD_ROBINHOOD),
+                gasLimit      : 1_000_000,
+                maxFeePerGas  : 50e9,
                 baseFee       : block.basefee
             });
         }
@@ -134,6 +154,25 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         GroveLiquidityLayerHelpers.offboardERC7540Vault(
             Ethereum.ALM_RATE_LIMITS,
             vault
+        );
+    }
+
+    function _transferAssetFromAlmProxy(address asset, address destination, uint256 amount) internal {
+        // Grant controller role to Grove Proxy
+        IALMProxy(Ethereum.ALM_PROXY).grantRole(
+            IALMProxy(Ethereum.ALM_PROXY).CONTROLLER(),
+            Ethereum.GROVE_PROXY
+        );
+
+        IALMProxy(Ethereum.ALM_PROXY).doCall(
+            asset,
+            abi.encodeCall(IERC20(asset).transfer, (destination, amount))
+        );
+
+        // Revoke controller role from Grove Proxy
+        IALMProxy(Ethereum.ALM_PROXY).revokeRole(
+            IALMProxy(Ethereum.ALM_PROXY).CONTROLLER(),
+            Ethereum.GROVE_PROXY
         );
     }
 

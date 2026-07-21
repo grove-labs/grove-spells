@@ -163,11 +163,20 @@ abstract contract DeploymentsTestingBase is CommonTestBase {
         address _receiver,
         address _deployer
     ) internal view {
+        _verifyForeignDomainExecutorDeployment(_executor, _receiver, _deployer, 0);
+    }
+
+    function _verifyForeignDomainExecutorDeployment(
+        address _executor,
+        address _receiver,
+        address _deployer,
+        uint256 _expectedDelay
+    ) internal view {
         Executor executor = Executor(_executor);
 
         // Executor has correct delay and grace period to default values
-        assertEq(executor.delay(),       0,      "incorrect-executor-delay");
-        assertEq(executor.gracePeriod(), 7 days, "incorrect-executor-grace-period");
+        assertEq(executor.delay(),       _expectedDelay, "incorrect-executor-delay");
+        assertEq(executor.gracePeriod(), 7 days,         "incorrect-executor-grace-period");
 
         // Executor has not processed any actions sets
         assertEq(executor.actionsSetCount(), 0, "incorrect-executor-actions-set-count");
