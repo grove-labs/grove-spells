@@ -9,6 +9,7 @@ import { Ethereum }  from 'grove-address-registry/Ethereum.sol';
 import { Avalanche } from 'grove-address-registry/Avalanche.sol';
 import { Base }      from 'grove-address-registry/Base.sol';
 import { Plume }     from 'grove-address-registry/Plume.sol';
+import { Robinhood } from 'grove-address-registry/Robinhood.sol';
 
 import { IExecutor } from 'lib/grove-gov-relay/src/interfaces/IExecutor.sol';
 
@@ -209,9 +210,9 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Plume()].prevController = Plume.ALM_CONTROLLER;
         chainData[ChainIdUtils.Plume()].newController  = Plume.ALM_CONTROLLER;
 
-        chainData[ChainIdUtils.Robinhood()].executor       = IExecutor(0x5ff98717a18833de1A49e11B498866d6Fa1c9296); // GROVE_EXECUTOR
-        chainData[ChainIdUtils.Robinhood()].prevController = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER
-        chainData[ChainIdUtils.Robinhood()].newController  = 0x2c10885ddec8d52ecF3Ad2B3833765bf36eD80cf;            // ALM_CONTROLLER
+        chainData[ChainIdUtils.Robinhood()].executor       = IExecutor(Robinhood.GROVE_EXECUTOR);
+        chainData[ChainIdUtils.Robinhood()].prevController = Robinhood.ALM_CONTROLLER;
+        chainData[ChainIdUtils.Robinhood()].newController  = Robinhood.ALM_CONTROLLER;
 
         // Avalanche
         chainData[ChainIdUtils.Avalanche()].bridges.push(
