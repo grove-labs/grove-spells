@@ -1,24 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-// TODO: Remove the local IPauRateLimitsLike interface and RateLimitHelpers library below and
-//       instead import them directly from diamond-pau (IRateLimits + RateLimitHelpers).
-// NOTE: They mirror diamond-pau (v1.13.0) so this helper can build under the repo's current
-//       solc 0.8.25, and can be swapped for the direct imports once the compiler is bumped to ^0.8.34.
-
-/// @dev Mirrors the subset of diamond-pau's IRateLimits used here.
-interface IPauRateLimitsLike {
-    function setRateLimitData(bytes32 key, uint256 maxAmount, uint256 slope) external;
-    function setUnlimitedRateLimitData(bytes32 key) external;
-}
-
-/// @dev Mirrors the subset of diamond-pau's RateLimitHelpers for local use.
-///      https://github.com/sky-ecosystem/diamond-pau/blob/5c5ad6ae174bf467081ca82342ced2bd42a5c732/src/libraries/RateLimitHelpers.sol#L8-L10
-library RateLimitHelpers {
-    function makeAddressAddressKey(bytes32 key, address a, address b) internal pure returns (bytes32) {
-        return keccak256(abi.encode(key, a, b));
-    }
-}
+import { IRateLimits }           from "diamond-pau/interfaces/IRateLimits.sol";
+import { makeAddressAddressKey } from "diamond-pau/libraries/RateLimitHelpers.sol";
 
 /**
  * @notice Helper functions for the Grove Parallelized Allocation Unit (PAU)
@@ -51,8 +35,8 @@ library GrovePauHelpers {
         uint256 burnMax,
         uint256 burnSlope
     ) internal {
-        IPauRateLimitsLike(rateLimits).setRateLimitData(LIMIT_USDS_MINT, mintMax, mintSlope);
-        IPauRateLimitsLike(rateLimits).setRateLimitData(LIMIT_USDS_BURN, burnMax, burnSlope);
+        IRateLimits(rateLimits).setRateLimitData(LIMIT_USDS_MINT, mintMax, mintSlope);
+        IRateLimits(rateLimits).setRateLimitData(LIMIT_USDS_BURN, burnMax, burnSlope);
     }
 
     /**********************************************************************************************/
@@ -71,8 +55,8 @@ library GrovePauHelpers {
         uint256 usdcToUsdsMax,
         uint256 usdcToUsdsSlope
     ) internal {
-        IPauRateLimitsLike(rateLimits).setRateLimitData(LIMIT_USDS_TO_USDC, usdsToUsdcMax, usdsToUsdcSlope);
-        IPauRateLimitsLike(rateLimits).setRateLimitData(LIMIT_USDC_TO_USDS, usdcToUsdsMax, usdcToUsdsSlope);
+        IRateLimits(rateLimits).setRateLimitData(LIMIT_USDS_TO_USDC, usdsToUsdcMax, usdsToUsdcSlope);
+        IRateLimits(rateLimits).setRateLimitData(LIMIT_USDC_TO_USDS, usdcToUsdsMax, usdcToUsdsSlope);
     }
 
     /**********************************************************************************************/
@@ -94,17 +78,17 @@ library GrovePauHelpers {
         uint256 depositMax,
         uint256 depositSlope
     ) internal {
-        IPauRateLimitsLike(rateLimits).setRateLimitData(
-            RateLimitHelpers.makeAddressAddressKey(LIMIT_BASIN_DEPOSIT, depositAsset, basin),
+        IRateLimits(rateLimits).setRateLimitData(
+            makeAddressAddressKey(LIMIT_BASIN_DEPOSIT, depositAsset, basin),
             depositMax,
             depositSlope
         );
 
-        IPauRateLimitsLike(rateLimits).setUnlimitedRateLimitData(
-            RateLimitHelpers.makeAddressAddressKey(LIMIT_BASIN_WITHDRAW, depositAsset, basin)
+        IRateLimits(rateLimits).setUnlimitedRateLimitData(
+            makeAddressAddressKey(LIMIT_BASIN_WITHDRAW, depositAsset, basin)
         );
-        IPauRateLimitsLike(rateLimits).setUnlimitedRateLimitData(
-            RateLimitHelpers.makeAddressAddressKey(LIMIT_BASIN_WITHDRAW, collateralAsset, basin)
+        IRateLimits(rateLimits).setUnlimitedRateLimitData(
+            makeAddressAddressKey(LIMIT_BASIN_WITHDRAW, collateralAsset, basin)
         );
     }
 

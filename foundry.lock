@@ -1,4 +1,7 @@
 {
+  "lib/diamond-pau": {
+    "rev": "5c5ad6ae174bf467081ca82342ced2bd42a5c732"
+  },
   "lib/dss-allocator": {
     "rev": "6e99d87374cff66e93fe44c55d4ed240dac1c3dc"
   },
