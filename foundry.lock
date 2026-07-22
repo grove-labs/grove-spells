@@ -18,7 +18,7 @@
     "rev": "f314e2480204f4ab897ba757886b7af45d61b746"
   },
   "lib/spark-address-registry": {
-    "rev": "4a25913fc1f48e80ee7c5987aaa98d0e7812e611"
+    "rev": "9b7fa274dd9c8f86ec2317fc6cc610aaafcdff68"
   },
   "lib/xchain-helpers": {
     "rev": "53f6ced11ae4828e7bd55ba7a6a713c97f2b19c4"
