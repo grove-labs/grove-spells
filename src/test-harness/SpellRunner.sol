@@ -59,6 +59,7 @@ abstract contract SpellRunner is Test {
 
     mapping(ChainId => DomainData)   internal chainData;
     mapping(ChainId => LZOftPair[])  internal lzOftPairs;
+    mapping(ChainId => uint256)      internal foreignActionsSetCountBefore;
 
     ChainId[] internal allChains;
     string internal    id;
@@ -113,7 +114,22 @@ abstract contract SpellRunner is Test {
 
             string memory response = string(vm.ffi(curlCmd));
             // Result: {"status":"1","message":"OK","result":"18518418"}
+            string memory status = vm.parseJsonString(response, ".status");
+            require(
+                keccak256(bytes(status)) == keccak256(bytes("1")),
+                string(abi.encodePacked(
+                    "SpellRunner/etherscan-failed chainId=",
+                    chainId,
+                    " response=",
+                    response
+                ))
+            );
+
             blocks[i] = vm.parseJsonUint(response, ".result");
+            require(
+                blocks[i] > 0,
+                string(abi.encodePacked("SpellRunner/invalid-block chainId=", chainId))
+            );
         }
     }
 
@@ -321,12 +337,27 @@ abstract contract SpellRunner is Test {
 
     /// @dev takes care to revert the selected fork to what was chosen before
     function executeAllPayloadsAndBridges() internal {
+        // record foreign action set counts pre-relay so we can assert the relay
+        // queued exactly one new set per chain before executing it
+        _snapshotForeignActionsSetCounts();
         // only execute mainnet payload
         executeMainnetPayload();
         // then use bridges to execute other chains' payloads
         _relayMessageOverBridges(allChains);
         // execute the foreign payloads (either by simulation or real execute)
         _executeForeignPayloads();
+    }
+
+    function _snapshotForeignActionsSetCounts() private {
+        for (uint256 i = 0; i < allChains.length; i++) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+            if (chainId == ChainIdUtils.Ethereum()) continue;
+
+            chainData[chainId].domain.selectFork();
+            foreignActionsSetCountBefore[chainId] = chainData[chainId].executor.actionsSetCount();
+        }
+
+        chainData[ChainIdUtils.Ethereum()].domain.selectFork();
     }
 
     /// @dev bridge contracts themselves are stored on mainnet
@@ -371,9 +402,18 @@ abstract contract SpellRunner is Test {
             address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
             IExecutor executor = chainData[chainId].executor;
             if (mainnetSpellPayload != address(0)) {
-                // We assume the payload has been queued in the executor (will revert otherwise)
                 chainData[chainId].domain.selectFork();
-                uint256 actionsSetId = executor.actionsSetCount() - 1;
+                uint256 prevCount    = foreignActionsSetCountBefore[chainId];
+                uint256 currentCount = executor.actionsSetCount();
+                require(
+                    currentCount == prevCount + 1,
+                    string(abi.encodePacked(
+                        "SpellRunner/relay-did-not-queue network=",
+                        chainId.toDomainString()
+                    ))
+                );
+
+                uint256 actionsSetId = currentCount - 1;
                 // Stay at executionTime afterwards: warping back would put rate limits set during
                 // execution (lastUpdated = executionTime) in the future of a delayed executor's
                 // fork, underflowing getCurrentRateLimit(); no-op for zero-delay executors.
