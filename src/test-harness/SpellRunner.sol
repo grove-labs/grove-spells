@@ -234,10 +234,9 @@ abstract contract SpellRunner is Test {
             )
         );
         // USDS SkyLink OFT (Ethereum <-> Avalanche)
-        // TODO: Use addresses from address registry after these are added there
         lzOftPairs[ChainIdUtils.Avalanche()].push(LZOftPair(
-            0x1e1D42781FC170EF9da004Fb735f56F0276d01B8, // USDS OFT Ethereum
-            0x4fec40719fD9a8AE3F8E20531669DEC5962D2619  // USDS OFT Avalanche
+            Ethereum.USDS_SKYLINK_OFT,  // USDS OFT Ethereum
+            Avalanche.USDS_SKYLINK_OFT  // USDS OFT Avalanche
         ));
 
         // Base
