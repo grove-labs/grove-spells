@@ -1,6 +1,6 @@
 {
   "lib/diamond-pau": {
-    "rev": "5c5ad6ae174bf467081ca82342ced2bd42a5c732"
+    "rev": "cbf71b2ac840ca9288eb867d3dd354e08089e1d7"
   },
   "lib/dss-allocator": {
     "rev": "6e99d87374cff66e93fe44c55d4ed240dac1c3dc"
@@ -15,7 +15,7 @@
     "rev": "2c6e3d4297d5f244894d05f3dbbe47bcada34712"
   },
   "lib/grove-gov-relay": {
-    "rev": "f314e2480204f4ab897ba757886b7af45d61b746"
+    "rev": "262e637bde27cddd7d021baeb2cd9f22a6433118"
   },
   "lib/spark-address-registry": {
     "rev": "9b7fa274dd9c8f86ec2317fc6cc610aaafcdff68"
