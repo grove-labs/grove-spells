@@ -337,6 +337,7 @@ abstract contract SpellRunner is Test {
 
     /// @dev takes care to revert the selected fork to what was chosen before
     function executeAllPayloadsAndBridges() internal {
+        uint256 originalFork = vm.activeFork();
         // record foreign action set counts pre-relay so we can assert the relay
         // queued exactly one new set per chain before executing it
         _snapshotForeignActionsSetCounts();
@@ -346,6 +347,7 @@ abstract contract SpellRunner is Test {
         _relayMessageOverBridges(allChains);
         // execute the foreign payloads (either by simulation or real execute)
         _executeForeignPayloads();
+        if (vm.activeFork() != originalFork) vm.selectFork(originalFork);
     }
 
     function _snapshotForeignActionsSetCounts() private {
