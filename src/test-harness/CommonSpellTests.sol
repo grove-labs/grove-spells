@@ -12,6 +12,10 @@ interface IPsmFeesLike {
     function tout() external view returns (uint256);
 }
 
+interface IGroveProxyLike {
+    function wards(address usr) external view returns (uint256);
+}
+
 /// @dev System-agnostic spell tests that apply to every spell regardless of
 /// which ALM system (legacy ALM controller or PAU controller) it touches:
 /// payload bytecode verification and execution cost.
@@ -86,6 +90,14 @@ abstract contract CommonSpellTests is CommonTestBase {
         assertEq(psm.tout(), 0, "CommonTest/psm-tout-not-zero-after-spell");
     }
 
+    function test_ETHEREUM_GroveProxyStorage() public onChain(ChainIdUtils.Ethereum()) {
+        _assertGroveProxyStorage();
+
+        executeAllPayloadsAndBridges();
+
+        _assertGroveProxyStorage();
+    }
+
     function test_AVALANCHE_PayloadBytecodeMatches() public {
         _assertPayloadBytecodeMatches(ChainIdUtils.Avalanche());
     }
@@ -105,6 +117,18 @@ abstract contract CommonSpellTests is CommonTestBase {
     /**********************************************************************************************/
     /*** Helper Functions                                                                      ***/
     /**********************************************************************************************/
+
+    // Mainnet payloads run via delegatecall from GROVE_PROXY, so a payload writing to
+    // storage would corrupt the proxy. Its wards live in a mapping (keccak-derived slots),
+    // so every direct slot is expected to stay zero.
+    function _assertGroveProxyStorage() private view {
+        assertEq(IGroveProxyLike(Ethereum.GROVE_PROXY).wards(Ethereum.PAUSE_PROXY),      1, "CommonTest/grove-proxy-pause-proxy-not-ward");
+        assertEq(IGroveProxyLike(Ethereum.GROVE_PROXY).wards(Ethereum.GROVE_STAR_GUARD), 1, "CommonTest/grove-proxy-star-guard-not-ward");
+
+        for (uint256 slot; slot <= 100; ++slot) {
+            assertEq(vm.load(Ethereum.GROVE_PROXY, bytes32(slot)), bytes32(0), "CommonTest/grove-proxy-slot-not-zero");
+        }
+    }
 
     function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
         address actualPayload = chainData[chainId].payload;
