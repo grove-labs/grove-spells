@@ -34,6 +34,29 @@ abstract contract CommonSpellTests is CommonTestBase {
         _assertPayloadBytecodeMatches(ChainIdUtils.Ethereum());
     }
 
+    function test_ETHEREUM_PayloadsConfigured() public onChain(ChainIdUtils.Ethereum()) {
+        vm.skip(chainData[ChainIdUtils.Ethereum()].payload == address(0));
+
+        for (uint256 i = 0; i < allChains.length; ++i) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+            if (chainId == ChainIdUtils.Ethereum()) continue;
+
+            address deployedPayload = chainData[chainId].payload;
+            if (deployedPayload == address(0)) continue;
+
+            address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
+            // address(0) means the mainnet spell does not wire this chain yet; foreign
+            // execution is then simulated locally, so there is nothing to cross-check
+            if (mainnetSpellPayload == address(0)) continue;
+
+            assertEq(
+                mainnetSpellPayload,
+                deployedPayload,
+                "CommonTest/mainnet-payload-not-matching-deployed"
+            );
+        }
+    }
+
     function test_ETHEREUM_ExecutionCost() public {
         uint256 startGas = gasleft();
         executeAllPayloadsAndBridges();
