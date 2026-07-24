@@ -112,11 +112,26 @@ abstract contract SpellRunner is Test {
             curlCmd[6] = "--header";
             curlCmd[7] = "accept: application/json";
 
-            string memory response = string(vm.ffi(curlCmd));
-            // Result: {"status":"1","message":"OK","result":"18518418"}
-            string memory status = vm.parseJsonString(response, ".status");
+            string memory response;
+            bool statusOk;
+
+            // Etherscan free tier is limited to 5 calls/second and test contracts run
+            // in parallel, so back off and retry on a failed status before failing hard
+            for (uint256 attempt = 0; attempt < 10; ++attempt) {
+                if (attempt > 0) vm.sleep(1000);
+
+                response = string(vm.ffi(curlCmd));
+                // Result: {"status":"1","message":"OK","result":"18518418"}
+                if (!vm.keyExistsJson(response, ".status")) continue;
+
+                if (keccak256(bytes(vm.parseJsonString(response, ".status"))) == keccak256(bytes("1"))) {
+                    statusOk = true;
+                    break;
+                }
+            }
+
             require(
-                keccak256(bytes(status)) == keccak256(bytes("1")),
+                statusOk,
                 string(abi.encodePacked(
                     "SpellRunner/etherscan-failed chainId=",
                     chainId,
