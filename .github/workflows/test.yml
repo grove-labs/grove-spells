@@ -15,12 +15,32 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
 
+      - name: Check foundry.lock matches submodule revisions
+        run: |
+          status=0
+          while read -r path rev; do
+            actual=$(git -C "$path" rev-parse HEAD)
+            if [ "$actual" != "$rev" ]; then
+              echo "::error::$path is checked out at $actual but foundry.lock pins $rev"
+              status=1
+            fi
+          done < <(jq -r 'to_entries[] | "\(.key) \(.value.rev)"' foundry.lock)
+          while read -r path; do
+            if ! jq -e --arg p "$path" 'has($p)' foundry.lock > /dev/null; then
+              echo "::error::submodule $path has no foundry.lock entry"
+              status=1
+            fi
+          done < <(git config --file .gitmodules --get-regexp path | awk '{print $2}')
+          exit $status
+
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
 
       - name: Run Forge build
         run: |

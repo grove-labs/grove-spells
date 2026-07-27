@@ -4,7 +4,7 @@
 
 ## 🔮 Overview
 
-Grove Spells are governance proposals that execute parameter changes and system updates for Grove infrastructure across multiple blockchain domains (currently Ethereum Mainnet, Avalanche, Base, and Plume)
+Grove Spells are governance proposals that execute parameter changes and system updates for Grove infrastructure across multiple blockchain domains (currently Ethereum Mainnet, Avalanche, Base, Plume, and Robinhood)
 
 Spells are executed on Ethereum and automatically relay payloads to foreign domains through the [grove-gov-relay](https://github.com/grove-labs/grove-gov-relay) infrastructure
 
@@ -35,11 +35,14 @@ The latest spells can be found in the `src/proposals/` directory. Spells are org
 
    Set the following environment variables:
    ```bash
-   export ETH_RPC_URL="your-ethereum-mainnet-rpc-url" # Ethereum Mainnet
-   export BASE_RPC_URL="your-base-rpc-url"            # Base
-   export AVALANCHE_RPC_URL="your-avalanche-rpc-url"  # Avalanche
-   export PLUME_RPC_URL="your-plume-rpc-url"          # Plume
+   export MAINNET_RPC_URL="your-ethereum-mainnet-rpc-url" # Ethereum Mainnet
+   export AVALANCHE_RPC_URL="your-avalanche-rpc-url"      # Avalanche
+   export BASE_RPC_URL="your-base-rpc-url"                # Base
+   export PLUME_RPC_URL="your-plume-rpc-url"              # Plume
+   export ROBINHOOD_RPC_URL="your-robinhood-rpc-url"      # Robinhood
    ```
+
+   **Note:** Ethereum, Avalanche, and Base are resolved through forge-std's `getChain` helper, which reads the `MAINNET_RPC_URL`, `AVALANCHE_RPC_URL`, and `BASE_RPC_URL` variables (falling back to public endpoints if unset). Plume and Robinhood are read directly and are required.
 
 2. **Etherscan API Key (Paid Tier Required)**
 
@@ -51,7 +54,7 @@ The latest spells can be found in the `src/proposals/` directory. Spells are org
    export ETHERSCAN_API_KEY="your-api-key"
    ```
 
-   **Note:** Chains not supported by Etherscan's API (e.g., Plume) have hardcoded block numbers in the spell runner (`src/test-harness/SpellRunner.sol`).
+   **Note:** Chains not supported by Etherscan's API (Plume and Robinhood) have hardcoded block numbers in the spell runner (`src/test-harness/SpellRunner.sol`) that must be bumped each spell cycle.
 
 ### 🚀 Running Tests
 

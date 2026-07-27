@@ -19,3 +19,6 @@
 [submodule "lib/grove-gov-relay"]
 	path = lib/grove-gov-relay
 	url = https://github.com/grove-labs/grove-gov-relay
+[submodule "lib/diamond-pau"]
+	path = lib/diamond-pau
+	url = https://github.com/sky-ecosystem/diamond-pau

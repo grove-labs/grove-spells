@@ -59,6 +59,7 @@ abstract contract SpellRunner is Test {
 
     mapping(ChainId => DomainData)   internal chainData;
     mapping(ChainId => LZOftPair[])  internal lzOftPairs;
+    mapping(ChainId => uint256)      internal foreignActionsSetCountBefore;
 
     ChainId[] internal allChains;
     string internal    id;
@@ -111,9 +112,39 @@ abstract contract SpellRunner is Test {
             curlCmd[6] = "--header";
             curlCmd[7] = "accept: application/json";
 
-            string memory response = string(vm.ffi(curlCmd));
-            // Result: {"status":"1","message":"OK","result":"18518418"}
+            string memory response;
+            bool statusOk;
+
+            // Etherscan free tier is limited to 5 calls/second and test contracts run
+            // in parallel, so back off and retry on a failed status before failing hard
+            for (uint256 attempt = 0; attempt < 10; ++attempt) {
+                if (attempt > 0) vm.sleep(1000);
+
+                response = string(vm.ffi(curlCmd));
+                // Result: {"status":"1","message":"OK","result":"18518418"}
+                if (!vm.keyExistsJson(response, ".status")) continue;
+
+                if (keccak256(bytes(vm.parseJsonString(response, ".status"))) == keccak256(bytes("1"))) {
+                    statusOk = true;
+                    break;
+                }
+            }
+
+            require(
+                statusOk,
+                string(abi.encodePacked(
+                    "SpellRunner/etherscan-failed chainId=",
+                    chainId,
+                    " response=",
+                    response
+                ))
+            );
+
             blocks[i] = vm.parseJsonUint(response, ".result");
+            require(
+                blocks[i] > 0,
+                string(abi.encodePacked("SpellRunner/invalid-block chainId=", chainId))
+            );
         }
     }
 
@@ -234,10 +265,9 @@ abstract contract SpellRunner is Test {
             )
         );
         // USDS SkyLink OFT (Ethereum <-> Avalanche)
-        // TODO: Use addresses from address registry after these are added there
         lzOftPairs[ChainIdUtils.Avalanche()].push(LZOftPair(
-            0x1e1D42781FC170EF9da004Fb735f56F0276d01B8, // USDS OFT Ethereum
-            0x4fec40719fD9a8AE3F8E20531669DEC5962D2619  // USDS OFT Avalanche
+            Ethereum.USDS_SKYLINK_OFT,  // USDS OFT Ethereum
+            Avalanche.USDS_SKYLINK_OFT  // USDS OFT Avalanche
         ));
 
         // Base
@@ -322,12 +352,29 @@ abstract contract SpellRunner is Test {
 
     /// @dev takes care to revert the selected fork to what was chosen before
     function executeAllPayloadsAndBridges() internal {
+        uint256 originalFork = vm.activeFork();
+        // record foreign action set counts pre-relay so we can assert the relay
+        // queued exactly one new set per chain before executing it
+        _snapshotForeignActionsSetCounts();
         // only execute mainnet payload
         executeMainnetPayload();
         // then use bridges to execute other chains' payloads
         _relayMessageOverBridges(allChains);
         // execute the foreign payloads (either by simulation or real execute)
         _executeForeignPayloads();
+        if (vm.activeFork() != originalFork) vm.selectFork(originalFork);
+    }
+
+    function _snapshotForeignActionsSetCounts() private {
+        for (uint256 i = 0; i < allChains.length; i++) {
+            ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
+            if (chainId == ChainIdUtils.Ethereum()) continue;
+
+            chainData[chainId].domain.selectFork();
+            foreignActionsSetCountBefore[chainId] = chainData[chainId].executor.actionsSetCount();
+        }
+
+        chainData[ChainIdUtils.Ethereum()].domain.selectFork();
     }
 
     /// @dev bridge contracts themselves are stored on mainnet
@@ -372,9 +419,18 @@ abstract contract SpellRunner is Test {
             address mainnetSpellPayload = _getForeignPayloadFromMainnetSpell(chainId);
             IExecutor executor = chainData[chainId].executor;
             if (mainnetSpellPayload != address(0)) {
-                // We assume the payload has been queued in the executor (will revert otherwise)
                 chainData[chainId].domain.selectFork();
-                uint256 actionsSetId = executor.actionsSetCount() - 1;
+                uint256 prevCount    = foreignActionsSetCountBefore[chainId];
+                uint256 currentCount = executor.actionsSetCount();
+                require(
+                    currentCount == prevCount + 1,
+                    string(abi.encodePacked(
+                        "SpellRunner/relay-did-not-queue network=",
+                        chainId.toDomainString()
+                    ))
+                );
+
+                uint256 actionsSetId = currentCount - 1;
                 // Stay at executionTime afterwards: warping back would put rate limits set during
                 // execution (lastUpdated = executionTime) in the future of a delayed executor's
                 // fork, underflowing getCurrentRateLimit(); no-op for zero-delay executors.
