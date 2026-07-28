@@ -173,6 +173,11 @@ abstract contract SpellRunner is Test {
 
         string memory rpcUrl = getChain(ChainId.unwrap(chainId)).rpcUrl;
 
+        // The search selects throwaway forks; restore the caller's fork (if any) on exit.
+        // vm.activeFork() reverts when no fork is active, e.g. during setupBlocksFromDate
+        uint256 originalFork = type(uint256).max;
+        try vm.activeFork() returns (uint256 forkId) { originalFork = forkId; } catch {}
+
         vm.createSelectFork(rpcUrl);
 
         require(block.timestamp >= searchTimestamp, "SpellRunner/timestamp-in-the-future");
@@ -211,6 +216,8 @@ abstract contract SpellRunner is Test {
 
         _writeBlockCache(chainId, searchTimestamp, bestBlock);
         console.log(string(abi.encodePacked("Resolved ", chainId.toDomainString(), " block by binary search:")), bestBlock);
+
+        if (originalFork != type(uint256).max) vm.selectFork(originalFork);
     }
 
     // A past timestamp always maps to the same block, and setUp() (hence block resolution)
@@ -225,7 +232,16 @@ abstract contract SpellRunner is Test {
     function _readBlockCache(ChainId chainId, uint256 timestamp) private view returns (uint256) {
         string memory path = _blockCachePath(chainId, timestamp);
         if (!vm.exists(path)) return 0;
-        return vm.parseUint(vm.readFile(path));
+
+        // Treat empty or non-numeric content (e.g. a torn concurrent write) as a cache
+        // miss instead of reverting; the re-resolved value then overwrites the bad entry
+        bytes memory content = bytes(vm.readFile(path));
+        if (content.length == 0) return 0;
+        for (uint256 i = 0; i < content.length; ++i) {
+            if (content[i] < "0" || content[i] > "9") return 0;
+        }
+
+        return vm.parseUint(string(content));
     }
 
     function _writeBlockCache(ChainId chainId, uint256 timestamp, uint256 blockNumber) private {
