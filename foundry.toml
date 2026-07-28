@@ -5,7 +5,8 @@ out = "out"
 libs = ["lib"]
 fs_permissions = [
     { access = "read", path = "./out" },
-    { access = "write", path = "./reports" }
+    { access = "write", path = "./reports" },
+    { access = "read-write", path = "./cache/fork-blocks" }
 ]
 solc = "0.8.34"
 ffi = true

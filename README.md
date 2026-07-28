@@ -54,7 +54,7 @@ The latest spells can be found in the `src/proposals/` directory. Spells are org
    export ETHERSCAN_API_KEY="your-api-key"
    ```
 
-   **Note:** Chains not supported by Etherscan's API (Plume and Robinhood) have hardcoded block numbers in the spell runner (`src/test-harness/SpellRunner.sol`) that must be bumped each spell cycle.
+   **Note:** For chains not supported by Etherscan's API (Plume and Robinhood), the spell runner (`src/test-harness/SpellRunner.sol`) finds the fork block for the given date automatically by binary-searching fork timestamps over their RPCs. All resolved blocks (Etherscan and binary-search) are memoized under `cache/fork-blocks/`; delete that directory to force re-resolution.
 
 ### 🚀 Running Tests
 

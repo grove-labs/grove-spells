@@ -87,7 +87,15 @@ abstract contract SpellRunner is Test {
         string memory apiKeyEnv       = "ETHERSCAN_API_KEY";
         string memory apiKey          = vm.envString(apiKeyEnv);
 
+        uint256 timestamp = vm.parseUint(timestampString);
+
         for (uint256 i = 0; i < chainIds.length; ++i) {
+            blocks[i] = _readBlockCache(chainIds[i], timestamp);
+            if (blocks[i] != 0) {
+                console.log(string(abi.encodePacked("Resolved ", chainIds[i].toDomainString(), " block from cache:")), blocks[i]);
+                continue;
+            }
+
             string memory chainId = vm.toString(ChainId.unwrap(chainIds[i]));
 
             string memory url = string(
@@ -145,7 +153,100 @@ abstract contract SpellRunner is Test {
                 blocks[i] > 0,
                 string(abi.encodePacked("SpellRunner/invalid-block chainId=", chainId))
             );
+
+            _writeBlockCache(chainIds[i], timestamp, blocks[i]);
+            console.log(string(abi.encodePacked("Resolved ", chainIds[i].toDomainString(), " block from Etherscan:")), blocks[i]);
         }
+    }
+
+    /// @dev Find the first block with a timestamp at or after 'searchTimestamp' by
+    /// binary-searching fork timestamps (matching the 'closest=after' semantics of the
+    /// Etherscan queries in getBlocksFromDateByChainIds). The search window is grown
+    /// automatically, so arbitrarily old dates work regardless of chain block times.
+    /// Used for chains not covered by Etherscan's block-by-timestamp API.
+    function getBlockFromTimestampBinarySearch(ChainId chainId, uint256 searchTimestamp) internal returns (uint256 bestBlock) {
+        bestBlock = _readBlockCache(chainId, searchTimestamp);
+        if (bestBlock != 0) {
+            console.log(string(abi.encodePacked("Resolved ", chainId.toDomainString(), " block from cache:")), bestBlock);
+            return bestBlock;
+        }
+
+        string memory rpcUrl = getChain(ChainId.unwrap(chainId)).rpcUrl;
+
+        // The search selects throwaway forks; restore the caller's fork (if any) on exit.
+        // vm.activeFork() reverts when no fork is active, e.g. during setupBlocksFromDate
+        uint256 originalFork = type(uint256).max;
+        try vm.activeFork() returns (uint256 forkId) { originalFork = forkId; } catch {}
+
+        vm.createSelectFork(rpcUrl);
+
+        require(block.timestamp >= searchTimestamp, "SpellRunner/timestamp-in-the-future");
+
+        uint256 endBlock = block.number;
+
+        // Double the window until its start block is earlier than the target timestamp
+        uint256 window = 1_000_000;
+        uint256 startBlock;
+        while (true) {
+            startBlock = window < endBlock ? endBlock - window : 0;
+            vm.createSelectFork(rpcUrl, startBlock);
+            if (block.timestamp < searchTimestamp) break;
+            require(startBlock > 0, "SpellRunner/timestamp-before-genesis");
+            window *= 2;
+        }
+
+        bestBlock = endBlock;
+
+        while (startBlock <= endBlock) {
+            uint256 midBlock = (startBlock + endBlock) / 2;
+
+            vm.createSelectFork(rpcUrl, midBlock);
+
+            if (block.timestamp >= searchTimestamp) {
+                bestBlock = midBlock;
+                endBlock  = midBlock - 1;
+            } else {
+                startBlock = midBlock + 1;
+            }
+        }
+
+        // Guards against inconsistent timestamps served by load-balanced RPC nodes
+        vm.createSelectFork(rpcUrl, bestBlock - 1);
+        require(block.timestamp < searchTimestamp, "SpellRunner/inconsistent-rpc-timestamps");
+
+        _writeBlockCache(chainId, searchTimestamp, bestBlock);
+        console.log(string(abi.encodePacked("Resolved ", chainId.toDomainString(), " block by binary search:")), bestBlock);
+
+        if (originalFork != type(uint256).max) vm.selectFork(originalFork);
+    }
+
+    // A past timestamp always maps to the same block, and setUp() (hence block resolution)
+    // runs before every single test function, so results are memoized on disk to keep both
+    // the binary searches and the Etherscan queries to one per chain and date
+    string internal constant BLOCK_CACHE_DIR = "cache/fork-blocks/";
+
+    function _blockCachePath(ChainId chainId, uint256 timestamp) private view returns (string memory) {
+        return string(abi.encodePacked(BLOCK_CACHE_DIR, vm.toString(ChainId.unwrap(chainId)), "-", vm.toString(timestamp)));
+    }
+
+    function _readBlockCache(ChainId chainId, uint256 timestamp) private view returns (uint256) {
+        string memory path = _blockCachePath(chainId, timestamp);
+        if (!vm.exists(path)) return 0;
+
+        // Treat empty or non-numeric content (e.g. a torn concurrent write) as a cache
+        // miss instead of reverting; the re-resolved value then overwrites the bad entry
+        bytes memory content = bytes(vm.readFile(path));
+        if (content.length == 0) return 0;
+        for (uint256 i = 0; i < content.length; ++i) {
+            if (content[i] < "0" || content[i] > "9") return 0;
+        }
+
+        return vm.parseUint(string(content));
+    }
+
+    function _writeBlockCache(ChainId chainId, uint256 timestamp, uint256 blockNumber) private {
+        vm.createDir(BLOCK_CACHE_DIR, true);
+        vm.writeFile(_blockCachePath(chainId, timestamp), vm.toString(blockNumber));
     }
 
     function isoToUnix(string memory iso) internal returns (string memory) {
@@ -200,22 +301,23 @@ abstract contract SpellRunner is Test {
 
         uint256[] memory blocks = getBlocksFromDateByChainIds(date, chainIds);
 
+        // Plume and Robinhood are not covered by Etherscan's block-by-timestamp API,
+        // so their blocks are found by binary-searching fork timestamps instead
+        uint256 timestamp      = vm.parseUint(isoToUnix(date));
+        uint256 plumeBlock     = getBlockFromTimestampBinarySearch(ChainIdUtils.Plume(),     timestamp);
+        uint256 robinhoodBlock = getBlockFromTimestampBinarySearch(ChainIdUtils.Robinhood(), timestamp);
+
         chainData[ChainIdUtils.Ethereum()].domain  = getChain("mainnet").createFork(blocks[0]);
         chainData[ChainIdUtils.Avalanche()].domain = getChain("avalanche").createFork(blocks[1]);
         chainData[ChainIdUtils.Base()].domain      = getChain("base").createFork(blocks[2]);
-
-        uint256[] memory hardcodedBlocks = new uint256[](2);
-        hardcodedBlocks[0] = 42727304; // Plume
-        hardcodedBlocks[1] = 4502920;  // Robinhood
-
-        chainData[ChainIdUtils.Plume()].domain     = getChain("plume").createFork(hardcodedBlocks[0]);
-        chainData[ChainIdUtils.Robinhood()].domain = getChain("robinhood").createFork(hardcodedBlocks[1]);
+        chainData[ChainIdUtils.Plume()].domain     = getChain("plume").createFork(plumeBlock);
+        chainData[ChainIdUtils.Robinhood()].domain = getChain("robinhood").createFork(robinhoodBlock);
 
         console.log("   Mainnet block:", blocks[0]);
         console.log(" Avalanche block:", blocks[1]);
         console.log("      Base block:", blocks[2]);
-        console.log("     Plume block:", hardcodedBlocks[0]);
-        console.log(" Robinhood block:", hardcodedBlocks[1]);
+        console.log("     Plume block:", plumeBlock);
+        console.log(" Robinhood block:", robinhoodBlock);
     }
 
     /// @dev to be called in setUp
