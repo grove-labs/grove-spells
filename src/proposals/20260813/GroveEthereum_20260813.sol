@@ -62,17 +62,13 @@ contract GroveEthereum_20260813 is GrovePayloadEthereum {
 
         controller.updateIntegrations(integrationIds);
 
-        // Pool params mirror the live ALM-side AUSD/USDC config (January 29, 2026 onboarding);
-        // the facet requires them before addLiquidity or swap can succeed.
+        // Mirrors the live ALM-side AUSD/USDC config (January 29, 2026 onboarding).
         controller.uniswapV3_setMaxSlippage(Ethereum.UNISWAP_V3_AUSD_USDC, 0.999e18);
         controller.uniswapV3_setMaxTickDelta(Ethereum.UNISWAP_V3_AUSD_USDC, 200);
         controller.uniswapV3_setTWAPSecondsAgo(Ethereum.UNISWAP_V3_AUSD_USDC, 600);
         controller.uniswapV3_setLiquidityLowerTickBound(Ethereum.UNISWAP_V3_AUSD_USDC, -10);
         controller.uniswapV3_setLiquidityUpperTickBound(Ethereum.UNISWAP_V3_AUSD_USDC, 10);
 
-        // Zero slopes make the 5M deposit allowances cumulative for the ramp-up phase rather than
-        // daily. The facet meters the aggregate key in 1e18-normalized units (per-asset keys in
-        // raw token units), so the aggregate is 5_000_000e18 for a 5M token cap.
         IPauRateLimits(Ethereum.PAU_RATE_LIMITS).setRateLimitData({
             key       : makeAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, Ethereum.UNISWAP_V3_AUSD_USDC),
             maxAmount : 5_000_000e18,  // BEFORE: 0
@@ -99,8 +95,6 @@ contract GroveEthereum_20260813 is GrovePayloadEthereum {
             makeAddressAddressKey(LIMIT_UNISWAP_V3_WITHDRAW, Ethereum.USDC, Ethereum.UNISWAP_V3_AUSD_USDC)
         );
 
-        // Unlike the deposit keys, the swap allowances replenish: the maximum bounds any single
-        // burst at 1M, the slope governs throughput at 5M per day.
         IPauRateLimits(Ethereum.PAU_RATE_LIMITS).setRateLimitData({
             key       : makeAddressAddressKey(LIMIT_UNISWAP_V3_SWAP, Ethereum.AUSD, Ethereum.UNISWAP_V3_AUSD_USDC),
             maxAmount : 1_000_000e6,                   // BEFORE: 0

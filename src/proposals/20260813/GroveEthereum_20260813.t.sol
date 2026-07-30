@@ -20,8 +20,7 @@ import { GroveLiquidityLayerContext } from "src/test-harness/CommonALMTestBase.s
 
 import { IPauBaseControllerLike, PauContext } from "src/test-harness/CommonPauTestBase.sol";
 
-// `positions` returns a struct (ABI-identical to the manager's 12-value tuple) because decoding
-// the tuple into locals overflows the stack without viaIR.
+// Struct return, ABI-identical to the manager's 12-value tuple: decoding into locals overflows the stack without viaIR.
 interface IPositionManagerLike {
     struct Position {
         uint96  nonce;
@@ -108,8 +107,6 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
     bytes32 internal constant LIMIT_UNISWAP_V3_SWAP     = keccak256("LIMIT_UNISWAP_V3_SWAP");
     bytes32 internal constant LIMIT_UNISWAP_V3_WITHDRAW = keccak256("LIMIT_UNISWAP_V3_WITHDRAW");
 
-    // The aggregate key is metered by the facet in 1e18-normalized units, per-asset keys in raw
-    // token units. Zero deposit slopes make the allowances cumulative for the ramp-up phase.
     uint256 internal constant AGGREGATE_DEPOSIT_MAX   = 5_000_000e18;
     uint256 internal constant AGGREGATE_DEPOSIT_SLOPE = 0;
     uint256 internal constant ASSET_DEPOSIT_MAX       = 5_000_000e6;
@@ -244,8 +241,7 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         bytes32 ausdDepositKey      = makeAddressAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, Ethereum.AUSD, Ethereum.UNISWAP_V3_AUSD_USDC);
         bytes32 usdcDepositKey      = makeAddressAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, Ethereum.USDC, Ethereum.UNISWAP_V3_AUSD_USDC);
 
-        // A single-sided USDC range strictly below the TWAP tick keeps the facet's expected
-        // amounts price-independent, so exact min amounts can be computed here.
+        // A single-sided USDC range strictly below the TWAP tick makes the expected amounts price-independent.
         int24 tickUpper = _twapTick(Ethereum.UNISWAP_V3_AUSD_USDC, 600) - 1;
         if (tickUpper > 10) tickUpper = 10;
         assertGt(tickUpper, -10, "twap-tick-outside-liquidity-bounds");
@@ -272,7 +268,6 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
 
         assertEq(IPositionManagerLike(Ethereum.UNISWAP_V3_POSITION_MANAGER).ownerOf(tokenId), address(ctx.proxy), "position-not-owned-by-pau-proxy");
 
-        // Deposits consume the limits: the aggregate in 1e18-normalized units, per-asset raw.
         assertEq(ctx.rateLimits.getCurrentRateLimit(aggregateDepositKey), AGGREGATE_DEPOSIT_MAX - deposited.amount1 * 1e12, "aggregate-deposit-limit-not-consumed");
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcDepositKey),      ASSET_DEPOSIT_MAX - deposited.amount1,            "usdc-deposit-limit-not-consumed");
         assertEq(ctx.rateLimits.getCurrentRateLimit(ausdDepositKey),      ASSET_DEPOSIT_MAX,                                "ausd-deposit-limit-consumed");
@@ -318,8 +313,7 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
 
         uint256 proxyAusdBalance = IERC20(Ethereum.AUSD).balanceOf(address(ctx.proxy));
 
-        // 0.2% tolerance covers the pool's 0.01% fee plus a near-peg price; tick delta at the
-        // configured swapMaxTickDelta.
+        // 0.2% tolerance covers the pool's 0.01% fee plus a near-peg price; tick delta at the configured max.
         bytes memory result = _callAsPauActor(ctx, abi.encodeCall(
             IPauControllerLike.uniswapV3_swap,
             (Ethereum.UNISWAP_V3_AUSD_USDC, Ethereum.USDC, amountIn, amountIn * 998 / 1000, 200)
@@ -332,7 +326,6 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         assertEq(IERC20(Ethereum.AUSD).balanceOf(address(ctx.proxy)), proxyAusdBalance + amountOut, "proxy-ausd-balance-mismatch");
         assertEq(IERC20(Ethereum.USDC).balanceOf(address(ctx.proxy)), 0,                            "usdc-not-fully-spent");
 
-        // The swap consumes the tokenIn key by the amount spent; the AUSD key stays untouched.
         assertEq(ctx.rateLimits.getCurrentRateLimit(usdcSwapKey), SWAP_MAX - amountIn, "usdc-swap-limit-not-consumed");
         assertEq(ctx.rateLimits.getCurrentRateLimit(ausdSwapKey), SWAP_MAX,            "ausd-swap-limit-consumed");
     }
@@ -362,8 +355,7 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         uint256 ausdBalance = ausd.balanceOf(Ethereum.ALM_PROXY);
         uint256 usdcBalance = usdc.balanceOf(Ethereum.ALM_PROXY);
 
-        // The spec pins no amounts (Post-checks §2: "whatever has accrued at execution"),
-        // so the balance assertions below are bounds rather than exact values.
+        // The spec pins no amounts, so the balance assertions are bounds rather than exact values.
         executeAllPayloadsAndBridges();
 
         assertGe(ausd.balanceOf(Ethereum.ALM_PROXY), ausdBalance, "alm-proxy-ausd-balance-decreased");
@@ -375,7 +367,7 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
             "no-fees-collected"
         );
 
-        // Only owed fees move: the position keeps its liquidity and stays with the ALM Proxy.
+        // Only owed fees move: the position keeps its liquidity and its owner.
         IPositionManagerLike.Position memory positionAfter = positionManager.positions(UNISWAP_V3_POSITION_TOKEN_ID);
 
         assertEq(positionAfter.liquidity,   position.liquidity, "position-liquidity-changed");
@@ -418,7 +410,7 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         bytes32 depositKey  = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_DEPOSIT(),  Ethereum.MAPLE_SYRUP_USDC);
         bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_WITHDRAW(), Ethereum.MAPLE_SYRUP_USDC);
 
-        // Key published in the spec (Post-checks §3), recomputed here from the live controller.
+        // Key published in the spec, recomputed here from the live controller.
         assertEq(depositKey, 0x99a69e57b2f387f999d6adff6eb2e707b59fdb54f06ca6211b4f20956e9bfe10, "syrup-usdc-deposit-key-mismatch");
 
         // --- Before: deposits still capped at the onboarded 50M limit, withdrawals never set. ---
