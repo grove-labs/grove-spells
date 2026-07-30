@@ -355,17 +355,11 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         uint256 ausdBalance = ausd.balanceOf(Ethereum.ALM_PROXY);
         uint256 usdcBalance = usdc.balanceOf(Ethereum.ALM_PROXY);
 
-        // The spec pins no amounts, so the balance assertions are bounds rather than exact values.
         executeAllPayloadsAndBridges();
 
-        assertGe(ausd.balanceOf(Ethereum.ALM_PROXY), ausdBalance, "alm-proxy-ausd-balance-decreased");
-        assertGe(usdc.balanceOf(Ethereum.ALM_PROXY), usdcBalance, "alm-proxy-usdc-balance-decreased");
-
-        assertGt(
-            ausd.balanceOf(Ethereum.ALM_PROXY) + usdc.balanceOf(Ethereum.ALM_PROXY),
-            ausdBalance + usdcBalance,
-            "no-fees-collected"
-        );
+        // Fees owed on the position, pinned to the deterministic mainnet fork block (both 6 decimals).
+        assertEq(ausd.balanceOf(Ethereum.ALM_PROXY) - ausdBalance, 29_362.725254e6, "ausd-fees-collected-mismatch");
+        assertEq(usdc.balanceOf(Ethereum.ALM_PROXY) - usdcBalance, 28_113.645384e6, "usdc-fees-collected-mismatch");
 
         // Only owed fees move: the position keeps its liquidity and its owner.
         IPositionManagerLike.Position memory positionAfter = positionManager.positions(UNISWAP_V3_POSITION_TOKEN_ID);
