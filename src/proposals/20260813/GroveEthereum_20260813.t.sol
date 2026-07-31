@@ -429,7 +429,14 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
 
         ( int56[] memory tickCumulatives, ) = IUniswapV3PoolLike(pool).observe(secondsAgos);
 
-        return int24((tickCumulatives[1] - tickCumulatives[0]) / int56(uint56(secondsAgo)));
+        int56 tickCumulativesDelta = tickCumulatives[1] - tickCumulatives[0];
+
+        int24 arithmeticMeanTick = int24(tickCumulativesDelta / int56(uint56(secondsAgo)));
+
+        // Mirrors UniswapV3Utils: always round to negative infinity.
+        if (tickCumulativesDelta < 0 && tickCumulativesDelta % int56(uint56(secondsAgo)) != 0) arithmeticMeanTick--;
+
+        return arithmeticMeanTick;
     }
 
 }
