@@ -42,15 +42,15 @@ contract GroveEthereum_20260813 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Item 1: enable the UniswapV3 facet on the Grove DPAU controller and onboard the AUSD/USDC pool.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/august-13-2026-proposed-changes-to-grove-for-upcoming-spell/28126#p-106981-proposed-actions-13
         _enableUniswapV3Facet();
 
         // [Ethereum] Item 2: one-time collect of accrued fees on the Grove Uniswap V3 ALM Controller position.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/august-13-2026-proposed-changes-to-grove-for-upcoming-spell/28126#p-106981-proposed-actions-13
         _collectUniswapV3PositionFees();
 
         // [Ethereum] Item 3: offboard the Maple syrupUSDC deposit rate limit.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/august-13-2026-proposed-changes-to-grove-for-upcoming-spell/28126#p-106981-proposed-actions-13
         _offboardMapleSyrupUsdcDepositRateLimit();
     }
 
