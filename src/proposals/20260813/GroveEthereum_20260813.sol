@@ -45,7 +45,7 @@ contract GroveEthereum_20260813 is GrovePayloadEthereum {
         //   Forum : TODO
         _enableUniswapV3Facet();
 
-        // [Ethereum] Item 2: one-time collect of accrued fees on the Grove Uniswap V3 position.
+        // [Ethereum] Item 2: one-time collect of accrued fees on the Grove Uniswap V3 ALM Controller position.
         //   Forum : TODO
         _collectUniswapV3PositionFees();
 
@@ -62,13 +62,14 @@ contract GroveEthereum_20260813 is GrovePayloadEthereum {
 
         controller.updateIntegrations(integrationIds);
 
-        // Mirrors the live ALM-side AUSD/USDC config (January 29, 2026 onboarding).
+        // Mirrors the live ALM-side AUSD/USDC config (archive/20260129/GroveEthereum_20260129.sol).
         controller.uniswapV3_setMaxSlippage(Ethereum.UNISWAP_V3_AUSD_USDC, 0.999e18);
         controller.uniswapV3_setMaxTickDelta(Ethereum.UNISWAP_V3_AUSD_USDC, 200);
         controller.uniswapV3_setTWAPSecondsAgo(Ethereum.UNISWAP_V3_AUSD_USDC, 600);
         controller.uniswapV3_setLiquidityLowerTickBound(Ethereum.UNISWAP_V3_AUSD_USDC, -10);
         controller.uniswapV3_setLiquidityUpperTickBound(Ethereum.UNISWAP_V3_AUSD_USDC, 10);
 
+        // Rate limits follow the facet ramp-up risk parameters, not the Jan 29 ALM-side values.
         IPauRateLimits(Ethereum.PAU_RATE_LIMITS).setRateLimitData({
             key       : makeAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, Ethereum.UNISWAP_V3_AUSD_USDC),
             maxAmount : 5_000_000e18,  // BEFORE: 0
