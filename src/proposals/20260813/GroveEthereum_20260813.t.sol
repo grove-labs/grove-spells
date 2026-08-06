@@ -20,6 +20,8 @@ import { GroveLiquidityLayerContext } from "src/test-harness/CommonALMTestBase.s
 
 import { IPauBaseControllerLike, PauContext } from "src/test-harness/CommonPauTestBase.sol";
 
+import { IStarGuardLike } from "src/test-harness/SpellRunner.sol";
+
 // Struct return, ABI-identical to the manager's 12-value tuple: decoding into locals overflows the stack without viaIR.
 interface IPositionManagerLike {
     struct Position {
@@ -228,7 +230,7 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         assertEq(upperTickBound, 10,  "upper-tick-bound-mismatch");
     }
 
-    function test_ETHEREUM_uniswapV3FacetAddRemoveLiquidity() public onChain(ChainIdUtils.Ethereum()) {
+    function test_ETHEREUM_uniswapV3FacetAddRemoveLiquidityUsdc() public onChain(ChainIdUtils.Ethereum()) {
         executeAllPayloadsAndBridges();
 
         PauContext memory ctx = _getPauContext();
@@ -299,6 +301,65 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         );
     }
 
+    function test_ETHEREUM_uniswapV3FacetAddRemoveLiquidityAusd() public onChain(ChainIdUtils.Ethereum()) {
+        executeAllPayloadsAndBridges();
+
+        PauContext memory ctx = _getPauContext();
+
+        uint256 depositAmount = 1_000_000e6;
+
+        deal2(Ethereum.AUSD, address(ctx.proxy), depositAmount);
+
+        bytes32 ausdWithdrawKey = makeAddressAddressKey(LIMIT_UNISWAP_V3_WITHDRAW, Ethereum.AUSD, Ethereum.UNISWAP_V3_AUSD_USDC);
+        bytes32 usdcWithdrawKey = makeAddressAddressKey(LIMIT_UNISWAP_V3_WITHDRAW, Ethereum.USDC, Ethereum.UNISWAP_V3_AUSD_USDC);
+
+        // Mirror of the USDC case: a single-sided AUSD range strictly above the TWAP tick.
+        int24 tickLower = _twapTick(Ethereum.UNISWAP_V3_AUSD_USDC, 600) + 1;
+        if (tickLower < -10) tickLower = -10;
+        assertLt(tickLower, 10, "twap-tick-outside-liquidity-bounds");
+
+        bytes memory result = _callAsPauActor(ctx, abi.encodeCall(
+            IPauControllerLike.uniswapV3_addLiquidity,
+            (
+                Ethereum.UNISWAP_V3_AUSD_USDC,
+                0,
+                IPauControllerLike.Ticks({ lower: tickLower, upper: 10 }),
+                IPauControllerLike.TokenAmounts({ amount0: depositAmount, amount1: 0 }),
+                IPauControllerLike.TokenAmounts({ amount0: depositAmount * 999 / 1000, amount1: 0 }),
+                block.timestamp + 1 hours
+            )
+        ));
+
+        ( uint256 tokenId, uint128 liquidity, IPauControllerLike.TokenAmounts memory deposited ) =
+            abi.decode(result, (uint256, uint128, IPauControllerLike.TokenAmounts));
+
+        assertEq(deposited.amount1, 0,                          "usdc-unexpectedly-deposited");
+        assertGe(deposited.amount0, depositAmount * 999 / 1000, "ausd-deposited-below-min");
+
+        uint256 proxyAusdBalance = IERC20(Ethereum.AUSD).balanceOf(address(ctx.proxy));
+
+        result = _callAsPauActor(ctx, abi.encodeCall(
+            IPauControllerLike.uniswapV3_removeLiquidity,
+            (
+                Ethereum.UNISWAP_V3_AUSD_USDC,
+                tokenId,
+                liquidity,
+                IPauControllerLike.TokenAmounts({ amount0: deposited.amount0 * 999 / 1000, amount1: 0 }),
+                block.timestamp + 1 hours
+            )
+        ));
+
+        IPauControllerLike.TokenAmounts memory withdrawn = abi.decode(result, (IPauControllerLike.TokenAmounts));
+
+        assertGe(withdrawn.amount0, deposited.amount0 * 999 / 1000, "ausd-not-returned");
+
+        assertEq(IERC20(Ethereum.AUSD).balanceOf(address(ctx.proxy)), proxyAusdBalance + withdrawn.amount0, "proxy-ausd-balance-mismatch");
+
+        // An unset withdraw key reverts the removal, so a successful AUSD-side unwind is the end-to-end proof.
+        assertEq(ctx.rateLimits.getCurrentRateLimit(ausdWithdrawKey), type(uint256).max, "ausd-withdraw-limit-not-unlimited");
+        assertEq(ctx.rateLimits.getCurrentRateLimit(usdcWithdrawKey), type(uint256).max, "usdc-withdraw-limit-not-unlimited");
+    }
+
     function test_ETHEREUM_uniswapV3FacetSwap() public onChain(ChainIdUtils.Ethereum()) {
         executeAllPayloadsAndBridges();
 
@@ -343,6 +404,11 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
 
         assertEq(position.token0, Ethereum.AUSD, "position-token0-not-ausd");
         assertEq(position.token1, Ethereum.USDC, "position-token1-not-usdc");
+        assertEq(position.fee,    100,           "position-fee-tier-mismatch");
+
+        // The position's own range, a different object from the [-10, 10] tick bounds Item 1 configures on the facet.
+        assertEq(position.tickLower, -1, "position-tick-lower-mismatch");
+        assertEq(position.tickUpper,  1, "position-tick-upper-mismatch");
 
         // The tokenId in the payload is the ALM Proxy's one and only position NFT.
         assertEq(positionManager.balanceOf(Ethereum.ALM_PROXY),               1,                             "alm-proxy-position-count-not-one");
@@ -361,16 +427,44 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         assertEq(ausd.balanceOf(Ethereum.ALM_PROXY) - ausdBalance, 29_362.725254e6, "ausd-fees-collected-mismatch");
         assertEq(usdc.balanceOf(Ethereum.ALM_PROXY) - usdcBalance, 28_113.645384e6, "usdc-fees-collected-mismatch");
 
-        // Only owed fees move: the position keeps its liquidity and its owner.
+        // Only owed fees move: the position keeps its liquidity, its range and its owner.
         IPositionManagerLike.Position memory positionAfter = positionManager.positions(UNISWAP_V3_POSITION_TOKEN_ID);
 
         assertEq(positionAfter.liquidity,   position.liquidity, "position-liquidity-changed");
+        assertEq(positionAfter.tickLower,   position.tickLower, "position-tick-lower-changed");
+        assertEq(positionAfter.tickUpper,   position.tickUpper, "position-tick-upper-changed");
         assertEq(positionAfter.tokensOwed0, 0,                  "token0-fees-not-fully-collected");
         assertEq(positionAfter.tokensOwed1, 0,                  "token1-fees-not-fully-collected");
 
         assertEq(positionManager.ownerOf(UNISWAP_V3_POSITION_TOKEN_ID), Ethereum.ALM_PROXY, "position-owner-changed");
 
         assertEq(almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY), false);
+    }
+
+    function test_ETHEREUM_collectRevertLeavesNoControllerRole() public onChain(ChainIdUtils.Ethereum()) {
+        IALMProxy almProxy = IALMProxy(Ethereum.ALM_PROXY);
+
+        bytes32 controllerRole = almProxy.CONTROLLER();
+
+        assertEq(almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY), false, "controller-role-granted-before");
+
+        // Fail the only call the payload makes inside the grant/revoke window.
+        vm.mockCallRevert(
+            Ethereum.UNISWAP_V3_POSITION_MANAGER,
+            abi.encodeWithSignature("collect((uint256,address,uint128,uint128))"),
+            abi.encodeWithSignature("Error(string)", "collect-forced-revert")
+        );
+
+        address payload = chainData[ChainIdUtils.Ethereum()].payload;
+
+        vm.prank(Ethereum.PAUSE_PROXY);
+        IStarGuardLike(Ethereum.GROVE_STAR_GUARD).plot(payload, keccak256(payload.code));
+
+        // The SubProxy masks the inner reason, so the forced failure surfaces as its own delegatecall error.
+        vm.expectRevert("SubProxy/delegatecall-error");
+        IStarGuardLike(Ethereum.GROVE_STAR_GUARD).exec();
+
+        assertEq(almProxy.hasRole(controllerRole, Ethereum.GROVE_PROXY), false, "controller-role-left-granted");
     }
 
     function test_ETHEREUM_almUniswapV3RateLimitsUnchanged() public onChain(ChainIdUtils.Ethereum()) {
