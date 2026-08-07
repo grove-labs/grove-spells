@@ -102,6 +102,8 @@ interface IPauControllerLike is IPauBaseControllerLike {
 
 contract GroveEthereum_20260813_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0xb12C687188427d7D1E5253afA5f09A101Fbd9d4b;
+
     // UNISWAP_V3_FACET in the Sky-governed PAU Beacon.
     address internal constant PAU_UNISWAP_V3_FACET = 0x445D9Dc752F269Be48250f1A180CAC4c61cE4bab;
 
@@ -124,9 +126,9 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-07-29T10:13:44Z");
+        setupDomains("2026-08-07T10:00:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
     }
 
     function test_ETHEREUM_enableUniswapV3Facet() public onChain(ChainIdUtils.Ethereum()) {
@@ -424,8 +426,8 @@ contract GroveEthereum_20260813_Test is GroveTestBase {
         executeAllPayloadsAndBridges();
 
         // Fees owed on the position, pinned to the deterministic mainnet fork block (both 6 decimals).
-        assertEq(ausd.balanceOf(Ethereum.ALM_PROXY) - ausdBalance, 29_362.725254e6, "ausd-fees-collected-mismatch");
-        assertEq(usdc.balanceOf(Ethereum.ALM_PROXY) - usdcBalance, 28_113.645384e6, "usdc-fees-collected-mismatch");
+        assertEq(ausd.balanceOf(Ethereum.ALM_PROXY) - ausdBalance, 29_992.197726e6, "ausd-fees-collected-mismatch");
+        assertEq(usdc.balanceOf(Ethereum.ALM_PROXY) - usdcBalance, 28_871.017982e6, "usdc-fees-collected-mismatch");
 
         // Only owed fees move: the position keeps its liquidity, its range and its owner.
         IPositionManagerLike.Position memory positionAfter = positionManager.positions(UNISWAP_V3_POSITION_TOKEN_ID);
