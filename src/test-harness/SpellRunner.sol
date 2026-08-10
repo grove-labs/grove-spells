@@ -281,6 +281,31 @@ abstract contract SpellRunner is Test {
         return s;
     }
 
+    /// @dev Yesterday's UTC midnight, as an ISO string `setupDomains` accepts. Suites
+    /// that track current chain state resolve their fork date through this instead of
+    /// hardcoding a literal that silently ages. Rounding to a day boundary keeps the
+    /// fork block stable within a day so the block cache still hits, and the 24h lag
+    /// keeps the block indexed by the block-by-timestamp APIs.
+    function previousUtcMidnight() internal returns (string memory) {
+        // Same GNU/BSD split as isoToUnix; printf avoids a trailing newline
+        string memory sh = string.concat(
+            "printf '%s' \"$(",
+                "if date --version >/dev/null 2>&1; then ",
+                    "date -u -d 'yesterday' +%Y-%m-%dT00:00:00Z; ",
+                "else ",
+                    "date -u -v-1d +%Y-%m-%dT00:00:00Z; ",
+                "fi",
+            ")\""
+        );
+
+        string[] memory cmd = new string[](3);
+        cmd[0] = "bash";
+        cmd[1] = "-lc";
+        cmd[2] = sh;
+
+        return string(vm.ffi(cmd));
+    }
+
     function setupBlocksFromDate(string memory date) internal {
         setChain("plume", ChainData({
             name    : "Plume",
@@ -454,6 +479,14 @@ abstract contract SpellRunner is Test {
 
     /// @dev takes care to revert the selected fork to what was chosen before
     function executeAllPayloadsAndBridges() internal {
+        // GroveStateTests tracks live chain state and configures no payload, so there is
+        // nothing to execute, relay, or forward. Spell suites that reach here with an
+        // unset payload still fail on their own post-execution assertions.
+        if (chainData[ChainIdUtils.Ethereum()].payload == address(0)) {
+            console.log("No mainnet payload configured - skipping spell execution");
+            return;
+        }
+
         uint256 originalFork = vm.activeFork();
         // record foreign action set counts pre-relay so we can assert the relay
         // queued exactly one new set per chain before executing it

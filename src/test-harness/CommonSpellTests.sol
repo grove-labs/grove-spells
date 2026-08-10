@@ -62,6 +62,8 @@ abstract contract CommonSpellTests is CommonTestBase {
     }
 
     function test_ETHEREUM_ExecutionCost() public {
+        vm.skip(chainData[ChainIdUtils.Ethereum()].payload == address(0));
+
         uint256 startGas = gasleft();
         executeAllPayloadsAndBridges();
         uint256 endGas = gasleft();
