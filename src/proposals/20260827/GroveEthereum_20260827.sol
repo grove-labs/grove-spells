@@ -24,15 +24,15 @@ contract GroveEthereum_20260827 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Item 1: Treasury Distribution of 800,000 USDS to the Grove Foundation Multisig.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/august-27-2026-proposed-changes-to-grove-for-upcoming-spell/28164#p-107091-proposed-actions-13
         _treasuryDistributionToGroveFoundation();
 
         // [Ethereum] Item 2: raise the UniswapV3 facet deposit rate limits to the next step of the ramp-up plan.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/august-27-2026-proposed-changes-to-grove-for-upcoming-spell/28164#p-107091-proposed-actions-13
         _raiseUniswapV3DepositRateLimits();
 
         // [Ethereum] Item 3: authorize the Sky PAS Configurator on the Grove DPAU access-control stack.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/august-27-2026-proposed-changes-to-grove-for-upcoming-spell/28164#p-107091-proposed-actions-13
         _authorizePasConfigurator();
     }
 
