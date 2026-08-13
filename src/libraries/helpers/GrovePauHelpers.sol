@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
-import { IRateLimits }           from "diamond-pau/interfaces/IRateLimits.sol";
-import { makeAddressAddressKey } from "diamond-pau/libraries/RateLimitHelpers.sol";
+import { IRateLimits }                           from "diamond-pau/interfaces/IRateLimits.sol";
+import { makeAddressKey, makeAddressAddressKey } from "diamond-pau/libraries/RateLimitHelpers.sol";
 
 /**
  * @notice Helper functions for the Grove Parallelized Allocation Unit (PAU)
@@ -20,6 +20,8 @@ library GrovePauHelpers {
     bytes32 public constant LIMIT_USDS_BURN    = keccak256("LIMIT_USDS_BURN");
     bytes32 public constant LIMIT_USDS_TO_USDC = keccak256("LIMIT_USDS_TO_USDC");
     bytes32 public constant LIMIT_USDC_TO_USDS = keccak256("LIMIT_USDC_TO_USDS");
+
+    bytes32 public constant LIMIT_UNISWAP_V3_DEPOSIT = keccak256("LIMIT_UNISWAP_V3_DEPOSIT");
 
     /**********************************************************************************************/
     /*** USDS mint/burn functions                                                               ***/
@@ -89,6 +91,47 @@ library GrovePauHelpers {
         );
         IRateLimits(rateLimits).setUnlimitedRateLimitData(
             makeAddressAddressKey(LIMIT_BASIN_WITHDRAW, collateralAsset, basin)
+        );
+    }
+
+    /**********************************************************************************************/
+    /*** Uniswap V3 functions                                                                   ***/
+    /**********************************************************************************************/
+
+    /**
+     * @notice Set a Uniswap V3 pool's deposit rate limits
+     * @dev The three deposit keys must be set together: a deposit meters against the aggregate key
+     *      and against the key of each token it supplies, so leaving one unset reverts the deposit.
+     *      The aggregate key meters the 1e18-normalised sum across both pool tokens; the per-token
+     *      keys meter raw amounts and so follow each token's own decimals.
+     */
+    function setUniswapV3DepositRateLimit(
+        address rateLimits,
+        address pool,
+        address token0,
+        address token1,
+        uint256 aggregateMax,
+        uint256 aggregateSlope,
+        uint256 token0Max,
+        uint256 token0Slope,
+        uint256 token1Max,
+        uint256 token1Slope
+    ) internal {
+        IRateLimits(rateLimits).setRateLimitData(
+            makeAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, pool),
+            aggregateMax,
+            aggregateSlope
+        );
+
+        IRateLimits(rateLimits).setRateLimitData(
+            makeAddressAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, token0, pool),
+            token0Max,
+            token0Slope
+        );
+        IRateLimits(rateLimits).setRateLimitData(
+            makeAddressAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, token1, pool),
+            token1Max,
+            token1Slope
         );
     }
 

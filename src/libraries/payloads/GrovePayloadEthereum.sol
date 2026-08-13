@@ -57,6 +57,8 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
 
     address internal constant ROBINHOOD_DELAYED_INBOX  = 0x1A07cc4BD17E0118BdB54D70990D2158AbAD7a2D; // Robinhood L1 bridge (Delayed Inbox) on Ethereum
 
+    bytes32 internal constant DEFAULT_ADMIN_ROLE = 0x00; // OpenZeppelin AccessControl role-superadmin
+
     function isExecutable() external view virtual returns (bool result) {
         return true;
     }
