@@ -17,6 +17,9 @@
   "lib/grove-gov-relay": {
     "rev": "262e637bde27cddd7d021baeb2cd9f22a6433118"
   },
+  "lib/pas": {
+    "rev": "947e71cd5dbaaf9c5b3840dd1b23e8e99d9a564d"
+  },
   "lib/spark-address-registry": {
     "rev": "2ec1f5c9b9d6b2f8b94a4a2f063b83d56175f265"
   },

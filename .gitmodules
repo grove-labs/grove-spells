@@ -22,3 +22,6 @@
 [submodule "lib/diamond-pau"]
 	path = lib/diamond-pau
 	url = https://github.com/sky-ecosystem/diamond-pau
+[submodule "lib/pas"]
+	path = lib/pas
+	url = https://github.com/sky-ecosystem/pas

@@ -3,8 +3,7 @@ pragma solidity 0.8.34;
 
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
-import { IAccessControls }               from "diamond-pau/interfaces/IAccessControls.sol";
-import { IRateLimits as IPauRateLimits } from "diamond-pau/interfaces/IRateLimits.sol";
+import { PASAuthorizeInPAU } from "lib/pas/deploy/PASAuthorizeInPAU.sol";
 
 import { GrovePauHelpers } from "src/libraries/helpers/GrovePauHelpers.sol";
 
@@ -56,8 +55,11 @@ contract GroveEthereum_20260827 is GrovePayloadEthereum {
     }
 
     function _authorizePasConfigurator() internal {
-        IAccessControls(Ethereum.PAU_ACCESS_CONTROLS).grantRole(DEFAULT_ADMIN_ROLE, PAS_CONFIGURATOR);
-        IPauRateLimits(Ethereum.PAU_RATE_LIMITS).grantRole(DEFAULT_ADMIN_ROLE, PAS_CONFIGURATOR);
+        PASAuthorizeInPAU.authorize({
+            configurator   : PAS_CONFIGURATOR,
+            accessControls : Ethereum.PAU_ACCESS_CONTROLS,
+            rateLimits     : Ethereum.PAU_RATE_LIMITS
+        });
     }
 
 }
