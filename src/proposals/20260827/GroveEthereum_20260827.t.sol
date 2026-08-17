@@ -14,15 +14,9 @@ import { makeAddressKey, makeAddressAddressKey } from "diamond-pau/libraries/Rat
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
-import { GroveTestBase }   from "src/test-harness/GroveTestBase.sol";
-import { IStarGuardLike }  from "src/test-harness/SpellRunner.sol";
+import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260827_Test is GroveTestBase {
-
-    // August 13, 2026 spell, deployed 2026-08-07 and cast after this spell's fork block.
-    // Codehash per archive/20260813/20260813.md.
-    address internal constant PAYLOAD_20260813          = 0xb12C687188427d7D1E5253afA5f09A101Fbd9d4b;
-    bytes32 internal constant PAYLOAD_20260813_CODEHASH = 0x180fc2de506150de525027a135843e91123578dc1f03945b69a489dce863f85c;
 
     bytes32 internal constant LIMIT_UNISWAP_V3_DEPOSIT  = keccak256("LIMIT_UNISWAP_V3_DEPOSIT");
     bytes32 internal constant LIMIT_UNISWAP_V3_SWAP     = keccak256("LIMIT_UNISWAP_V3_SWAP");
@@ -41,34 +35,9 @@ contract GroveEthereum_20260827_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-08-13T15:56:36Z");
-
-        _executePreviousSpell();
+        setupDomains("2026-08-17T15:44:02Z");
 
         deployPayloads();
-    }
-
-    /// @dev Item 2 edits three rate-limit keys the August 13, 2026 spell creates, and that spell had
-    /// not been cast at this fork block. Execute it here so every test runs against the state this
-    /// spell will actually land on. Mirrors SpellRunner.executeMainnetPayload.
-    function _executePreviousSpell() internal {
-        // Obsolescence guard: fails the day the fork block moves past the real cast, at which point this
-        // helper must be deleted rather than left to re-execute the payload on top of itself.
-        _assertPauZeroRateLimit(makeAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, Ethereum.UNISWAP_V3_AUSD_USDC));
-
-        assertEq(PAYLOAD_20260813.codehash, PAYLOAD_20260813_CODEHASH, "previous-spell-codehash-mismatch");
-
-        vm.prank(Ethereum.PAUSE_PROXY);
-        IStarGuardLike(Ethereum.GROVE_STAR_GUARD).plot({
-            addr_ : PAYLOAD_20260813,
-            tag_  : PAYLOAD_20260813_CODEHASH
-        });
-
-        assertEq(
-            IStarGuardLike(Ethereum.GROVE_STAR_GUARD).exec(),
-            PAYLOAD_20260813,
-            "previous-spell-not-executed"
-        );
     }
 
     function test_ETHEREUM_treasuryDistributionToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {
@@ -99,8 +68,8 @@ contract GroveEthereum_20260827_Test is GroveTestBase {
         bytes32 ausdDepositKey      = makeAddressAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, Ethereum.AUSD, Ethereum.UNISWAP_V3_AUSD_USDC);
         bytes32 usdcDepositKey      = makeAddressAddressKey(LIMIT_UNISWAP_V3_DEPOSIT, Ethereum.USDC, Ethereum.UNISWAP_V3_AUSD_USDC);
 
-        // Initial ramp-up values written by the August 13, 2026 spell, executed in setUp: the maximum
-        // with a zero slope, so the allowance does not replenish.
+        // Initial ramp-up values from the August 13, 2026 spell: the maximum with a zero slope, so the
+        // allowance does not replenish.
         _assertPauRateLimit(aggregateDepositKey, 5_000_000e18, 0);
         _assertPauRateLimit(ausdDepositKey,      5_000_000e6,  0);
         _assertPauRateLimit(usdcDepositKey,      5_000_000e6,  0);
@@ -160,7 +129,7 @@ contract GroveEthereum_20260827_Test is GroveTestBase {
 
     function test_ETHEREUM_pauRoleSetOtherwiseUnchanged() public onChain(ChainIdUtils.Ethereum()) {
         // The bridge helpers drain vm.getRecordedLogs(), so read through the same accumulator they use.
-        // Everything recorded so far is setup, the previous spell included, and must not be counted.
+        // Everything recorded so far is setup and must not be counted.
         uint256 logsBefore = RecordedLogs.getLogs().length;
 
         executeAllPayloadsAndBridges();
