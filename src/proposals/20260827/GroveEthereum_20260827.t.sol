@@ -18,6 +18,8 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260827_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0xF3d4F600640a87F4203DF0A554642228a119711e;
+
     bytes32 internal constant LIMIT_UNISWAP_V3_DEPOSIT  = keccak256("LIMIT_UNISWAP_V3_DEPOSIT");
     bytes32 internal constant LIMIT_UNISWAP_V3_SWAP     = keccak256("LIMIT_UNISWAP_V3_SWAP");
     bytes32 internal constant LIMIT_UNISWAP_V3_WITHDRAW = keccak256("LIMIT_UNISWAP_V3_WITHDRAW");
@@ -35,9 +37,9 @@ contract GroveEthereum_20260827_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-08-17T15:44:02Z");
+        setupDomains("2026-08-18T17:10:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
     }
 
     function test_ETHEREUM_treasuryDistributionToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {
