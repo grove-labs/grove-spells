@@ -26,7 +26,7 @@
     - paramOneName - paramOneValue (`SPELL_PARAM_1_VAR_NAME`)
     - paramTwoName - paramTwoValue (`SPELL_PARAM_2_VAR_NAME`)
 
-<!-- Where applicable values expressing token amounts should mention the precision; i.e. 50_000_000e6 (use Solidity-style underscore separators, NOT dot-as-thousands-separator). -->
+<!-- Where applicable values expressing token amounts should mention the precision; i.e. 50_000_000e6 -->
 
 ## Spell Deployment
 
