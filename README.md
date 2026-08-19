@@ -69,6 +69,21 @@ forge test
 forge test --help
 ```
 
+### 🛡️ State Tests
+
+`src/state-tests/GroveStateTests.t.sol` keeps `forge test` meaningful between spell cycles. Every shared assertion lives in an abstract contract that only a per-spell suite instantiates, so while `src/proposals/` is empty there is no concrete test contract to run and a green result means only that the project compiled.
+
+`GroveStateTests` inherits the same `GroveTestBase` harness but configures no payload. The spell-execution step is therefore inert and each inherited test asserts current chain state instead; the ones that only hold once a spell has executed skip themselves.
+
+- **It runs only between cycles.** While a spell is in flight (any `src/proposals/*/GroveEthereum_*.t.sol` is present) the suite skips entirely, so the same assertions are not repeated at a second fork block.
+- **It forks at yesterday's UTC midnight**, resolved when the test runs rather than from a hardcoded date that silently ages. The day boundary keeps the fork block stable so `cache/fork-blocks/` still hits, and the 24h lag keeps the block indexed by the block-by-timestamp APIs.
+- **A run can therefore start failing without any code change.** That is intentional: these tests exist to surface drift in live chain state, so treat a new failure as a real change on-chain until proven otherwise.
+
+```bash
+# Run only the state tests
+forge test --match-path "src/state-tests/*"
+```
+
 ## 📦 Archive
 
 The `archive/` directory stores all historical spells that have been executed on-chain. Each archived spell includes:
