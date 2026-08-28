@@ -589,6 +589,23 @@ abstract contract SpellRunner is Test {
         chainData[ChainIdUtils.Ethereum()].spellExecuted = true;
     }
 
+    function _executePreviousSpell(address payload, bytes32 codehash) internal onChain(ChainIdUtils.Ethereum()) {
+        require(_isContract(payload),                         "SpellRunner/previous-payload-not-a-contract");
+        require(payload.codehash == codehash,                 "SpellRunner/previous-payload-codehash-mismatch");
+        require(GrovePayloadEthereum(payload).isExecutable(), "SpellRunner/previous-payload-not-executable");
+
+        vm.prank(Ethereum.PAUSE_PROXY);
+        IStarGuardLike(Ethereum.GROVE_STAR_GUARD).plot({
+            addr_ : payload,
+            tag_  : codehash
+        });
+
+        require(
+            IStarGuardLike(Ethereum.GROVE_STAR_GUARD).exec() == payload,
+            "SpellRunner/previous-payload-not-executed"
+        );
+    }
+
     function _clearLogs() internal {
         RecordedLogs.clearLogs();
 
