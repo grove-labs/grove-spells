@@ -40,7 +40,9 @@ jobs:
       - name: Install Foundry
         uses: foundry-rs/foundry-toolchain@v1
         with:
-          version: stable
+          # Pinned deliberately: forge 1.8 changed remapping auto-detection and breaks this
+          # dependency graph. Bump only with a verified build.
+          version: v1.7.1
 
       - name: Run Forge build
         run: |
