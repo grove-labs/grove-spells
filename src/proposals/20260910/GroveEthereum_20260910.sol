@@ -13,7 +13,7 @@ contract GroveEthereum_20260910 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Item 1: onboard the Grove x Steakhouse USDG Morpho vault.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/september-10-2026-proposed-changes-to-grove-for-upcoming-spell/28207#p-107231-proposed-actions-13
         _onboardGroveXSteakhouseUsdgMorphoVault();
     }
 
