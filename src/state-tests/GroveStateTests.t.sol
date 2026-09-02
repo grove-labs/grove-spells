@@ -11,21 +11,13 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 /// themselves.
 contract GroveStateTests is GroveTestBase {
 
-    string internal forkDate;
-
-    constructor() {
-        // Resolved once here rather than per setUp so every test in the run forks the same
-        // day, even when the run straddles UTC midnight.
-        forkDate = previousUtcMidnight();
-    }
-
     function setUp() public {
         // An active spell already runs every shared test post-execution at its own pinned
         // fork block, so running here as well would only repeat those assertions at a second
         // block. vm.skip reverts out of setUp, so this also avoids forking five chains.
         vm.skip(_spellSuiteInFlight());
 
-        setupDomains(forkDate);
+        setupDomains(previousUtcMidnight());
     }
 
 }

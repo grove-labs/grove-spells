@@ -254,7 +254,9 @@ abstract contract SpellRunner is Test {
     }
 
     function isoToUnix(string memory iso) internal returns (string memory) {
-        // Build a bash script that works on both GNU date (Linux) and BSD date (macOS)
+        // Build a bash script that works on both GNU date (Linux) and BSD date (macOS).
+        // Run it with -c, never -lc: a login shell sources profile files, and anything they
+        // print lands on stdout ahead of the result and corrupts it.
         string memory sh = string.concat(
             "ISO='", iso, "'; ",
             "if date --version >/dev/null 2>&1; then ",
@@ -266,7 +268,7 @@ abstract contract SpellRunner is Test {
 
         string[] memory cmd = new string[](3);
         cmd[0] = "bash";
-        cmd[1] = "-lc";
+        cmd[1] = "-c";
         cmd[2] = sh;
 
         bytes memory out = vm.ffi(cmd);
@@ -291,10 +293,9 @@ abstract contract SpellRunner is Test {
     /// fork block stable within a day so the block cache still hits, and the 24h lag
     /// keeps the block indexed by the block-by-timestamp APIs.
     ///
-    /// Resolve this once per suite, from the constructor, not from `setUp`. Forge replays
-    /// `setUp` per test from the post-construction snapshot, so a run straddling UTC
-    /// midnight would otherwise fork earlier tests a day apart from later ones, and
-    /// storage written in `setUp` cannot memoize it because that write is rolled back.
+    /// Call this once per suite run. `setUp` runs once and every test replays from the
+    /// post-`setUp` snapshot, so calling it there gives the whole run one fork date even
+    /// when the run crosses UTC midnight.
     function previousUtcMidnight() internal returns (string memory) {
         // Same GNU/BSD split as isoToUnix; printf avoids a trailing newline
         string memory sh = string.concat(
@@ -309,7 +310,7 @@ abstract contract SpellRunner is Test {
 
         string[] memory cmd = new string[](3);
         cmd[0] = "bash";
-        cmd[1] = "-lc";
+        cmd[1] = "-c";
         cmd[2] = sh;
 
         return string(vm.ffi(cmd));
