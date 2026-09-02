@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import { Test }      from "forge-std/Test.sol";
 import { StdChains } from "forge-std/StdChains.sol";
+import { Vm }        from "forge-std/Vm.sol";
 import { console }   from "forge-std/console.sol";
 
 import { Ethereum }  from 'grove-address-registry/Ethereum.sol';
@@ -63,6 +64,9 @@ abstract contract SpellRunner is Test {
 
     ChainId[] internal allChains;
     string internal    id;
+
+    string  private constant PROPOSALS_DIR = "src/proposals";
+    uint256 private constant NOT_FOUND     = type(uint256).max; // vm.indexOf miss sentinel
 
     modifier onChain(ChainId chainId) {
         uint256 currentFork = vm.activeFork();
@@ -286,6 +290,11 @@ abstract contract SpellRunner is Test {
     /// hardcoding a literal that silently ages. Rounding to a day boundary keeps the
     /// fork block stable within a day so the block cache still hits, and the 24h lag
     /// keeps the block indexed by the block-by-timestamp APIs.
+    ///
+    /// Resolve this once per suite, from the constructor, not from `setUp`. Forge replays
+    /// `setUp` per test from the post-construction snapshot, so a run straddling UTC
+    /// midnight would otherwise fork earlier tests a day apart from later ones, and
+    /// storage written in `setUp` cannot memoize it because that write is rolled back.
     function previousUtcMidnight() internal returns (string memory) {
         // Same GNU/BSD split as isoToUnix; printf avoids a trailing newline
         string memory sh = string.concat(
@@ -458,6 +467,47 @@ abstract contract SpellRunner is Test {
         return identifier;
     }
 
+    /// @dev True when a spell cycle is present in src/proposals. Detection is by file rather
+    /// than by configured payload so that a cycle whose payload never loaded, from a
+    /// misnamed file or a stale artifact, is told apart from an idle repo between cycles.
+    function _spellSuiteInFlight() internal view returns (bool) {
+        return _proposalSolidityFileExists("");
+    }
+
+    /// @dev True when src/proposals holds a Solidity file for this chain, matched on the same
+    /// `Grove<Domain>_` prefix that spellIdentifier derives artifact names from. A chain is
+    /// only expected to configure a payload when its cycle ships one of these.
+    function _spellFileExists(ChainId chainId) internal view returns (bool) {
+        return _proposalSolidityFileExists(string.concat("/Grove", chainId.toDomainString(), "_"));
+    }
+
+    function _proposalSolidityFileExists(string memory pathFragment) private view returns (bool) {
+        // Absent between cycles: git tracks no files under src/proposals once one is archived
+        if (!vm.isDir(PROPOSALS_DIR)) return false;
+
+        Vm.DirEntry[] memory entries = vm.readDir(PROPOSALS_DIR, 3);
+
+        for (uint256 i = 0; i < entries.length; i++) {
+            if (entries[i].isDir)                        continue;
+            if (!_hasSolidityExtension(entries[i].path)) continue;
+            if (bytes(pathFragment).length == 0)         return true;
+
+            if (vm.indexOf(entries[i].path, pathFragment) != NOT_FOUND) return true;
+        }
+
+        return false;
+    }
+
+    function _hasSolidityExtension(string memory path) private pure returns (bool) {
+        bytes memory chars = bytes(path);
+        if (chars.length < 4) return false;
+
+        return chars[chars.length - 4] == "."
+            && chars[chars.length - 3] == "s"
+            && chars[chars.length - 2] == "o"
+            && chars[chars.length - 1] == "l";
+    }
+
     function deployPayload(ChainId chainId) internal onChain(chainId) returns(address) {
         return deployCode(spellIdentifier(chainId));
     }
@@ -480,9 +530,11 @@ abstract contract SpellRunner is Test {
     /// @dev takes care to revert the selected fork to what was chosen before
     function executeAllPayloadsAndBridges() internal {
         // GroveStateTests tracks live chain state and configures no payload, so there is
-        // nothing to execute, relay, or forward. Spell suites that reach here with an
-        // unset payload still fail on their own post-execution assertions.
+        // nothing to execute, relay, or forward. Every cycle ships a mainnet payload, so
+        // reaching here with proposal files present means the suite is misconfigured
+        // rather than idle, and must keep failing instead of asserting pre-execution state.
         if (chainData[ChainIdUtils.Ethereum()].payload == address(0)) {
+            require(!_spellSuiteInFlight(), "SPELL IN FLIGHT BUT NO MAINNET PAYLOAD CONFIGURED");
             console.log("No mainnet payload configured - skipping spell execution");
             return;
         }

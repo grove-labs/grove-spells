@@ -11,25 +11,21 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 /// themselves.
 contract GroveStateTests is GroveTestBase {
 
-    function setUp() public {
-        // An active spell already runs every shared test post-execution at its own pinned
-        // fork block, so running here as well would only repeat those assertions at a
-        // second block. Skipping before setupDomains also avoids forking five chains.
-        if (_activeSpellExists()) {
-            vm.skip(true);
-            return;
-        }
+    string internal forkDate;
 
-        setupDomains(previousUtcMidnight());
+    constructor() {
+        // Resolved once here rather than per setUp so every test in the run forks the same
+        // day, even when the run straddles UTC midnight.
+        forkDate = previousUtcMidnight();
     }
 
-    function _activeSpellExists() private returns (bool) {
-        string[] memory cmd = new string[](3);
-        cmd[0] = "bash";
-        cmd[1] = "-lc";
-        cmd[2] = "ls src/proposals/*/GroveEthereum_*.t.sol >/dev/null 2>&1 && printf yes || printf no";
+    function setUp() public {
+        // An active spell already runs every shared test post-execution at its own pinned
+        // fork block, so running here as well would only repeat those assertions at a second
+        // block. vm.skip reverts out of setUp, so this also avoids forking five chains.
+        vm.skip(_spellSuiteInFlight());
 
-        return keccak256(vm.ffi(cmd)) == keccak256(bytes("yes"));
+        setupDomains(forkDate);
     }
 
 }
