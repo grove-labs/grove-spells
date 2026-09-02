@@ -10,6 +10,8 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260910_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0x73F9798B24b7843B8028f905373124EfCAF25Da4;
+
     // Must equal the address hardcoded in the 20260910 payload.
     address internal constant GROVE_X_STEAKHOUSE_USDG_V2_MORPHO_VAULT = 0xbeef05061FE51eA482BD1b68041353490b3a5934;
 
@@ -20,9 +22,9 @@ contract GroveEthereum_20260910_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-08-28T16:30:30Z");
+        setupDomains("2026-09-02T13:15:47Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
     }
 
     function test_ETHEREUM_onboardGroveXSteakhouseUsdgMorphoVault() public onChain(ChainIdUtils.Ethereum()) {
