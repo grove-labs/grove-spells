@@ -297,15 +297,14 @@ abstract contract SpellRunner is Test {
     /// post-`setUp` snapshot, so calling it there gives the whole run one fork date even
     /// when the run crosses UTC midnight.
     function previousUtcMidnight() internal returns (string memory) {
-        // Same GNU/BSD split as isoToUnix; printf avoids a trailing newline
+        // Same GNU/BSD split as isoToUnix. Left unwrapped so a failing date propagates its
+        // exit status and reverts; vm.ffi already trims the trailing newline.
         string memory sh = string.concat(
-            "printf '%s' \"$(",
-                "if date --version >/dev/null 2>&1; then ",
-                    "date -u -d 'yesterday' +%Y-%m-%dT00:00:00Z; ",
-                "else ",
-                    "date -u -v-1d +%Y-%m-%dT00:00:00Z; ",
-                "fi",
-            ")\""
+            "if date --version >/dev/null 2>&1; then ",
+                "date -u -d 'yesterday' +%Y-%m-%dT00:00:00Z; ",
+            "else ",
+                "date -u -v-1d +%Y-%m-%dT00:00:00Z; ",
+            "fi"
         );
 
         string[] memory cmd = new string[](3);
@@ -491,7 +490,6 @@ abstract contract SpellRunner is Test {
         for (uint256 i = 0; i < entries.length; i++) {
             if (entries[i].isDir)                        continue;
             if (!_hasSolidityExtension(entries[i].path)) continue;
-            if (bytes(pathFragment).length == 0)         return true;
 
             if (vm.indexOf(entries[i].path, pathFragment) != NOT_FOUND) return true;
         }
