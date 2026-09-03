@@ -3,6 +3,7 @@ pragma solidity ^0.8.0;
 
 import { Test }      from "forge-std/Test.sol";
 import { StdChains } from "forge-std/StdChains.sol";
+import { Vm }        from "forge-std/Vm.sol";
 import { console }   from "forge-std/console.sol";
 
 import { Ethereum }  from 'grove-address-registry/Ethereum.sol';
@@ -63,6 +64,9 @@ abstract contract SpellRunner is Test {
 
     ChainId[] internal allChains;
     string internal    id;
+
+    string  private constant PROPOSALS_DIR = "src/proposals";
+    uint256 private constant NOT_FOUND     = type(uint256).max; // vm.indexOf miss sentinel
 
     modifier onChain(ChainId chainId) {
         uint256 currentFork = vm.activeFork();
@@ -250,7 +254,9 @@ abstract contract SpellRunner is Test {
     }
 
     function isoToUnix(string memory iso) internal returns (string memory) {
-        // Build a bash script that works on both GNU date (Linux) and BSD date (macOS)
+        // Build a bash script that works on both GNU date (Linux) and BSD date (macOS).
+        // Run it with -c, never -lc: a login shell sources profile files, and anything they
+        // print lands on stdout ahead of the result and corrupts it.
         string memory sh = string.concat(
             "ISO='", iso, "'; ",
             "if date --version >/dev/null 2>&1; then ",
@@ -262,7 +268,7 @@ abstract contract SpellRunner is Test {
 
         string[] memory cmd = new string[](3);
         cmd[0] = "bash";
-        cmd[1] = "-lc";
+        cmd[1] = "-c";
         cmd[2] = sh;
 
         bytes memory out = vm.ffi(cmd);
@@ -279,6 +285,34 @@ abstract contract SpellRunner is Test {
             return string(out);
         }
         return s;
+    }
+
+    /// @dev Yesterday's UTC midnight, as an ISO string `setupDomains` accepts. Suites
+    /// that track current chain state resolve their fork date through this instead of
+    /// hardcoding a literal that silently ages. Rounding to a day boundary keeps the
+    /// fork block stable within a day so the block cache still hits, and the 24h lag
+    /// keeps the block indexed by the block-by-timestamp APIs.
+    ///
+    /// Call this once per suite run. `setUp` runs once and every test replays from the
+    /// post-`setUp` snapshot, so calling it there gives the whole run one fork date even
+    /// when the run crosses UTC midnight.
+    function previousUtcMidnight() internal returns (string memory) {
+        // Same GNU/BSD split as isoToUnix. Left unwrapped so a failing date propagates its
+        // exit status and reverts; vm.ffi already trims the trailing newline.
+        string memory sh = string.concat(
+            "if date --version >/dev/null 2>&1; then ",
+                "date -u -d 'yesterday' +%Y-%m-%dT00:00:00Z; ",
+            "else ",
+                "date -u -v-1d +%Y-%m-%dT00:00:00Z; ",
+            "fi"
+        );
+
+        string[] memory cmd = new string[](3);
+        cmd[0] = "bash";
+        cmd[1] = "-c";
+        cmd[2] = sh;
+
+        return string(vm.ffi(cmd));
     }
 
     function setupBlocksFromDate(string memory date) internal {
@@ -433,6 +467,46 @@ abstract contract SpellRunner is Test {
         return identifier;
     }
 
+    /// @dev True when a spell cycle is present in src/proposals. Detection is by file rather
+    /// than by configured payload so that a cycle whose payload never loaded, from a
+    /// misnamed file or a stale artifact, is told apart from an idle repo between cycles.
+    function _spellSuiteInFlight() internal view returns (bool) {
+        return _proposalSolidityFileExists("");
+    }
+
+    /// @dev True when src/proposals holds a Solidity file for this chain, matched on the same
+    /// `Grove<Domain>_` prefix that spellIdentifier derives artifact names from. A chain is
+    /// only expected to configure a payload when its cycle ships one of these.
+    function _spellFileExists(ChainId chainId) internal view returns (bool) {
+        return _proposalSolidityFileExists(string.concat("/Grove", chainId.toDomainString(), "_"));
+    }
+
+    function _proposalSolidityFileExists(string memory pathFragment) private view returns (bool) {
+        // Absent between cycles: git tracks no files under src/proposals once one is archived
+        if (!vm.isDir(PROPOSALS_DIR)) return false;
+
+        Vm.DirEntry[] memory entries = vm.readDir(PROPOSALS_DIR, 3);
+
+        for (uint256 i = 0; i < entries.length; i++) {
+            if (entries[i].isDir)                        continue;
+            if (!_hasSolidityExtension(entries[i].path)) continue;
+
+            if (vm.indexOf(entries[i].path, pathFragment) != NOT_FOUND) return true;
+        }
+
+        return false;
+    }
+
+    function _hasSolidityExtension(string memory path) private pure returns (bool) {
+        bytes memory chars = bytes(path);
+        if (chars.length < 4) return false;
+
+        return chars[chars.length - 4] == "."
+            && chars[chars.length - 3] == "s"
+            && chars[chars.length - 2] == "o"
+            && chars[chars.length - 1] == "l";
+    }
+
     function deployPayload(ChainId chainId) internal onChain(chainId) returns(address) {
         return deployCode(spellIdentifier(chainId));
     }
@@ -454,6 +528,16 @@ abstract contract SpellRunner is Test {
 
     /// @dev takes care to revert the selected fork to what was chosen before
     function executeAllPayloadsAndBridges() internal {
+        // GroveStateTests tracks live chain state and configures no payload, so there is
+        // nothing to execute, relay, or forward. Every cycle ships a mainnet payload, so
+        // reaching here with proposal files present means the suite is misconfigured
+        // rather than idle, and must keep failing instead of asserting pre-execution state.
+        if (chainData[ChainIdUtils.Ethereum()].payload == address(0)) {
+            require(!_spellSuiteInFlight(), "SPELL IN FLIGHT BUT NO MAINNET PAYLOAD CONFIGURED");
+            console.log("No mainnet payload configured - skipping spell execution");
+            return;
+        }
+
         uint256 originalFork = vm.activeFork();
         // record foreign action set counts pre-relay so we can assert the relay
         // queued exactly one new set per chain before executing it
