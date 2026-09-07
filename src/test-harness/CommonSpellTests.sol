@@ -39,7 +39,7 @@ abstract contract CommonSpellTests is CommonTestBase {
     }
 
     function test_ETHEREUM_PayloadsConfigured() public onChain(ChainIdUtils.Ethereum()) {
-        vm.skip(chainData[ChainIdUtils.Ethereum()].payload == address(0));
+        _skipIfNoPayload(ChainIdUtils.Ethereum());
 
         for (uint256 i = 0; i < allChains.length; ++i) {
             ChainId chainId = ChainIdUtils.fromDomain(chainData[allChains[i]].domain);
@@ -62,6 +62,8 @@ abstract contract CommonSpellTests is CommonTestBase {
     }
 
     function test_ETHEREUM_ExecutionCost() public {
+        _skipIfNoPayload(ChainIdUtils.Ethereum());
+
         uint256 startGas = gasleft();
         executeAllPayloadsAndBridges();
         uint256 endGas = gasleft();
@@ -118,6 +120,22 @@ abstract contract CommonSpellTests is CommonTestBase {
     /*** Helper Functions                                                                      ***/
     /**********************************************************************************************/
 
+    /// @dev Skips when there is genuinely no spell to assert against, but keeps failing when a
+    /// payload was expected and never loaded, which a bare skip would let pass silently.
+    /// Every cycle ships a mainnet payload, so any proposal file makes Ethereum's mandatory;
+    /// other chains are only expected when the cycle ships their own payload file.
+    function _skipIfNoPayload(ChainId chainId) internal {
+        if (chainData[chainId].payload != address(0)) return;
+
+        bool payloadExpected = chainId == ChainIdUtils.Ethereum()
+            ? _spellSuiteInFlight()
+            : _spellFileExists(chainId);
+
+        require(!payloadExpected, "SPELL IN FLIGHT BUT NO PAYLOAD CONFIGURED");
+
+        vm.skip(true);
+    }
+
     // Mainnet payloads run via delegatecall from GROVE_PROXY, so a payload writing to
     // storage would corrupt the proxy. Its wards live in a mapping (keccak-derived slots),
     // so every direct slot is expected to stay zero.
@@ -132,7 +150,7 @@ abstract contract CommonSpellTests is CommonTestBase {
 
     function _assertPayloadBytecodeMatches(ChainId chainId) private onChain(chainId) {
         address actualPayload = chainData[chainId].payload;
-        vm.skip(actualPayload == address(0));
+        _skipIfNoPayload(chainId);
         require(_isContract(actualPayload), "PAYLOAD IS NOT A CONTRACT");
         address expectedPayload = deployPayload(chainId);
 
