@@ -49,6 +49,10 @@ contract GroveEthereum_20260924 is GrovePayloadEthereum {
             basin        : BUIDLI_GROVE_BASIN,
             depositMax   : 5_000_000e18,                  // BEFORE: 0
             depositSlope : 5_000_000e18 / uint256(1 days) // BEFORE: 0
+        //  withdrawDepositAssetMax      : unlimited         BEFORE: 0
+        //  withdrawDepositAssetSlope    : 0                 BEFORE: 0
+        //  withdrawCollateralAssetMax   : unlimited         BEFORE: 0
+        //  withdrawCollateralAssetSlope : 0                 BEFORE: 0
         });
     }
 

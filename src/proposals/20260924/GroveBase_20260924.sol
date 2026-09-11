@@ -24,6 +24,8 @@ contract GroveBase_20260924 is GrovePayloadBase {
             depositSlope      : 20_000_000e6 / uint256(1 days), // BEFORE: 0
             shareUnit         : 1e18,                           // BEFORE: 0
             maxAssetsPerShare : 1.15e6                          // BEFORE: 0
+        //  withdrawMax       : unlimited                          BEFORE: 0
+        //  withdrawSlope     : 0                                  BEFORE: 0
         });
     }
 
