@@ -2,7 +2,7 @@
 
 ## Forum Post
 
-[Forum Post Link](TBD)
+[Forum Post Title](TBD)
 
 ## List of intended changes
 
