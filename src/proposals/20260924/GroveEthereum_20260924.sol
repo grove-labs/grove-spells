@@ -27,16 +27,16 @@ contract GroveEthereum_20260924 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Item 1: Treasury Distribution of 800,000 USDS to the Grove Foundation Multisig.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
         _treasuryDistributionToGroveFoundation();
 
-        // [Ethereum] Item 3: onboard the BUIDL-I Tokenized Treasury (Basin) Instance on the Grove DPAU.
-        //   Forum : TODO
+        // [Ethereum] Item 3: onboard the BUIDL-I Tokenized Treasury (Basin) Instance on the Grove PAU.
+        //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
         _onboardBuidlIBasin();
 
-        // [Ethereum] Item 4: set the Grove DPAU unwind rate limits to unlimited.
-        //   Forum : TODO
-        _setDpauUnwindRateLimitsToUnlimited();
+        // [Ethereum] Item 4: set the Grove PAU unwind rate limits to unlimited.
+        //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
+        _setPauUnwindRateLimitsToUnlimited();
     }
 
     function _treasuryDistributionToGroveFoundation() internal {
@@ -52,7 +52,7 @@ contract GroveEthereum_20260924 is GrovePayloadEthereum {
         });
     }
 
-    function _setDpauUnwindRateLimitsToUnlimited() internal {
+    function _setPauUnwindRateLimitsToUnlimited() internal {
         // Set key-by-key instead of through _setUsdsMintBurnPauRateLimits / _setPsmSwapPauRateLimits:
         // each of those writes both directions of its pair, which would also rewrite the outbound
         // mint and USDS->USDC keys that this item must leave untouched.

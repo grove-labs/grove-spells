@@ -9,7 +9,8 @@ import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 
 import { IRateLimits as IPauRateLimits } from "diamond-pau/interfaces/IRateLimits.sol";
 
-import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
+import { ChainIdUtils }    from "src/libraries/helpers/ChainId.sol";
+import { GrovePauHelpers } from "src/libraries/helpers/GrovePauHelpers.sol";
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
@@ -18,11 +19,6 @@ contract GroveEthereum_20260924_Test is GroveTestBase {
     address internal constant BUIDLI_GROVE_BASIN = 0xf1615aC3181a4a28D35fB2b9cea84dd4a199B9D7;
 
     address internal constant GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT = 0xbeef0786756810478b88982DE00F3CD7fdB8e7c7;
-
-    bytes32 internal constant LIMIT_USDS_BURN    = keccak256("LIMIT_USDS_BURN");
-    bytes32 internal constant LIMIT_USDS_MINT    = keccak256("LIMIT_USDS_MINT");
-    bytes32 internal constant LIMIT_USDC_TO_USDS = keccak256("LIMIT_USDC_TO_USDS");
-    bytes32 internal constant LIMIT_USDS_TO_USDC = keccak256("LIMIT_USDS_TO_USDC");
 
     constructor() {
         id = "20260924";
@@ -68,38 +64,38 @@ contract GroveEthereum_20260924_Test is GroveTestBase {
         });
     }
 
-    function test_ETHEREUM_setDpauUnwindRateLimitsToUnlimited() public onChain(ChainIdUtils.Ethereum()) {
+    function test_ETHEREUM_setPauUnwindRateLimitsToUnlimited() public onChain(ChainIdUtils.Ethereum()) {
         IPauRateLimits rateLimits = IPauRateLimits(Ethereum.PAU_RATE_LIMITS);
 
         // The spec sets these to unlimited from whatever finite value they hold at execution, so the
         // pre-state is asserted as finite rather than as a literal that would rot before the cast.
         assertLt(
-            rateLimits.getRateLimitData(LIMIT_USDS_BURN).maxAmount,
+            rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDS_BURN).maxAmount,
             type(uint256).max,
             "usds-burn-already-unlimited"
         );
         assertLt(
-            rateLimits.getRateLimitData(LIMIT_USDC_TO_USDS).maxAmount,
+            rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDC_TO_USDS).maxAmount,
             type(uint256).max,
             "usdc-to-usds-already-unlimited"
         );
 
         executeAllPayloadsAndBridges();
 
-        _assertPauUnlimitedRateLimit(LIMIT_USDS_BURN);
-        _assertPauUnlimitedRateLimit(LIMIT_USDC_TO_USDS);
+        _assertPauUnlimitedRateLimit(GrovePauHelpers.LIMIT_USDS_BURN);
+        _assertPauUnlimitedRateLimit(GrovePauHelpers.LIMIT_USDC_TO_USDS);
     }
 
-    function test_ETHEREUM_dpauOutboundRateLimitsUnchanged() public onChain(ChainIdUtils.Ethereum()) {
+    function test_ETHEREUM_pauOutboundRateLimitsUnchanged() public onChain(ChainIdUtils.Ethereum()) {
         IPauRateLimits rateLimits = IPauRateLimits(Ethereum.PAU_RATE_LIMITS);
 
-        IPauRateLimits.RateLimitData memory mintBefore       = rateLimits.getRateLimitData(LIMIT_USDS_MINT);
-        IPauRateLimits.RateLimitData memory usdsToUsdcBefore = rateLimits.getRateLimitData(LIMIT_USDS_TO_USDC);
+        IPauRateLimits.RateLimitData memory mintBefore       = rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDS_MINT);
+        IPauRateLimits.RateLimitData memory usdsToUsdcBefore = rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDS_TO_USDC);
 
         executeAllPayloadsAndBridges();
 
-        IPauRateLimits.RateLimitData memory mintAfter       = rateLimits.getRateLimitData(LIMIT_USDS_MINT);
-        IPauRateLimits.RateLimitData memory usdsToUsdcAfter = rateLimits.getRateLimitData(LIMIT_USDS_TO_USDC);
+        IPauRateLimits.RateLimitData memory mintAfter       = rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDS_MINT);
+        IPauRateLimits.RateLimitData memory usdsToUsdcAfter = rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDS_TO_USDC);
 
         assertEq(mintAfter.maxAmount, mintBefore.maxAmount, "usds-mint-max-changed");
         assertEq(mintAfter.slope,     mintBefore.slope,     "usds-mint-slope-changed");

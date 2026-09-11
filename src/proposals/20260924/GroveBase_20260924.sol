@@ -13,7 +13,7 @@ contract GroveBase_20260924 is GrovePayloadBase {
 
     function execute() external {
         // [Base] Item 2: onboard the Grove x Steakhouse USDC Morpho vault.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
         _onboardGroveXSteakhouseUsdcV2MorphoVault();
     }
 
