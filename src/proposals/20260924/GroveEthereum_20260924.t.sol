@@ -16,8 +16,6 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20260924_Test is GroveTestBase {
 
-    address internal constant BUIDLI_GROVE_BASIN = 0xf1615aC3181a4a28D35fB2b9cea84dd4a199B9D7;
-
     address internal constant GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT = 0xbeef0786756810478b88982DE00F3CD7fdB8e7c7;
 
     constructor() {
@@ -51,17 +49,6 @@ contract GroveEthereum_20260924_Test is GroveTestBase {
             foundationUsdsStart + 800_000e18,
             "foundation-usds-balance-not-increased"
         );
-    }
-
-    function test_ETHEREUM_onboardBuidlIBasin() public onChain(ChainIdUtils.Ethereum()) {
-        _testBasinOnboarding({
-            basin                 : BUIDLI_GROVE_BASIN,
-            swapToken             : Ethereum.USDS,
-            collateralToken       : Ethereum.USDC,
-            expectedDepositAmount : 1_000_000e18,
-            depositMax            : 5_000_000e18,
-            depositSlope          : 5_000_000e18 / uint256(1 days)
-        });
     }
 
     function test_ETHEREUM_setPauUnwindRateLimitsToUnlimited() public onChain(ChainIdUtils.Ethereum()) {

@@ -19,8 +19,6 @@ interface IERC20Like {
  */
 contract GroveEthereum_20260924 is GrovePayloadEthereum {
 
-    address internal constant BUIDLI_GROVE_BASIN = 0xf1615aC3181a4a28D35fB2b9cea84dd4a199B9D7;
-
     constructor() {
         PAYLOAD_BASE = address(0); // TODO: set after foreign payload deploy
     }
@@ -30,10 +28,6 @@ contract GroveEthereum_20260924 is GrovePayloadEthereum {
         //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
         _treasuryDistributionToGroveFoundation();
 
-        // [Ethereum] Item 3: onboard the BUIDL-I Tokenized Treasury (Basin) Instance on the Grove PAU.
-        //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
-        _onboardBuidlIBasin();
-
         // [Ethereum] Item 4: set the Grove PAU unwind rate limits to unlimited.
         //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
         _setPauUnwindRateLimitsToUnlimited();
@@ -41,19 +35,6 @@ contract GroveEthereum_20260924 is GrovePayloadEthereum {
 
     function _treasuryDistributionToGroveFoundation() internal {
         require(IERC20Like(Ethereum.USDS).transfer(Ethereum.GROVE_FOUNDATION, 800_000e18));
-    }
-
-    function _onboardBuidlIBasin() internal {
-        _setBasinPauRateLimits({
-            rateLimits   : Ethereum.PAU_RATE_LIMITS,
-            basin        : BUIDLI_GROVE_BASIN,
-            depositMax   : 5_000_000e18,                  // BEFORE: 0
-            depositSlope : 5_000_000e18 / uint256(1 days) // BEFORE: 0
-        //  withdrawDepositAssetMax      : unlimited         BEFORE: 0
-        //  withdrawDepositAssetSlope    : 0                 BEFORE: 0
-        //  withdrawCollateralAssetMax   : unlimited         BEFORE: 0
-        //  withdrawCollateralAssetSlope : 0                 BEFORE: 0
-        });
     }
 
     function _setPauUnwindRateLimitsToUnlimited() internal {
