@@ -28,7 +28,7 @@ contract GroveEthereum_20260924 is GrovePayloadEthereum {
         //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
         _treasuryDistributionToGroveFoundation();
 
-        // [Ethereum] Item 4: set the Grove PAU unwind rate limits to unlimited.
+        // [Ethereum] Item 3: set the Grove PAU unwind rate limits to unlimited.
         //   Forum : https://forum.skyeco.com/t/september-24-2026-proposed-changes-to-grove-for-upcoming-spell/28229
         _setPauUnwindRateLimitsToUnlimited();
     }
@@ -42,10 +42,10 @@ contract GroveEthereum_20260924 is GrovePayloadEthereum {
         // each of those writes both directions of its pair, which would also rewrite the outbound
         // mint and USDS->USDC keys that this item must leave untouched.
         IPauRateLimits(Ethereum.PAU_RATE_LIMITS).setUnlimitedRateLimitData(
-            GrovePauHelpers.LIMIT_USDS_BURN     // BEFORE: 14_929_920e18 max ; 14_929_920e18 / 1 days slope
+            GrovePauHelpers.LIMIT_USDS_BURN     // BEFORE: 15_000_000e18 max ; 17_915_904e18 / 1 days slope (read 2026-09-11)
         );
         IPauRateLimits(Ethereum.PAU_RATE_LIMITS).setUnlimitedRateLimitData(
-            GrovePauHelpers.LIMIT_USDC_TO_USDS  // BEFORE: 14_929_920e6 max ; 14_929_920e6 / 1 days slope
+            GrovePauHelpers.LIMIT_USDC_TO_USDS  // BEFORE: 15_000_000e6 max ; 17_915_904e6 / 1 days slope (read 2026-09-11)
         );
     }
 
