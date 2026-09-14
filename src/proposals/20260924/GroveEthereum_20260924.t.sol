@@ -14,6 +14,17 @@ import { GrovePauHelpers } from "src/libraries/helpers/GrovePauHelpers.sol";
 
 import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
+import { IPauBaseControllerLike, PauContext } from "src/test-harness/CommonPauTestBase.sol";
+
+interface IAllocatorVaultLike {
+    function ilk() external view returns (bytes32);
+}
+
+interface IVatLike {
+    function ilks(bytes32 ilk) external view returns (uint256 Art, uint256 rate, uint256 spot, uint256 line, uint256 dust);
+    function urns(bytes32 ilk, address urn) external view returns (uint256 ink, uint256 art);
+}
+
 contract GroveEthereum_20260924_Test is GroveTestBase {
 
     address internal constant GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT = 0xbeef0786756810478b88982DE00F3CD7fdB8e7c7;
@@ -54,23 +65,65 @@ contract GroveEthereum_20260924_Test is GroveTestBase {
     function test_ETHEREUM_setPauUnwindRateLimitsToUnlimited() public onChain(ChainIdUtils.Ethereum()) {
         IPauRateLimits rateLimits = IPauRateLimits(Ethereum.PAU_RATE_LIMITS);
 
+        uint256 burnMaxBefore = rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDS_BURN).maxAmount;
+        uint256 swapMaxBefore = rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDC_TO_USDS).maxAmount;
+
         // The spec sets these to unlimited from whatever finite value they hold at execution, so the
         // pre-state is asserted as finite rather than as a literal that would rot before the cast.
-        assertLt(
-            rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDS_BURN).maxAmount,
-            type(uint256).max,
-            "usds-burn-already-unlimited"
-        );
-        assertLt(
-            rateLimits.getRateLimitData(GrovePauHelpers.LIMIT_USDC_TO_USDS).maxAmount,
-            type(uint256).max,
-            "usdc-to-usds-already-unlimited"
-        );
+        assertLt(burnMaxBefore, type(uint256).max, "usds-burn-already-unlimited");
+        assertLt(swapMaxBefore, type(uint256).max, "usdc-to-usds-already-unlimited");
+
+        // Unwind sizes sit one million above the finite ceilings in force at the fork block
+        // (15_000_000 on 2026-09-11, stepped daily by PAS), so they always exceed the old limits.
+        uint256 burnUsds = burnMaxBefore + 1_000_000e18;
+        uint256 swapUsdc = swapMaxBefore + 1_000_000e6;
+
+        PauContext memory ctx  = _getPauContext();
+        IERC20            usds = IERC20(Ethereum.USDS);
+        IERC20            usdc = IERC20(Ethereum.USDC);
+
+        // Burn repays ALLOCATOR-GROVE-A debt, so the vault must owe at least the burn amount.
+        IAllocatorVaultLike vault = IAllocatorVaultLike(IPauBaseControllerLike(ctx.controller).usds_vault());
+
+        ( , uint256 art )     = IVatLike(Ethereum.VAT).urns(vault.ilk(), address(vault));
+        ( , uint256 rate,,, ) = IVatLike(Ethereum.VAT).ilks(vault.ilk());
+
+        assertGe(art * rate / 1e27, burnUsds, "vault-debt-below-burn-amount");
+
+        deal2(Ethereum.USDS, address(ctx.proxy), burnUsds);
+        deal(Ethereum.USDC,  address(ctx.proxy), swapUsdc);
+
+        // --- Before: the finite limits reject the unwind. ---
+        vm.expectRevert("RateLimits/rate-limit-exceeded");
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.usds_burn, (burnUsds)));
+
+        vm.expectRevert("RateLimits/rate-limit-exceeded");
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.psm_swapUSDCToUSDS, (swapUsdc)));
 
         executeAllPayloadsAndBridges();
 
         _assertPauUnlimitedRateLimit(GrovePauHelpers.LIMIT_USDS_BURN);
         _assertPauUnlimitedRateLimit(GrovePauHelpers.LIMIT_USDC_TO_USDS);
+
+        // --- After: the same unwind goes through and leaves both limits unlimited. ---
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.usds_burn, (burnUsds)));
+
+        assertEq(usds.balanceOf(address(ctx.proxy)), 0, "proxy-usds-not-burned");
+        assertEq(
+            ctx.rateLimits.getCurrentRateLimit(GrovePauHelpers.LIMIT_USDS_BURN),
+            type(uint256).max,
+            "usds-burn-limit-consumed"
+        );
+
+        _callAsPauActor(ctx, abi.encodeCall(IPauBaseControllerLike.psm_swapUSDCToUSDS, (swapUsdc)));
+
+        assertEq(usdc.balanceOf(address(ctx.proxy)), 0,               "proxy-usdc-not-swapped");
+        assertEq(usds.balanceOf(address(ctx.proxy)), swapUsdc * 1e12, "proxy-usds-not-received");
+        assertEq(
+            ctx.rateLimits.getCurrentRateLimit(GrovePauHelpers.LIMIT_USDC_TO_USDS),
+            type(uint256).max,
+            "usdc-to-usds-limit-consumed"
+        );
     }
 
     function test_ETHEREUM_pauOutboundRateLimitsUnchanged() public onChain(ChainIdUtils.Ethereum()) {
