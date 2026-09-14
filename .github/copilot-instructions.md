@@ -77,6 +77,8 @@ the highest-value finding is a mismatch between the description, the payload, an
 - In archive PRs: "Dependencies Updated: _None_" alongside `foundry.lock` bumps of the two address
   registries. That table lists dependencies the spell introduced; registry refreshes happen every
   archive cycle. Likewise the `git mv` of the spell files and the literal-to-constant swaps.
+- An empty archive PR body. Archive PRs carry no description by convention; the diff is the
+  description. Do not ask for one.
 - The `## Forum Post` link text being the forum thread title in square brackets, e.g.
   `[[September 24, 2026] - Proposed Changes ...](https://forum...)`. That is the intended format.
 - `foundry.toml` setting both `src` and `test` to `"src"`; tests live beside payloads on purpose.
