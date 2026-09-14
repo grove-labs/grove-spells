@@ -150,7 +150,7 @@ contract GroveEthereum_20260924_Test is GroveTestBase {
             Base.USDC,
             "vault-asset-not-usdc"
         );
-        assertEq(IERC20(Base.USDC).decimals(),                                6, "usdc-decimals-changed");
+        assertEq(IERC20(Base.USDC).decimals(),                                 6,  "usdc-decimals-changed");
         assertEq(IERC4626(GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT).decimals(), 18, "vault-decimals-changed");
 
         _testERC4626Onboarding({
