@@ -27,6 +27,9 @@ interface IVatLike {
 
 contract GroveEthereum_20260924_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0xFB1DEBB9CD8eD442103092C6aCd9ACC231224CFb;
+    address internal constant PAYLOAD_BASE     = 0xd3642d91279c58508E9986b8742Ac51eb70BF72e;
+
     address internal constant GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT = 0xbeef0786756810478b88982DE00F3CD7fdB8e7c7;
 
     constructor() {
@@ -34,9 +37,10 @@ contract GroveEthereum_20260924_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-09-10T17:28:00Z");
+        setupDomains("2026-09-15T15:50:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Base()].payload     = PAYLOAD_BASE;
     }
 
     function test_ETHEREUM_treasuryDistributionToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {
