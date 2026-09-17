@@ -39,7 +39,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
     }
 
     function _almIntegrationsEthereum() internal pure returns (RateLimitIntegration[] memory ints) {
-        ints = new RateLimitIntegration[](45);
+        ints = new RateLimitIntegration[](46);
 
         ints[0] = RateLimitIntegration({
             label       : "Core",
@@ -577,6 +577,18 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             entryId     : _limitKey("LIMIT_ASSET_TRANSFER", Ethereum.USDC, Ethereum.PAXOS_USDC_DEPOSIT_WALLET),
             entryId2    : bytes32(0),
             exitId      : bytes32(0),
+            exitId2     : bytes32(0),
+            extraData   : ""
+        });
+
+        ints[45] = RateLimitIntegration({
+            label       : "ERC4626-GROVE_X_STEAKHOUSE_USDG_V2_MORPHO_VAULT",
+            category    : Category.ERC4626,
+            integration : Ethereum.GROVE_X_STEAKHOUSE_USDG_V2_MORPHO_VAULT,
+            asset       : Ethereum.USDG,
+            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Ethereum.GROVE_X_STEAKHOUSE_USDG_V2_MORPHO_VAULT),
+            entryId2    : bytes32(0),
+            exitId      : _limitKey("LIMIT_4626_WITHDRAW", Ethereum.GROVE_X_STEAKHOUSE_USDG_V2_MORPHO_VAULT),
             exitId2     : bytes32(0),
             extraData   : ""
         });
