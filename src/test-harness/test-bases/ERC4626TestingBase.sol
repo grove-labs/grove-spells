@@ -95,4 +95,36 @@ abstract contract ERC4626TestingBase is CommonALMTestBase {
         }
     }
 
+    function _testERC4626DepositsOffboarding(
+        address vault,
+        bytes32 expectedDepositKey,
+        uint256 depositMax,
+        uint256 depositSlope,
+        uint256 depositAttempt
+    ) internal {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        bytes32 depositKey  = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_DEPOSIT(),  vault);
+        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_WITHDRAW(), vault);
+
+        assertEq(depositKey, expectedDepositKey, "deposit-key-mismatch");
+
+        uint256 withdrawMax   = ctx.rateLimits.getRateLimitData(withdrawKey).maxAmount;
+        uint256 withdrawSlope = ctx.rateLimits.getRateLimitData(withdrawKey).slope;
+
+        _assertRateLimit(depositKey, depositMax, depositSlope);
+
+        executeAllPayloadsAndBridges();
+
+        // Reload the context after spell execution to get the new controller after potential controller upgrade
+        ctx = _getGroveLiquidityLayerContext();
+
+        _assertZeroRateLimit(depositKey);
+        _assertRateLimit(withdrawKey, withdrawMax, withdrawSlope);
+
+        vm.prank(ctx.relayer);
+        vm.expectRevert("RateLimits/zero-maxAmount");
+        MainnetController(ctx.controller).depositERC4626(vault, depositAttempt);
+    }
+
 }
