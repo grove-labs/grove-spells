@@ -112,6 +112,8 @@ abstract contract ERC4626TestingBase is CommonALMTestBase {
         uint256 withdrawMax   = ctx.rateLimits.getRateLimitData(withdrawKey).maxAmount;
         uint256 withdrawSlope = ctx.rateLimits.getRateLimitData(withdrawKey).slope;
 
+        assertEq(withdrawMax, type(uint256).max, "withdraw-not-unlimited");
+
         _assertRateLimit(depositKey, depositMax, depositSlope);
 
         executeAllPayloadsAndBridges();
