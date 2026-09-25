@@ -123,6 +123,9 @@ abstract contract ERC4626TestingBase is CommonALMTestBase {
         vm.prank(ctx.relayer);
         vm.expectRevert("RateLimits/zero-maxAmount");
         MainnetController(ctx.controller).depositERC4626(vault, oneToken);
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).withdrawERC4626(vault, oneToken / 2);
     }
 
 }
