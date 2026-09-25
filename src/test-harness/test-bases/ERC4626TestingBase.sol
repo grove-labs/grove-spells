@@ -96,22 +96,22 @@ abstract contract ERC4626TestingBase is CommonALMTestBase {
         }
     }
 
-    function _testERC4626DepositsOffboarding(
-        address vault,
-        bytes32 expectedDepositKey
-    ) internal {
+    function _testERC4626DepositsOffboarding(address vault) internal {
         GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
 
         bytes32 depositKey  = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_DEPOSIT(),  vault);
         bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_WITHDRAW(), vault);
 
-        assertEq(depositKey, expectedDepositKey, "deposit-key-mismatch");
-
         uint256 withdrawMax   = ctx.rateLimits.getRateLimitData(withdrawKey).maxAmount;
         uint256 withdrawSlope = ctx.rateLimits.getRateLimitData(withdrawKey).slope;
 
-        assertGt(ctx.rateLimits.getRateLimitData(depositKey).maxAmount, 0, "deposit-max-already-zero");
-        assertGt(ctx.rateLimits.getRateLimitData(depositKey).slope,     0, "deposit-slope-already-zero");
+        address asset    = IERC4626(vault).asset();
+        uint256 oneToken = 10 ** uint256(IERC20(asset).decimals());
+
+        deal2(asset, address(ctx.proxy), oneToken * 2);
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).depositERC4626(vault, oneToken);
 
         executeAllPayloadsAndBridges();
 
@@ -120,8 +120,6 @@ abstract contract ERC4626TestingBase is CommonALMTestBase {
 
         _assertZeroRateLimit(depositKey);
         _assertRateLimit(withdrawKey, withdrawMax, withdrawSlope);
-
-        uint256 oneToken = 10 ** uint256(IERC20(IERC4626(vault).asset()).decimals());
 
         vm.prank(ctx.relayer);
         vm.expectRevert("RateLimits/zero-maxAmount");

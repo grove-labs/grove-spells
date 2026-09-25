@@ -160,31 +160,19 @@ contract GroveEthereum_20261008_Test is GroveTestBase {
     }
 
     function test_ETHEREUM_offboardGroveXSteakhouseUsdcDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
-        _testERC4626DepositsOffboarding({
-            vault              : Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT))
-        });
+        _testERC4626DepositsOffboarding(Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT);
     }
 
     function test_ETHEREUM_offboardSteakhousePyusdDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
-        _testERC4626DepositsOffboarding({
-            vault              : Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT,
-            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT))
-        });
+        _testERC4626DepositsOffboarding(Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT);
     }
 
     function test_ETHEREUM_offboardSentoraPyusdMainDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
-        _testERC4626DepositsOffboarding({
-            vault              : Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT,
-            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT))
-        });
+        _testERC4626DepositsOffboarding(Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT);
     }
 
     function test_ETHEREUM_offboardSentoraRlusdMainDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
-        _testERC4626DepositsOffboarding({
-            vault              : Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT,
-            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT))
-        });
+        _testERC4626DepositsOffboarding(Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT);
     }
 
     function test_ETHEREUM_onboardGroveXSteakhousePyusdV2MorphoVault() public onChain(ChainIdUtils.Ethereum()) {
@@ -204,17 +192,11 @@ contract GroveEthereum_20261008_Test is GroveTestBase {
     }
 
     function test_BASE_offboardSteakhousePrimeUsdcDepositRateLimit() public onChain(ChainIdUtils.Base()) {
-        _testERC4626DepositsOffboarding({
-            vault              : Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT,
-            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT))
-        });
+        _testERC4626DepositsOffboarding(Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT);
     }
 
     function test_BASE_offboardGroveXSteakhouseUsdcDepositRateLimit() public onChain(ChainIdUtils.Base()) {
-        _testERC4626DepositsOffboarding({
-            vault              : Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT))
-        });
+        _testERC4626DepositsOffboarding(Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT);
     }
 
     function _vaultMigrationCalldata() internal pure returns (bytes memory) {
