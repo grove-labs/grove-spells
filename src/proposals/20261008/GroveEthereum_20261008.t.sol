@@ -90,7 +90,6 @@ contract GroveEthereum_20261008_Test is GroveTestBase {
 
         assertEq(safe.approvedHashes(Ethereum.GROVE_PROXY, VAULT_MIGRATION_TX_HASH), 1, "hash-not-approved");
 
-        // The spell only approves; execTransaction stays outside it, so no vault role changes here.
         assertEq(safe.nonce(), 0, "safe-transaction-executed-by-spell");
     }
 

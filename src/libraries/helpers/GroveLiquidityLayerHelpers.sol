@@ -86,8 +86,7 @@ library GroveLiquidityLayerHelpers {
     /**
      * @notice Stop new allocations to an ERC4626 vault
      * @dev This zeroes the deposit limit and deliberately leaves the withdraw limit untouched, so
-     *      positions already held stay redeemable. Unlike `offboardERC7540Vault`, it does not make
-     *      the integration inert in both directions.
+     *      positions already held stay redeemable.
      */
     function offboardERC4626VaultDeposits(
         address rateLimits,

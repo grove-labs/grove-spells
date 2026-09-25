@@ -115,7 +115,6 @@ abstract contract ERC4626TestingBase is CommonALMTestBase {
 
         executeAllPayloadsAndBridges();
 
-        // Reload the context after spell execution to get the new controller after potential controller upgrade
         ctx = _getGroveLiquidityLayerContext();
 
         _assertZeroRateLimit(depositKey);
