@@ -13,11 +13,11 @@ contract GroveBase_20261008 is GrovePayloadBase {
 
     function execute() external {
         // [Base] Item 7: set the Steakhouse Prime USDC deposit rate limit to 0.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _offboardSteakhousePrimeUsdcDepositRateLimit();
 
         // [Base] Item 8: set the Grove x Steakhouse USDC High Yield Vault V1.1 deposit rate limit to 0.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _offboardGroveXSteakhouseUsdcDepositRateLimit();
     }
 

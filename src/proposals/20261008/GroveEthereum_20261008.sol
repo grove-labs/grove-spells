@@ -26,27 +26,27 @@ contract GroveEthereum_20261008 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Item 1: approve the Safe transaction migrating the USDC, AUSD and RLUSD Vault V2 vaults.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _approveVaultMigrationSafeTransaction();
 
         // [Ethereum] Item 2: set the Grove x Steakhouse USDC High Yield Vault V1.1 deposit rate limit to 0.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _offboardGroveXSteakhouseUsdcDepositRateLimit();
 
         // [Ethereum] Item 3: set the Steakhouse High Yield Instant (PYUSD) deposit rate limit to 0.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _offboardSteakhousePyusdDepositRateLimit();
 
         // [Ethereum] Item 4: set the Paypal USD Main (Sentora) deposit rate limit to 0.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _offboardSentoraPyusdMainDepositRateLimit();
 
         // [Ethereum] Item 5: set the Sentora RLUSD Main deposit rate limit to 0.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _offboardSentoraRlusdMainDepositRateLimit();
 
-        // [Ethereum] Item 6: onboard the Grove x Steakhouse PYUSD Morpho vault.
-        //   Forum : TODO
+        // [Ethereum] Item 6: onboard the Grove x Steakhouse PYUSD Morpho Vault V2.
+        //   Forum : https://forum.skyeco.com/t/october-8-2026-proposed-changes-to-grove-for-upcoming-spell/28255
         _onboardGroveXSteakhousePyusdV2MorphoVault();
     }
 
