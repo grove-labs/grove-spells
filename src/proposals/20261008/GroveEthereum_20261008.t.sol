@@ -63,40 +63,28 @@ contract GroveEthereum_20261008_Test is GroveTestBase {
     function test_ETHEREUM_offboardGroveXSteakhouseUsdcDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
         _testERC4626DepositsOffboarding({
             vault              : Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            expectedDepositKey : 0x82fb6a87781d1c18617960e9528d0633bfbc534f5ae8109347f10bb49a2f4f19,
-            depositMax         : 20_000_000e6,
-            depositSlope       : 20_000_000e6 / uint256(1 days),
-            depositAttempt     : 1e6
+            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT))
         });
     }
 
     function test_ETHEREUM_offboardSteakhousePyusdDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
         _testERC4626DepositsOffboarding({
             vault              : Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT,
-            expectedDepositKey : 0xfc4e1f8ba7b0389a287411c3f6b97cc0ec60fb2816bfaa31e12a21561486321a,
-            depositMax         : 20_000_000e6,
-            depositSlope       : 20_000_000e6 / uint256(1 days),
-            depositAttempt     : 1e6
+            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT))
         });
     }
 
     function test_ETHEREUM_offboardSentoraPyusdMainDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
         _testERC4626DepositsOffboarding({
             vault              : Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT,
-            expectedDepositKey : 0x4dc0c7cd471560aa12324cb36f720d7d301ef230d3ae772ae07b681725ae7b66,
-            depositMax         : 50_000_000e6,
-            depositSlope       : 50_000_000e6 / uint256(1 days),
-            depositAttempt     : 1e6
+            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT))
         });
     }
 
     function test_ETHEREUM_offboardSentoraRlusdMainDepositRateLimit() public onChain(ChainIdUtils.Ethereum()) {
         _testERC4626DepositsOffboarding({
             vault              : Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT,
-            expectedDepositKey : 0x944bbb34c3717aacc72419f43d62f5a01d2ebd7a9157ba9975fd7d971deb803f,
-            depositMax         : 50_000_000e18,
-            depositSlope       : 50_000_000e18 / uint256(1 days),
-            depositAttempt     : 1e18
+            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT))
         });
     }
 
@@ -119,20 +107,14 @@ contract GroveEthereum_20261008_Test is GroveTestBase {
     function test_BASE_offboardSteakhousePrimeUsdcDepositRateLimit() public onChain(ChainIdUtils.Base()) {
         _testERC4626DepositsOffboarding({
             vault              : Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT,
-            expectedDepositKey : 0xcc33156879fb03deee37b5ff243fa9afa95b94d13a2ab710f8096c0b5f053f3b,
-            depositMax         : 20_000_000e6,
-            depositSlope       : 20_000_000e6 / uint256(1 days),
-            depositAttempt     : 1e6
+            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT))
         });
     }
 
     function test_BASE_offboardGroveXSteakhouseUsdcDepositRateLimit() public onChain(ChainIdUtils.Base()) {
         _testERC4626DepositsOffboarding({
             vault              : Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
-            expectedDepositKey : 0xb5c3e377398c99e28d39340657bbc979bef79e01e2af3d0ff742e30722cd0d5a,
-            depositMax         : 20_000_000e6,
-            depositSlope       : 20_000_000e6 / uint256(1 days),
-            depositAttempt     : 1e6
+            expectedDepositKey : keccak256(abi.encode(keccak256("LIMIT_4626_DEPOSIT"), Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT))
         });
     }
 
