@@ -83,6 +83,22 @@ library GroveLiquidityLayerHelpers {
         IRateLimits(rateLimits).setUnlimitedRateLimitData(withdrawKey);
     }
 
+    /**
+     * @notice Stop new allocations to an ERC4626 vault
+     * @dev    This zeroes the deposit limit and leaves the withdraw limit untouched.
+     */
+    function offboardERC4626VaultDeposits(
+        address rateLimits,
+        address vault
+    ) internal {
+        bytes32 depositKey = RateLimitHelpers.makeAssetKey(
+            LIMIT_4626_DEPOSIT,
+            vault
+        );
+
+        IRateLimits(rateLimits).setRateLimitData(depositKey, 0, 0);
+    }
+
     /**********************************************************************************************/
     /*** ERC-7540 functions                                                                     ***/
     /**********************************************************************************************/
