@@ -56,7 +56,7 @@ contract GroveEthereum_20261008 is GrovePayloadEthereum {
     }
 
     function _offboardGroveXSteakhouseUsdcDepositRateLimit() internal {
-        _offboardERC4626VaultDeposits({
+        _offboardERC4626VaultAlmDeposits({
             vault         : Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT
         //  == OFFBOARDED ==
         //  depositMax    : 0           BEFORE: 20_000_000e6
@@ -68,7 +68,7 @@ contract GroveEthereum_20261008 is GrovePayloadEthereum {
     }
 
     function _offboardSteakhousePyusdDepositRateLimit() internal {
-        _offboardERC4626VaultDeposits({
+        _offboardERC4626VaultAlmDeposits({
             vault         : Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT
         //  == OFFBOARDED ==
         //  depositMax    : 0           BEFORE: 20_000_000e6
@@ -80,7 +80,7 @@ contract GroveEthereum_20261008 is GrovePayloadEthereum {
     }
 
     function _offboardSentoraPyusdMainDepositRateLimit() internal {
-        _offboardERC4626VaultDeposits({
+        _offboardERC4626VaultAlmDeposits({
             vault         : Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT
         //  == OFFBOARDED ==
         //  depositMax    : 0           BEFORE: 50_000_000e6
@@ -92,7 +92,7 @@ contract GroveEthereum_20261008 is GrovePayloadEthereum {
     }
 
     function _offboardSentoraRlusdMainDepositRateLimit() internal {
-        _offboardERC4626VaultDeposits({
+        _offboardERC4626VaultAlmDeposits({
             vault         : Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT
         //  == OFFBOARDED ==
         //  depositMax    : 0           BEFORE: 50_000_000e18

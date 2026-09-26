@@ -22,7 +22,7 @@ contract GroveBase_20261008 is GrovePayloadBase {
     }
 
     function _offboardSteakhousePrimeUsdcDepositRateLimit() internal {
-        _offboardERC4626VaultDeposits({
+        _offboardERC4626VaultAlmDeposits({
             vault         : Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT
         //  == OFFBOARDED ==
         //  depositMax    : 0           BEFORE: 20_000_000e6
@@ -34,7 +34,7 @@ contract GroveBase_20261008 is GrovePayloadBase {
     }
 
     function _offboardGroveXSteakhouseUsdcDepositRateLimit() internal {
-        _offboardERC4626VaultDeposits({
+        _offboardERC4626VaultAlmDeposits({
             vault         : Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT
         //  == OFFBOARDED ==
         //  depositMax    : 0           BEFORE: 20_000_000e6
