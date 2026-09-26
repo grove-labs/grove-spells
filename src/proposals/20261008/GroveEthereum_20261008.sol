@@ -51,7 +51,6 @@ contract GroveEthereum_20261008 is GrovePayloadEthereum {
     }
 
     function _approveVaultMigrationSafeTransaction() internal {
-        // Steakhouse already approved, so this is the second of two and any account can then execute it.
         ISafeLike(VAULT_OWNER_SAFE).approveHash(VAULT_MIGRATION_TX_HASH);
     }
 
