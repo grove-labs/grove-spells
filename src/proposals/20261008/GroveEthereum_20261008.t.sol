@@ -50,6 +50,9 @@ interface IVaultV2Like {
 
 contract GroveEthereum_20261008_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0x262E8baA6bFbECDD8d483d13C37c1BA7b4a861A5;
+    address internal constant PAYLOAD_BASE     = 0xfC0D1E084bA1446676668CB2A45cA0c421F181EA;
+
     address internal constant VAULT_OWNER_SAFE        = 0xD700038b3f8d2F1a8193F35d7dD25c02e7155427;
     bytes32 internal constant VAULT_MIGRATION_TX_HASH = 0x8856a205b4c0b0eac9dad69a0c756eb7effa1d42134fccbc66dda1e8a85c32d8;
 
@@ -68,9 +71,10 @@ contract GroveEthereum_20261008_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-09-22T10:21:38Z");
+        setupDomains("2026-09-30T16:13:00Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Base()].payload     = PAYLOAD_BASE;
     }
 
     function test_ETHEREUM_approveVaultMigrationSafeTransaction() public onChain(ChainIdUtils.Ethereum()) {

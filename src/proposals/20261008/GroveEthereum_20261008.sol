@@ -21,7 +21,7 @@ contract GroveEthereum_20261008 is GrovePayloadEthereum {
     address internal constant GROVE_X_STEAKHOUSE_PYUSD_V2_MORPHO_VAULT = 0xbeef08Db223ad823164A4B13CBD6bd8b5d507b41;
 
     constructor() {
-        PAYLOAD_BASE = address(0); // TODO: set after foreign payload deploy
+        PAYLOAD_BASE = 0xfC0D1E084bA1446676668CB2A45cA0c421F181EA;
     }
 
     function _execute() internal override {
