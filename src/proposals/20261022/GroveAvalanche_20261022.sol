@@ -18,7 +18,7 @@ contract GroveAvalanche_20261022 is GrovePayloadAvalanche {
 
     function execute() external {
         // [Avalanche] Item 2: revoke the Circle CCTP v1 Governance Relay Receiver's submission role on the Grove Executor.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-22-2026-proposed-changes-to-grove-for-upcoming-spell/28296/2
         _offboardCctpV1Receiver();
     }
 

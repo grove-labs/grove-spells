@@ -21,7 +21,7 @@ contract GroveEthereum_20261022 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Item 1: Treasury Distribution of 800,000 USDS to the Grove Foundation Multisig.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/october-22-2026-proposed-changes-to-grove-for-upcoming-spell/28296/2
         _treasuryDistributionToGroveFoundation();
     }
 
