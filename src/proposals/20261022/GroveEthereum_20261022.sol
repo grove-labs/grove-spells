@@ -16,7 +16,7 @@ interface IERC20Like {
 contract GroveEthereum_20261022 is GrovePayloadEthereum {
 
     constructor() {
-        PAYLOAD_AVALANCHE = address(0); // TODO: set after foreign payload deploy
+        PAYLOAD_AVALANCHE = 0xA6098Ee0248ce604bC057dFc62C7eFBc77699F6B;
     }
 
     function _execute() internal override {

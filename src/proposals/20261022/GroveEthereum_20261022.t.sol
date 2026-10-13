@@ -14,14 +14,18 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20261022_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM  = 0xf9449D21ef687eE55233B9EDC3d7DDA87C7562a7;
+    address internal constant PAYLOAD_AVALANCHE = 0xA6098Ee0248ce604bC057dFc62C7eFBc77699F6B;
+
     constructor() {
         id = "20261022";
     }
 
     function setUp() public {
-        setupDomains("2026-10-08T10:49:05Z");
+        setupDomains("2026-10-13T10:29:35Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload  = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Avalanche()].payload = PAYLOAD_AVALANCHE;
     }
 
     function test_ETHEREUM_treasuryDistributionToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {
