@@ -23,4 +23,11 @@ abstract contract GrovePayloadBase {
         );
     }
 
+    function _offboardERC4626VaultAlmDeposits(address vault) internal {
+        GroveLiquidityLayerHelpers.offboardERC4626VaultDeposits(
+            Base.ALM_RATE_LIMITS,
+            vault
+        );
+    }
+
 }
