@@ -5,6 +5,15 @@ StarGuard on Ethereum mainnet (and relayed to foreign chains), plus a Foundry fo
 that proves each payload does what its PR description says. Review with that purpose in mind:
 the highest-value finding is a mismatch between the description, the payload, and the tests.
 
+This file holds the code-level standards, which apply to every review. The review *process* — how to
+tell which stage a spell PR has reached and how to word the verdict — is in the `code-review` skill at
+`.github/skills/code-review/SKILL.md`. Follow it whenever you review a spell PR.
+
+One rule from it is absolute enough to repeat here: **a spell PR merges only after the spell has
+executed on-chain, four days after the date in its title.** Never choose `🟢 Approval recommended` on
+one before that date, and never write "good to merge", "ready to merge" or "LGTM". No number of
+reviewer sign-offs makes it mergeable earlier.
+
 ## Repository layout and PR types
 
 - `src/proposals/<YYYYMMDD>/` holds the one spell currently in flight: `GroveEthereum_<d>.sol`,
@@ -66,9 +75,10 @@ the highest-value finding is a mismatch between the description, the payload, an
 
 ## What not to flag
 
-- `PAYLOAD_<CHAIN> = address(0); // TODO: set after foreign payload deploy` in a spell PR. Foreign
-  payloads are deployed after review; the constructor is wired in a later commit. The harness
-  simulates the local foreign payload while the constant is zero, so tests are meaningful.
+- `PAYLOAD_<CHAIN> = address(0); // TODO: set after foreign payload deploy` in a spell PR that has not
+  reached the deployment stage. Foreign payloads are deployed after review; the constructor is wired
+  in a later commit. The harness simulates the local foreign payload while the constant is zero, so
+  tests are meaningful.
 - `Address TBD` / `Codehash TBD` / `(TBD)` links under "Spell Deployment" in the body before the
   payload is deployed. These are filled by the deployment step.
 - The `setupDomains("<ISO timestamp>")` argument. It is a fork point in the recent past, not a
@@ -94,3 +104,6 @@ the highest-value finding is a mismatch between the description, the payload, an
 - When the PR body and the code disagree, ask which is right rather than assuming the code is.
 - Prefer a concrete suggestion block when the fix is a one-liner.
 - Do not restate the PR overview or summarise files; the reviewers already know what the spell does.
+- Never justify a verdict with the repository's inherent risk. That these are mainnet governance
+  spells moving real funds is true of every PR here, so "correctness depends on state I cannot verify"
+  tells the reviewers nothing. Report a concrete finding, or say what the PR is waiting on.
