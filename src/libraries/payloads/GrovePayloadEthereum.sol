@@ -141,6 +141,13 @@ abstract contract GrovePayloadEthereum is IStarSpellLike {
         );
     }
 
+    function _offboardERC4626VaultAlmDeposits(address vault) internal {
+        GroveLiquidityLayerHelpers.offboardERC4626VaultDeposits(
+            Ethereum.ALM_RATE_LIMITS,
+            vault
+        );
+    }
+
     function _onboardERC7540Vault(address vault, uint256 depositMax, uint256 depositSlope) internal {
         GroveLiquidityLayerHelpers.onboardERC7540Vault(
             Ethereum.ALM_RATE_LIMITS,

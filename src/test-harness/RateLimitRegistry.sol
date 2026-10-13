@@ -813,7 +813,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
     }
 
     function _almIntegrationsBase() internal pure returns (RateLimitIntegration[] memory ints) {
-        ints = new RateLimitIntegration[](4);
+        ints = new RateLimitIntegration[](5);
 
         ints[0] = RateLimitIntegration({
             label       : "ERC4626-GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT",
@@ -859,6 +859,18 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             entryId     : _limitKey("LIMIT_4626_DEPOSIT", Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT),
+            exitId2     : bytes32(0),
+            extraData   : ""
+        });
+
+        ints[4] = RateLimitIntegration({
+            label       : "ERC4626-GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT",
+            category    : Category.ERC4626,
+            integration : Base.GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT,
+            asset       : Base.USDC,
+            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Base.GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT),
+            entryId2    : bytes32(0),
+            exitId      : _limitKey("LIMIT_4626_WITHDRAW", Base.GROVE_X_STEAKHOUSE_USDC_V2_MORPHO_VAULT),
             exitId2     : bytes32(0),
             extraData   : ""
         });
