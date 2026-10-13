@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0
 pragma solidity ^0.8.0;
 
+import { IERC20 }   from "forge-std/interfaces/IERC20.sol";
 import { IERC4626 } from "forge-std/interfaces/IERC4626.sol";
 
 import { MainnetController } from "grove-alm-controller/src/MainnetController.sol";
@@ -93,6 +94,38 @@ abstract contract ERC4626TestingBase is CommonALMTestBase {
             uint256 monthlySlope = depositSlope * 30 days;
             assertGe(monthlySlope, depositMax);
         }
+    }
+
+    function _testERC4626DepositsOffboarding(address vault) internal {
+        GroveLiquidityLayerContext memory ctx = _getGroveLiquidityLayerContext();
+
+        bytes32 depositKey  = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_DEPOSIT(),  vault);
+        bytes32 withdrawKey = RateLimitHelpers.makeAssetKey(MainnetController(ctx.controller).LIMIT_4626_WITHDRAW(), vault);
+
+        uint256 withdrawMax   = ctx.rateLimits.getRateLimitData(withdrawKey).maxAmount;
+        uint256 withdrawSlope = ctx.rateLimits.getRateLimitData(withdrawKey).slope;
+
+        address asset    = IERC4626(vault).asset();
+        uint256 oneToken = 10 ** uint256(IERC20(asset).decimals());
+
+        deal2(asset, address(ctx.proxy), oneToken * 2);
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).depositERC4626(vault, oneToken);
+
+        executeAllPayloadsAndBridges();
+
+        ctx = _getGroveLiquidityLayerContext();
+
+        _assertZeroRateLimit(depositKey);
+        _assertRateLimit(withdrawKey, withdrawMax, withdrawSlope);
+
+        vm.prank(ctx.relayer);
+        vm.expectRevert("RateLimits/zero-maxAmount");
+        MainnetController(ctx.controller).depositERC4626(vault, oneToken);
+
+        vm.prank(ctx.relayer);
+        MainnetController(ctx.controller).withdrawERC4626(vault, oneToken / 2);
     }
 
 }
