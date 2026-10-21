@@ -39,7 +39,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
     }
 
     function _almIntegrationsEthereum() internal pure returns (RateLimitIntegration[] memory ints) {
-        ints = new RateLimitIntegration[](46);
+        ints = new RateLimitIntegration[](47);
 
         ints[0] = RateLimitIntegration({
             label       : "Core",
@@ -334,7 +334,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             category    : Category.ERC4626,
             integration : Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
             asset       : Ethereum.USDC,
-            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT),
+            entryId     : bytes32(0),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Ethereum.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT),
             exitId2     : bytes32(0),
@@ -466,7 +466,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             category    : Category.ERC4626,
             integration : Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT,
             asset       : Ethereum.PYUSD,
-            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT),
+            entryId     : bytes32(0),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Ethereum.STEAKHOUSE_PYUSD_MORPHO_VAULT),
             exitId2     : bytes32(0),
@@ -514,7 +514,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             category    : Category.ERC4626,
             integration : Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT,
             asset       : Ethereum.PYUSD,
-            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT),
+            entryId     : bytes32(0),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Ethereum.SENTORA_PYUSD_MAIN_V2_MORPHO_VAULT),
             exitId2     : bytes32(0),
@@ -526,7 +526,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             category    : Category.ERC4626,
             integration : Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT,
             asset       : Ethereum.RLUSD,
-            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT),
+            entryId     : bytes32(0),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Ethereum.SENTORA_RLUSD_MAIN_V2_MORPHO_VAULT),
             exitId2     : bytes32(0),
@@ -589,6 +589,18 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             entryId     : _limitKey("LIMIT_4626_DEPOSIT", Ethereum.GROVE_X_STEAKHOUSE_USDG_V2_MORPHO_VAULT),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Ethereum.GROVE_X_STEAKHOUSE_USDG_V2_MORPHO_VAULT),
+            exitId2     : bytes32(0),
+            extraData   : ""
+        });
+
+        ints[46] = RateLimitIntegration({
+            label       : "ERC4626-GROVE_X_STEAKHOUSE_PYUSD_V2_MORPHO_VAULT",
+            category    : Category.ERC4626,
+            integration : Ethereum.GROVE_X_STEAKHOUSE_PYUSD_V2_MORPHO_VAULT,
+            asset       : Ethereum.PYUSD,
+            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Ethereum.GROVE_X_STEAKHOUSE_PYUSD_V2_MORPHO_VAULT),
+            entryId2    : bytes32(0),
+            exitId      : _limitKey("LIMIT_4626_WITHDRAW", Ethereum.GROVE_X_STEAKHOUSE_PYUSD_V2_MORPHO_VAULT),
             exitId2     : bytes32(0),
             extraData   : ""
         });
@@ -820,7 +832,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             category    : Category.ERC4626,
             integration : Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT,
             asset       : Base.USDC,
-            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT),
+            entryId     : bytes32(0),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Base.GROVE_X_STEAKHOUSE_USDC_MORPHO_VAULT),
             exitId2     : bytes32(0),
@@ -856,7 +868,7 @@ abstract contract RateLimitRegistry is CommonRateLimitTests {
             category    : Category.ERC4626,
             integration : Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT,
             asset       : Base.USDC,
-            entryId     : _limitKey("LIMIT_4626_DEPOSIT", Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT),
+            entryId     : bytes32(0),
             entryId2    : bytes32(0),
             exitId      : _limitKey("LIMIT_4626_WITHDRAW", Base.STEAKHOUSE_PRIME_INSTANT_V2_MORPHO_VAULT),
             exitId2     : bytes32(0),

@@ -46,6 +46,88 @@ struct RateLimitIntegration {
     bytes    extraData;
 }
 
+library RateLimitTestHelpers {
+
+    function replay(VmSafe.EthGetLogs[] memory logs)
+        internal pure returns (bytes32[] memory keys)
+    {
+        keys = new bytes32[](0);
+
+        for (uint256 i; i < logs.length; ++i) {
+            if (logs[i].topics.length < 2) continue;
+
+            ( uint256 maxAmount,,, ) = abi.decode(logs[i].data, (uint256, uint256, uint256, uint256));
+
+            keys = maxAmount == 0
+                ? removeKey(keys, logs[i].topics[1])
+                : _appendKey(keys, logs[i].topics[1]);
+        }
+    }
+
+    function containsKey(bytes32[] memory keys, bytes32 key) internal pure returns (bool) {
+        for (uint256 i; i < keys.length; ++i) {
+            if (keys[i] == key) return true;
+        }
+
+        return false;
+    }
+
+    function removeKey(bytes32[] memory keys, bytes32 key)
+        internal pure returns (bytes32[] memory)
+    {
+        for (uint256 i; i < keys.length; ++i) {
+            if (keys[i] != key) continue;
+
+            bytes32[] memory result = new bytes32[](keys.length - 1);
+
+            for (uint256 j; j < i; ++j) {
+                result[j] = keys[j];
+            }
+            for (uint256 j = i + 1; j < keys.length; ++j) {
+                result[j - 1] = keys[j];
+            }
+
+            return result;
+        }
+
+        return keys;
+    }
+
+    function checkValue(uint256 maxAmount, uint256 slope, uint256 unit)
+        internal pure returns (string memory problem)
+    {
+        if (maxAmount == type(uint256).max) return "";
+
+        if (maxAmount / unit > 1e10) return "max-amount-over-10b";
+        if (maxAmount / unit == 0)   return "max-amount-under-one-unit";
+
+        if (slope == 0 || slope == type(uint256).max) return "";
+
+        if (slope * 1 days / unit > 1e10) return "slope-over-10b-per-day";
+        if (slope * 1 days / unit == 0)   return "slope-under-one-unit-per-day";
+
+        return "";
+    }
+
+    function _appendKey(bytes32[] memory keys, bytes32 key)
+        private pure returns (bytes32[] memory)
+    {
+        for (uint256 i; i < keys.length; ++i) {
+            if (keys[i] == key) return keys;
+        }
+
+        bytes32[] memory result = new bytes32[](keys.length + 1);
+
+        for (uint256 i; i < keys.length; ++i) {
+            result[i] = keys[i];
+        }
+
+        result[keys.length] = key;
+        return result;
+    }
+
+}
+
 /// @dev Discovers the rate limit keys that are live on chain by replaying every
 /// RateLimitDataSet event, rather than trusting a hardcoded list. Both the legacy ALM
 /// controller and the PAU diamond declare an identical event, so one topic covers both.
@@ -98,19 +180,7 @@ abstract contract CommonRateLimitTests is CommonALMTestBase, CommonPauTestBase {
     /// onboards a key, a zero maxAmount offboards it, so the final state of the replay is
     /// the live set.
     function _discoverRateLimitKeys(address rateLimits) internal returns (bytes32[] memory keys) {
-        VmSafe.EthGetLogs[] memory logs = _fetchRateLimitLogs(rateLimits);
-
-        keys = new bytes32[](0);
-
-        for (uint256 i; i < logs.length; ++i) {
-            if (logs[i].topics.length < 2) continue;
-
-            ( uint256 maxAmount,,, ) = abi.decode(logs[i].data, (uint256, uint256, uint256, uint256));
-
-            keys = maxAmount == 0
-                ? _removeKey(keys, logs[i].topics[1])
-                : _appendKey(keys, logs[i].topics[1]);
-        }
+        return RateLimitTestHelpers.replay(_fetchRateLimitLogs(rateLimits));
     }
 
     /// @dev Etherscan v2 does not support every chain Grove deploys to, so chains it does
@@ -290,13 +360,13 @@ abstract contract CommonRateLimitTests is CommonALMTestBase, CommonPauTestBase {
             for (uint256 j; j < keys.length; ++j) {
                 if (keys[j] == bytes32(0)) continue;
 
-                if (!_containsKey(discovered, keys[j])) {
+                if (!RateLimitTestHelpers.containsKey(discovered, keys[j])) {
                     console.log("Registered rate limit is not live:", integrations[i].label);
                     ++notLive;
                     continue;
                 }
 
-                discovered = _removeKey(discovered, keys[j]);
+                discovered = RateLimitTestHelpers.removeKey(discovered, keys[j]);
             }
         }
 
@@ -309,8 +379,8 @@ abstract contract CommonRateLimitTests is CommonALMTestBase, CommonPauTestBase {
     }
 
     /// @dev Rejects limits that are implausible in either direction, which catches a
-    /// misplaced decimal in a spell. Unlimited and zero-slope limits are deliberate
-    /// configurations rather than mistakes, so they are exempt.
+    /// misplaced decimal in a spell. Unlimited caps are exempt, while zero and unlimited
+    /// slopes skip only the slope checks.
     function _checkRateLimitValue(address rateLimits, bytes32 key, address asset)
         private view returns (string memory problem)
     {
@@ -318,17 +388,11 @@ abstract contract CommonRateLimitTests is CommonALMTestBase, CommonPauTestBase {
 
         IRateLimits.RateLimitData memory data = IRateLimits(rateLimits).getRateLimitData(key);
 
-        if (data.maxAmount == type(uint256).max)                    return "";
-        if (data.slope     == 0 || data.slope == type(uint256).max) return "";
-
-        uint256 unit = 10 ** _assetDecimals(asset);
-
-        if (data.maxAmount      / unit > 1e10) return "max-amount-over-10b";
-        if (data.slope * 1 days / unit > 1e10) return "slope-over-10b-per-day";
-        if (data.maxAmount      / unit == 0)   return "max-amount-under-one-unit";
-        if (data.slope * 1 days / unit == 0)   return "slope-under-one-unit-per-day";
-
-        return "";
+        return RateLimitTestHelpers.checkValue(
+            data.maxAmount,
+            data.slope,
+            10 ** _assetDecimals(asset)
+        );
     }
 
     function _checkRateLimitValues(address rateLimits, RateLimitIntegration memory integration) private view {
@@ -363,47 +427,6 @@ abstract contract CommonRateLimitTests is CommonALMTestBase, CommonPauTestBase {
                 "CommonRateLimitTests/asset-has-no-decimals ", vm.toString(asset)
             )));
         }
-    }
-
-    function _appendKey(bytes32[] memory keys, bytes32 key) private pure returns (bytes32[] memory) {
-        for (uint256 i; i < keys.length; ++i) {
-            if (keys[i] == key) return keys;
-        }
-
-        bytes32[] memory extended = new bytes32[](keys.length + 1);
-
-        for (uint256 i; i < keys.length; ++i) {
-            extended[i] = keys[i];
-        }
-
-        extended[keys.length] = key;
-
-        return extended;
-    }
-
-    function _containsKey(bytes32[] memory keys, bytes32 key) private pure returns (bool) {
-        for (uint256 i; i < keys.length; ++i) {
-            if (keys[i] == key) return true;
-        }
-
-        return false;
-    }
-
-    function _removeKey(bytes32[] memory keys, bytes32 key) private pure returns (bytes32[] memory) {
-        for (uint256 i; i < keys.length; ++i) {
-            if (keys[i] != key) continue;
-
-            bytes32[] memory shortened = new bytes32[](keys.length - 1);
-
-            for (uint256 j; j < keys.length; ++j) {
-                if (j < i)      shortened[j]     = keys[j];
-                else if (j > i) shortened[j - 1] = keys[j];
-            }
-
-            return shortened;
-        }
-
-        return keys;
     }
 
     function _concat(VmSafe.EthGetLogs[] memory left, VmSafe.EthGetLogs[] memory right)
