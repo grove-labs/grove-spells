@@ -27,17 +27,16 @@ interface IRateLimitsLike {
 contract GroveEthereum_20261105 is GrovePayloadEthereum {
 
     constructor() {
-        PAYLOAD_AVALANCHE = address(0); // TODO: set after foreign payload deploy
-        PAYLOAD_BASE      = address(0); // TODO: set after foreign payload deploy
+        PAYLOAD_BASE = address(0); // TODO: set after foreign payload deploy
     }
 
     function _execute() internal override {
-        // [Ethereum] Item 3: raise the Grove x Steakhouse USDC Morpho Vault V2 deposit rate limit.
-        //   Forum : TODO
+        // [Ethereum] Item 2: raise the Grove x Steakhouse USDC Morpho Vault V2 deposit rate limit.
+        //   Forum : https://forum.skyeco.com/t/november-5-2026-proposed-changes-to-grove-for-upcoming-spell/28336
         _raiseGroveXSteakhouseUsdcV2MorphoVaultDepositRateLimit();
 
-        // [Ethereum] Item 4: swap the Grove SubProxy's USDC to USDS.
-        //   Forum : TODO
+        // [Ethereum] Item 3: swap the Grove SubProxy's USDC to USDS.
+        //   Forum : https://forum.skyeco.com/t/november-5-2026-proposed-changes-to-grove-for-upcoming-spell/28336
         _swapUsdcToUsdsViaPsm();
     }
 

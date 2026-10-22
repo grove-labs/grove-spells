@@ -19,8 +19,8 @@ interface IRateLimitsLike {
 contract GroveBase_20261105 is GrovePayloadBase {
 
     function execute() external {
-        // [Base] Item 2: raise the Grove x Steakhouse USDC Morpho Vault V2 deposit rate limit.
-        //   Forum : TODO
+        // [Base] Item 1: raise the Grove x Steakhouse USDC Morpho Vault V2 deposit rate limit.
+        //   Forum : https://forum.skyeco.com/t/november-5-2026-proposed-changes-to-grove-for-upcoming-spell/28336
         _raiseGroveXSteakhouseUsdcV2MorphoVaultDepositRateLimit();
     }
 
