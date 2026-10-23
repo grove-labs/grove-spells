@@ -6,7 +6,7 @@ import { Base } from "lib/grove-address-registry/src/Base.sol";
 import { RateLimitHelpers } from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
-import { GrovePayloadBase }            from "src/libraries/payloads/GrovePayloadBase.sol";
+import { GrovePayloadBase }           from "src/libraries/payloads/GrovePayloadBase.sol";
 
 interface IRateLimitsLike {
     function setRateLimitData(bytes32 key, uint256 maxAmount, uint256 slope) external;

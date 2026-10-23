@@ -6,7 +6,7 @@ import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
 import { RateLimitHelpers } from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { GroveLiquidityLayerHelpers } from "src/libraries/helpers/GroveLiquidityLayerHelpers.sol";
-import { GrovePayloadEthereum }        from "src/libraries/payloads/GrovePayloadEthereum.sol";
+import { GrovePayloadEthereum }       from "src/libraries/payloads/GrovePayloadEthereum.sol";
 
 interface IERC20Like {
     function approve(address spender, uint256 amount) external returns (bool);
