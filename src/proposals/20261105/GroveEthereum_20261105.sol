@@ -27,7 +27,7 @@ interface IRateLimitsLike {
 contract GroveEthereum_20261105 is GrovePayloadEthereum {
 
     constructor() {
-        PAYLOAD_BASE = address(0); // TODO: set after foreign payload deploy
+        PAYLOAD_BASE = 0x5dA864316D7D5E04520605953f2002bdf2e94F40;
     }
 
     function _execute() internal override {

@@ -22,6 +22,9 @@ interface IVaultV2Like {
 
 contract GroveEthereum_20261105_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0xb7fdd2f1efE69EC2145A914bCEB23D48de4Bb74D;
+    address internal constant PAYLOAD_BASE     = 0x5dA864316D7D5E04520605953f2002bdf2e94F40;
+
     address internal constant VAULT_CURATOR  = 0x622E19d6903BD4507cfc70b31d5B99535114C0FC;
     address internal constant VAULT_SENTINEL = 0xB597026150552bB3F6092aC685A2241C5FA77Ed0;
 
@@ -30,8 +33,10 @@ contract GroveEthereum_20261105_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-10-20T09:54:54Z");
-        deployPayloads();
+        setupDomains("2026-10-27T13:04:59Z");
+
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Base()].payload     = PAYLOAD_BASE;
     }
 
     function test_BASE_raiseGroveXSteakhouseUsdcV2MorphoVaultDepositRateLimit()
