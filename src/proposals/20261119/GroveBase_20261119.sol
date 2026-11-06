@@ -22,7 +22,7 @@ contract GroveBase_20261119 is GrovePayloadBase {
 
     function execute() external {
         // [Base] Item 3: raise the Circle CCTP transfer rate limit to Ethereum.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
         _raiseCctpTransferRateLimitToEthereum();
     }
 

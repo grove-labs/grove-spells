@@ -33,15 +33,15 @@ contract GroveEthereum_20261119 is GrovePayloadEthereum {
 
     function _execute() internal override {
         // [Ethereum] Item 1 + Item 4: transfer the November 2026 grant and the GROVE purchase budget to the Grove Foundation.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
         _transferUsdsToGroveFoundation();
 
         // [Ethereum] Item 2: add Agora's new AUSD mint and redeem addresses.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
         _onboardNewAgoraAusdAddresses();
 
         // [Ethereum] Item 3: raise the Circle CCTP transfer rate limit to Base.
-        //   Forum : TODO
+        //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
         _raiseCctpTransferRateLimitToBase();
 
     }
