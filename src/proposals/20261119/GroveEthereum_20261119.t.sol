@@ -2,7 +2,6 @@
 pragma solidity 0.8.34;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
-import { Vm }     from "forge-std/Vm.sol";
 
 import { Base }     from "lib/grove-address-registry/src/Base.sol";
 import { Ethereum } from "lib/grove-address-registry/src/Ethereum.sol";
@@ -12,7 +11,6 @@ import { MainnetController } from "lib/grove-alm-controller/src/MainnetControlle
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
 import { CCTPv2Forwarder } from "lib/xchain-helpers/src/forwarders/CCTPv2Forwarder.sol";
-import { RecordedLogs }    from "lib/xchain-helpers/src/testing/utils/RecordedLogs.sol";
 
 import { ChainIdUtils } from "src/libraries/helpers/ChainId.sol";
 
@@ -22,8 +20,6 @@ contract GroveEthereum_20261119_Test is GroveTestBase {
 
     address internal constant NEW_AGORA_AUSD_MINT   = 0xC6A7d3662e7d38f8e3a1e991116F6c3628bd7EDf;
     address internal constant NEW_AGORA_AUSD_REDEEM = 0x9307672C95c7B92e659da63EF5ee64B0C0D14619;
-
-    bytes32 internal constant TRANSFER = keccak256("Transfer(address,address,uint256)");
 
     constructor() {
         id = "20261119";
@@ -43,11 +39,21 @@ contract GroveEthereum_20261119_Test is GroveTestBase {
 
         assertGe(subProxyUsdsStart, 1_100_000e18, "grove-proxy-insufficient-usds-balance");
 
-        uint256 logsBefore = RecordedLogs.getLogs().length;
+        uint256[] memory expectedAmounts = new uint256[](2);
+        expectedAmounts[0] = 800_000e18;
+        expectedAmounts[1] = 300_000e18;
+
+        uint256 logsBefore = _getRecordedLogsLength();
 
         executeAllPayloadsAndBridges();
 
-        _assertUsdsTransferEvents(logsBefore);
+        _assertErc20TransferEvents({
+            token           : Ethereum.USDS,
+            from            : Ethereum.GROVE_PROXY,
+            to              : Ethereum.GROVE_FOUNDATION,
+            logsBefore      : logsBefore,
+            expectedAmounts : expectedAmounts
+        });
 
         assertEq(
             usds.balanceOf(Ethereum.GROVE_PROXY),
@@ -132,33 +138,6 @@ contract GroveEthereum_20261119_Test is GroveTestBase {
 
         _assertUnlimitedRateLimit(generalCctpKey);
         _assertRateLimit(ethereumCctpKey, 100_000_000e6, 100_000_000e6 / uint256(1 days));
-    }
-
-    function _assertUsdsTransferEvents(uint256 logsBefore) internal {
-        Vm.Log[] memory logs = RecordedLogs.getLogs();
-
-        bytes32 from = bytes32(uint256(uint160(Ethereum.GROVE_PROXY)));
-        bytes32 to   = bytes32(uint256(uint160(Ethereum.GROVE_FOUNDATION)));
-
-        uint256 grantTransfers;
-        uint256 purchaseBudgetTransfers;
-        uint256 foundationTransfers;
-
-        for (uint256 i = logsBefore; i < logs.length; ++i) {
-            if (logs[i].emitter != Ethereum.USDS || logs[i].topics.length != 3) continue;
-            if (logs[i].topics[0] != TRANSFER || logs[i].topics[1] != from || logs[i].topics[2] != to) continue;
-
-            uint256 amount = abi.decode(logs[i].data, (uint256));
-
-            if (amount == 800_000e18) ++grantTransfers;
-            if (amount == 300_000e18) ++purchaseBudgetTransfers;
-
-            ++foundationTransfers;
-        }
-
-        assertEq(grantTransfers,          1, "unexpected-grant-transfer-count");
-        assertEq(purchaseBudgetTransfers, 1, "unexpected-purchase-budget-transfer-count");
-        assertEq(foundationTransfers,     2, "unexpected-foundation-transfer-count");
     }
 
 }
