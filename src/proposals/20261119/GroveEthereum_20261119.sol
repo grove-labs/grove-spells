@@ -32,9 +32,9 @@ contract GroveEthereum_20261119 is GrovePayloadEthereum {
     }
 
     function _execute() internal override {
-        // [Ethereum] Item 1 + Item 4: transfer the November 2026 grant and the GROVE purchase budget to the Grove Foundation.
+        // [Ethereum] Item 1: transfer the November 2026 grant to the Grove Foundation.
         //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
-        _transferUsdsToGroveFoundation();
+        _transferNovemberGrantToGroveFoundation();
 
         // [Ethereum] Item 2: add Agora's new AUSD mint and redeem addresses.
         //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
@@ -44,10 +44,13 @@ contract GroveEthereum_20261119 is GrovePayloadEthereum {
         //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
         _raiseCctpTransferRateLimitToBase();
 
+        // [Ethereum] Item 4: transfer the GROVE purchase budget to the Grove Foundation.
+        //   Forum : https://forum.skyeco.com/t/november-19-2026-proposed-changes-to-grove-for-upcoming-spell/28387
+        _transferGrovePurchaseBudgetToGroveFoundation();
     }
 
-    function _transferUsdsToGroveFoundation() internal {
-        require(IERC20Like(Ethereum.USDS).transfer(Ethereum.GROVE_FOUNDATION, 1_100_000e18));
+    function _transferNovemberGrantToGroveFoundation() internal {
+        require(IERC20Like(Ethereum.USDS).transfer(Ethereum.GROVE_FOUNDATION, 800_000e18));
     }
 
     function _onboardNewAgoraAusdAddresses() internal {
@@ -85,6 +88,10 @@ contract GroveEthereum_20261119 is GrovePayloadEthereum {
             maxAmount : 100_000_000e6,                   // BEFORE: 50_000_000e6
             slope     : 100_000_000e6 / uint256(1 days)  // BEFORE: 50_000_000e6 / 1 days
         });
+    }
+
+    function _transferGrovePurchaseBudgetToGroveFoundation() internal {
+        require(IERC20Like(Ethereum.USDS).transfer(Ethereum.GROVE_FOUNDATION, 300_000e18));
     }
 
 }
