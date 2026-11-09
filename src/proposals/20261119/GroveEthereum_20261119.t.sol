@@ -18,6 +18,9 @@ import { GroveTestBase } from "src/test-harness/GroveTestBase.sol";
 
 contract GroveEthereum_20261119_Test is GroveTestBase {
 
+    address internal constant PAYLOAD_ETHEREUM = 0x1a74cC68A37f24367914fAc1915cC604CB3D72AF;
+    address internal constant PAYLOAD_BASE     = 0x2b10AF143fa182A57b7eb99Dda7838BB8dCEDc5a;
+
     address internal constant NEW_AGORA_AUSD_MINT   = 0xC6A7d3662e7d38f8e3a1e991116F6c3628bd7EDf;
     address internal constant NEW_AGORA_AUSD_REDEEM = 0x9307672C95c7B92e659da63EF5ee64B0C0D14619;
 
@@ -26,9 +29,10 @@ contract GroveEthereum_20261119_Test is GroveTestBase {
     }
 
     function setUp() public {
-        setupDomains("2026-11-04T12:32:38Z");
+        setupDomains("2026-11-09T17:46:47Z");
 
-        deployPayloads();
+        chainData[ChainIdUtils.Ethereum()].payload = PAYLOAD_ETHEREUM;
+        chainData[ChainIdUtils.Base()].payload     = PAYLOAD_BASE;
     }
 
     function test_ETHEREUM_transfersToGroveFoundation() public onChain(ChainIdUtils.Ethereum()) {

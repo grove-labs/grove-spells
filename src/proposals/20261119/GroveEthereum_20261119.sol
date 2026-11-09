@@ -28,7 +28,7 @@ contract GroveEthereum_20261119 is GrovePayloadEthereum {
     address internal constant NEW_AGORA_AUSD_REDEEM = 0x9307672C95c7B92e659da63EF5ee64B0C0D14619;
 
     constructor() {
-        PAYLOAD_BASE = address(0); // TODO: set after foreign payload deploy
+        PAYLOAD_BASE = 0x2b10AF143fa182A57b7eb99Dda7838BB8dCEDc5a;
     }
 
     function _execute() internal override {
