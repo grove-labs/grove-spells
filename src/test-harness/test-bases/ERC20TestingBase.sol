@@ -2,13 +2,18 @@
 pragma solidity ^0.8.0;
 
 import { IERC20 } from "forge-std/interfaces/IERC20.sol";
+import { Vm }     from "forge-std/Vm.sol";
 
 import { MainnetController } from "lib/grove-alm-controller/src/MainnetController.sol";
 import { RateLimitHelpers }  from "lib/grove-alm-controller/src/RateLimitHelpers.sol";
 
+import { RecordedLogs } from "xchain-helpers/testing/utils/RecordedLogs.sol";
+
 import { GroveLiquidityLayerContext, CommonALMTestBase } from "../CommonALMTestBase.sol";
 
 abstract contract ERC20TestingBase is CommonALMTestBase {
+
+    bytes32 private constant TRANSFER_EVENT = keccak256("Transfer(address,address,uint256)");
 
     /**********************************************************************************************/
     /*** Testing functions                                                                      ***/
@@ -73,6 +78,55 @@ abstract contract ERC20TestingBase is CommonALMTestBase {
             depositMax,
             depositSlope
         );
+    }
+
+    function _getRecordedLogsLength() internal returns (uint256) {
+        return RecordedLogs.getLogs().length;
+    }
+
+    function _assertErc20TransferEvents(
+        address token,
+        address from,
+        address to,
+        uint256 logsBefore,
+        uint256[] memory expectedAmounts
+    ) internal {
+        Vm.Log[] memory logs = RecordedLogs.getLogs();
+
+        bytes32 fromTopic = bytes32(uint256(uint160(from)));
+        bytes32 toTopic   = bytes32(uint256(uint160(to)));
+
+        bool[] memory matched = new bool[](expectedAmounts.length);
+        uint256 transferCount;
+
+        for (uint256 i = logsBefore; i < logs.length; ++i) {
+            if (logs[i].emitter != token || logs[i].topics.length != 3) continue;
+            if (
+                logs[i].topics[0] != TRANSFER_EVENT ||
+                logs[i].topics[1] != fromTopic ||
+                logs[i].topics[2] != toTopic
+            ) continue;
+
+            uint256 amount = abi.decode(logs[i].data, (uint256));
+            bool found;
+
+            for (uint256 j; j < expectedAmounts.length; ++j) {
+                if (matched[j] || amount != expectedAmounts[j]) continue;
+
+                matched[j] = true;
+                found      = true;
+                break;
+            }
+
+            assertTrue(found, "unexpected-erc20-transfer");
+            ++transferCount;
+        }
+
+        assertEq(transferCount, expectedAmounts.length, "unexpected-erc20-transfer-count");
+
+        for (uint256 i; i < matched.length; ++i) {
+            assertTrue(matched[i], "missing-erc20-transfer");
+        }
     }
 
     /**********************************************************************************************/
